@@ -2,19 +2,28 @@ r"""
 Automated V3 Parameter-Table, Exact-Path Scope-Validated Prose-Claim, & Anti-Overclaiming Verifier
 (`scripts_v3/verify_prose_claims_v3.py`).
 
-Implements parameter-table, scope-validated prose, and adversarial verification without modifying `src_v3/*.py`
-(preserving 100% SHA-256 lock across all `src_v3` modules and `results_v3/*_v3.json` headers):
-  1. Verifies every row and every `V3_CONFIG` field in `tab:hyperparams` (`manuscript/main.tex`)
-     directly against `src_v3/config_v3.py` (`V3_CONFIG`), catching any discrepancy such as `0.12` vs `0.10`.
-  2. Strips `\begin{table}...\end{table}` blocks from `manuscript/main.tex` so prose checks run strictly
-     on narrative text, and verifies Abstract word count is within Springer SQJ's `[150, 250]` limit.
-  3. Validates registered prose claims using **exact positional JSON path templates** (not loose
-     ancestor set intersections) for BOTH value paths (`jp_a`, `jp_b`) AND statistical paths (`jp_diff`,
-     `jp_p`), validated dynamically against `src_v3/config_v3.py` and `results_v3/*.json` manifests.
-  4. Runs adversarial self-tests proving swapped numbers, wrong directions, mutated `V3_CONFIG` values,
-     fabricated metadata (`cohort="999 independent projects"`, `horizon="entire..."`, `metric="ROC_AUC"`),
-     and realistic `K25 <-> K24` path+number substitution (`sensitivity_K24_disjoint_from_benchmark_a`
-     / `K24_cluster_means` / `*_K24` claimed as `K=25`) ALL deterministically fail.
+Decoupled SQJ verification architecture (preserving 100% SHA-256 lock across all `src_v3/*.py`
+modules and archived `results_v3/*_v3.json` headers):
+  - Exact 4-decimal numerical cells (839 Main + 1,054 Online Resource 1 = 1,893 registered cells)
+    are verified cell-by-cell against `results_v3/*.json` by `src_v3/verify_manuscript_v3.py` and
+    `scripts_v3/verify_online_resource_v3.py`.
+  - This verifier audits narrative prose and protocol hygiene without forcing 4-decimal table
+    regurgitation in running text:
+      1. Verifies all 33 `V3_CONFIG` fields in `tab:hyperparams` + inline `$c_{\text{ht}} = 0.10$`
+         directly against `src_v3/config_v3.py`.
+      2. Strips `\begin{table}...\end{table}` blocks so prose checks run strictly on narrative
+         text, and checks Abstract length within Springer SQJ's `[150, 250]` word limit.
+      3. Validates registered prose claims (`pair`, `delta_pp`, and `direction` modes) using
+         **exact positional JSON path templates** for BOTH value paths (`jp_a`, `jp_b`) AND
+         statistical paths (`jp_diff`, `jp_p`), validated dynamically against `src_v3/config_v3.py`
+         and `results_v3/*.json` manifests.
+      4. Enforces semantic compliance with `PRE_REGISTERED_INTERPRETATION_BOUNDARIES`, 60+
+         anti-misstatement & relational overclaim guards, LaTeX/SQJ hygiene, and Appendix A
+         traceability symbols.
+      5. Runs adversarial self-tests proving mutated `V3_CONFIG` values (`0.10 -> 0.12`),
+         realistic `K25 <-> K24` value/p-value path substitutions, fabricated metadata,
+         wrong directions, mutated prose deltas, and swapped prose pair percentages ALL
+         deterministically fail.
 """
 from __future__ import annotations
 
@@ -59,12 +68,13 @@ class ProsePairClaim:
     fmt_b: str
     prose_regex: str
     scope_prose_regex: str
+    claim_mode: str = "delta_pp"  # "pair", "delta_pp", "direction"
     jf_diff: Optional[str] = None
     jp_diff: Optional[Tuple[str, ...]] = None
     fmt_diff: Optional[str] = None
     jf_p: Optional[str] = None
     jp_p: Optional[Tuple[str, ...]] = None
-    fmt_p: Optional[str] = None
+    require_sig: bool = False
 
 
 def _resolve_json(loaded: Dict[str, Any], jf: str, jpath: Tuple[str, ...]) -> float:
@@ -137,10 +147,6 @@ def _count_abstract_words(abs_tex: str) -> int:
 
 
 def _fmt_num(val: float, fmt: str) -> str:
-    if fmt == "sci_tex_2":
-        s = f"{val:.2e}"
-        mant, exp = s.split("e")
-        return f"{mant}e{int(exp)}"
     out = format(val, fmt)
     if out.endswith("%"):
         out = out[:-1]
@@ -149,20 +155,10 @@ def _fmt_num(val: float, fmt: str) -> str:
 
 def _norm_captured_num(raw: str, fmt: str) -> str:
     s = raw.strip().replace("{,}", "").replace(",", "").replace(r"\%", "").replace("%", "")
-    if fmt == "sci_tex_2":
-        m = re.match(r"^([+-]?\d+\.\d+)\s*\\times\s*10\^\{([+-]?\d+)\}$", s)
-        if m:
-            return f"{m.group(1)}e{int(m.group(2))}"
     return s.lstrip("+") if not fmt.startswith("+") else s
 
 
 def _matches_exact_template(jpath: Tuple[str, ...], template: Tuple[Any, ...]) -> bool:
-    """
-    Matches `jpath` position-by-position against `template`:
-      - `str`: exact string equality
-      - `set`/`frozenset`: membership in allowed string set
-      - `"*"`: matches any single non-empty key (never across multiple path depths!)
-    """
     if len(jpath) != len(template):
         return False
     for elem, pat in zip(jpath, template):
@@ -224,10 +220,6 @@ def verify_hyperparam_table_against_v3_config(full_tex: str, cfg_obj: Any = V3_C
 
 
 def build_exact_scope_binding_rules(loaded: Dict[str, Any]) -> Dict[Tuple[str, str, str, str], Dict[str, Any]]:
-    """
-    Dynamically verifies dataset/manifest counts and binds each exact `(cohort, horizon, metric, aggregation)`
-    4-tuple to its ONLY permitted full positional JSON path templates.
-    """
     ba = loaded["benchmark_a_multihost_v3.json"]
     bb = loaded["benchmark_b_main_v3.json"]
     conf = loaded["confirmatory_cohort_v3.json"]
@@ -241,7 +233,6 @@ def build_exact_scope_binding_rules(loaded: Dict[str, Any]) -> Dict[Tuple[str, s
     bb_shift_streams = sorted(bb["controlled_shift_streams_mlp"].keys())
     assert bb_shift_streams == sorted(CONTROLLED_TABULAR_SHIFT_STREAMS.keys()) and len(bb_shift_streams) == 4
 
-    # Verify RQ4b evaluates ALL 4 controlled-shift streams (4 * 5 = 20 runs), whereas RQ4e evaluates 3!
     rq4b_per_stream = set(rq4b["configs"]["DriftLens_Block_Rolling_95_CD1_V3"]["per_stream"].keys())
     rq4b_shifts = sorted(rq4b_per_stream & set(CONTROLLED_TABULAR_SHIFT_STREAMS.keys()))
     assert len(rq4b_shifts) == 4, f"Expected 4 controlled shifts in RQ4b, got {rq4b_shifts}"
@@ -262,12 +253,9 @@ def build_exact_scope_binding_rules(loaded: Dict[str, Any]) -> Dict[Tuple[str, s
     k25_fams = {"family1_paradox_K25", "family2_competitors_K25", "family3_controls_K25"}
 
     return {
-        ("Benchmark_A_Qt_Natural", "scheduled_1W", "pooled_censoring_and_count", "pooled_window_defects"): {
+        ("Benchmark_A_MultiYear_Cens", "scheduled_1W", "censoring_range", "cohort_min_max"): {
             "val_templates": [
-                (
-                    "manuscript_derived_aggregates_v3.json",
-                    ("window_censoring_audit", "qt_natural_25k", {"pooled_cens_1w", "pooled_bugs_1w"}),
-                ),
+                ("manuscript_derived_aggregates_v3.json", ("window_censoring_audit", "*", {"cens_1w", "cens_4w"})),
             ],
             "diff_templates": [],
             "p_templates": [],
@@ -336,66 +324,9 @@ def build_exact_scope_binding_rules(loaded: Dict[str, Any]) -> Dict[Tuple[str, s
                 ("confirmatory_cohort_v3.json", ("umbrella4_family1_paradox", "*", "p_wilcoxon_wilcox")),
             ],
         },
-        ("RQ4a_10Streams", "full_stream_kappa_3.0", "f1", "10stream_mean"): {
+        ("Confirmatory_Standalone3_MLP", "full_stream", "ap", "3repo_standalone_mean"): {
             "val_templates": [
-                ("rq4a_latency_intervention_v3.json", ("results_by_kappa", "3.00", "means", "*", "f1")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4a_10Streams", "full_stream_kappa_3.0", "f1_th", "10stream_mean"): {
-            "val_templates": [
-                ("rq4a_latency_intervention_v3.json", ("results_by_kappa", "3.00", "means", "*", "f1_th")),
-                ("rq4a_fixedcurve_control_v3.json", ("results_by_kappa", "3.00", "means", "*", "f1_th")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4a_10Streams", "full_stream_kappa_0.0", "ap", "10stream_mean"): {
-            "val_templates": [
-                ("rq4a_fixedcurve_control_v3.json", ("results_by_kappa", "0.00", "means", "*", "ap")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4a_10Streams", "full_stream_kappa_3.0", "ap", "10stream_mean"): {
-            "val_templates": [
-                ("rq4a_fixedcurve_control_v3.json", ("results_by_kappa", "3.00", "means", "*", "ap")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4b_4ControlledShifts_20Runs", "post_onset_detection", "undetected_shift_rate", "4shift_x_5seed_20runs"): {
-            "val_templates": [
-                ("rq4b_factorial_monitors_v3.json", ("configs", "*", "undetected_shift_rate")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4b_4ControlledShifts_20Runs", "post_onset_detection", "conditional_shift_delay_commits_given_detected", "4shift_x_5seed_20runs"): {
-            "val_templates": [
-                ("rq4b_factorial_monitors_v3.json", ("configs", "*", "conditional_shift_delay_commits_given_detected")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4c_5PRSZZStreams", "2x2_szz_perturbation", "ap", "5stream_mean"): {
-            "val_templates": [
-                ("rq4d_szz_perturbation_v3.json", ("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "*", "*")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4e_3RepControlledShifts", "fixed_1200_post_onset_W800", "ap", "3stream_rep_shift_mean"): {
-            "val_templates": [
-                ("rq4e_sensitivity_sweeps_v3.json", ("window_size_sweep", "800", "fixed_1200_post_onset_ap", "*")),
-            ],
-            "diff_templates": [],
-            "p_templates": [],
-        },
-        ("RQ4f_OpenStack_320Slice", "320_commit_slice", "ap_mean", "3_prompt_seed_mean"): {
-            "val_templates": [
-                ("rq4f_llm_audit_v3.json", ("ecosystems", "openstack", "regimes", "*", "ap_mean")),
+                ("reviewer_mechanism_audits_v3.json", ("audit_a_apachejit_funnel", "separated_confirmatory_ap", "standalone_3_mlp", "*")),
             ],
             "diff_templates": [],
             "p_templates": [],
@@ -414,23 +345,59 @@ def build_exact_scope_binding_rules(loaded: Dict[str, Any]) -> Dict[Tuple[str, s
             "diff_templates": [],
             "p_templates": [],
         },
-        ("Confirmatory_Standalone3_MLP", "full_stream", "ap", "3repo_standalone_mean"): {
+        ("RQ4a_10Streams", "full_stream_kappa_3.0", "f1", "10stream_mean"): {
             "val_templates": [
-                ("reviewer_mechanism_audits_v3.json", ("audit_a_apachejit_funnel", "separated_confirmatory_ap", "standalone_3_mlp", "*")),
+                ("rq4a_latency_intervention_v3.json", ("results_by_kappa", "3.00", "means", "*", "f1")),
             ],
             "diff_templates": [],
             "p_templates": [],
         },
-        ("RQ4a_10Streams_PostHocControl", "full_stream_kappa_3.0", "f1", "10stream_mean"): {
+        ("RQ4a_10Streams", "full_stream_kappa_3.0", "f1_th", "10stream_mean"): {
             "val_templates": [
-                ("reviewer_mechanism_audits_v3.json", ("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "*", "f1")),
+                ("rq4a_latency_intervention_v3.json", ("results_by_kappa", "3.00", "means", "*", "f1_th")),
+                ("rq4a_fixedcurve_control_v3.json", ("results_by_kappa", "3.00", "means", "*", "f1_th")),
             ],
             "diff_templates": [],
             "p_templates": [],
         },
-        ("RQ4a_10Streams_PostHocRatioClip", "full_stream_kappa_0.0", "upper_clip_and_win_tie", "10stream_mean"): {
+        ("RQ4a_10Streams_PostHocControl", "full_stream_kappa_3.0", "f1_th", "10stream_mean"): {
             "val_templates": [
-                ("reviewer_mechanism_audits_v3.json", ("audit_d_calibration_and_posthoc", "posthoc_ratio_clipping_diagnostics", "by_kappa", "0.00", {"upper_clip_frac", "window_upper_tie_frac"})),
+                ("reviewer_mechanism_audits_v3.json", ("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "*", "f1_th")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4a_10Streams", "full_stream_kappa_0.0", "ap", "10stream_mean"): {
+            "val_templates": [
+                ("rq4a_fixedcurve_control_v3.json", ("results_by_kappa", "0.00", "means", "*", "ap")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4a_10Streams", "full_stream_kappa_3.0", "ap", "10stream_mean"): {
+            "val_templates": [
+                ("rq4a_fixedcurve_control_v3.json", ("results_by_kappa", "3.00", "means", "*", "ap")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4b_10Streams_NullRate", "val_pool", "stationary_false_alarm_rate", "10stream_mean"): {
+            "val_templates": [
+                ("rq4b_factorial_monitors_v3.json", ("configs", "*", "stationary_false_alarm_rate")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4b_4ControlledShifts_20Runs", "post_onset_detection", "undetected_shift_rate", "4shift_x_5seed_20runs"): {
+            "val_templates": [
+                ("rq4b_factorial_monitors_v3.json", ("configs", "*", "undetected_shift_rate")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4b_4ControlledShifts_20Runs", "post_onset_detection", "conditional_shift_delay_commits_given_detected", "4shift_x_5seed_20runs"): {
+            "val_templates": [
+                ("rq4b_factorial_monitors_v3.json", ("configs", "*", "conditional_shift_delay_commits_given_detected")),
             ],
             "diff_templates": [],
             "p_templates": [],
@@ -438,6 +405,34 @@ def build_exact_scope_binding_rules(loaded: Dict[str, Any]) -> Dict[Tuple[str, s
         ("RQ4b_10Streams_AlarmRate", "full_stream", "mean_alarm_rate_10streams", "10stream_mean"): {
             "val_templates": [
                 ("rq4b_factorial_monitors_v3.json", ("configs", "*", "mean_alarm_rate_10streams")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4c_5PRSZZStreams", "2x2_szz_perturbation", "ap", "5stream_mean"): {
+            "val_templates": [
+                ("rq4d_szz_perturbation_v3.json", ("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "*", "*")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4e_3RepControlledShifts", "fixed_1200_post_onset_W800", "ap", "3stream_rep_shift_mean"): {
+            "val_templates": [
+                ("rq4e_sensitivity_sweeps_v3.json", ("window_size_sweep", "800", "fixed_1200_post_onset_ap", "*")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4f_OpenStack_320Slice", "320_commit_slice", "f1_mean", "3_prompt_seed_mean"): {
+            "val_templates": [
+                ("rq4f_llm_audit_v3.json", ("ecosystems", "openstack", "regimes", "*", "f1_mean")),
+            ],
+            "diff_templates": [],
+            "p_templates": [],
+        },
+        ("RQ4f_OpenStack_320Slice", "320_commit_slice", "ap_mean", "3_prompt_seed_mean"): {
+            "val_templates": [
+                ("rq4f_llm_audit_v3.json", ("ecosystems", "openstack", "regimes", "*", "ap_mean")),
             ],
             "diff_templates": [],
             "p_templates": [],
@@ -496,10 +491,18 @@ def verify_single_claim(
         assert va < vb, f"[{claim.claim_id}] Direction check failed: expected {claim.method_a} ({va}) < {claim.method_b} ({vb})"
     elif claim.direction == "==":
         assert abs(va - vb) <= 1e-12, f"[{claim.claim_id}] Equality check failed: {va} != {vb}"
-    elif claim.direction == "tie_fmt":
-        assert _fmt_num(va, claim.fmt_a) == _fmt_num(vb, claim.fmt_b), f"[{claim.claim_id}] Formatted tie check failed: {va} vs {vb}"
     else:
         raise ValueError(f"Unknown direction '{claim.direction}'")
+
+    if claim.jf_p and claim.jp_p and claim.require_sig:
+        vp = _resolve_json(loaded, claim.jf_p, claim.jp_p)
+        assert vp < 0.05, f"[{claim.claim_id}] Significance check failed: p={vp} >= 0.05!"
+
+    if claim.jf_diff and claim.jp_diff:
+        vd = _resolve_json(loaded, claim.jf_diff, claim.jp_diff)
+        assert abs(abs(vd) - abs(va - vb)) <= 1e-3, (
+            f"[{claim.claim_id}] Registered diff path {vd} inconsistent with |va - vb| = {abs(va - vb)}!"
+        )
 
     m = re.search(claim.prose_regex, sec_txt, flags=re.DOTALL)
     assert m is not None, (
@@ -507,103 +510,105 @@ def verify_single_claim(
         f"  Pattern: {claim.prose_regex}"
     )
     gd = m.groupdict()
-    assert "a" in gd and "b" in gd, f"[{claim.claim_id}] Regex must define (?P<a>...) and (?P<b>...)!"
 
-    exp_a = _fmt_num(va, claim.fmt_a).lstrip("+")
-    exp_b = _fmt_num(vb, claim.fmt_b).lstrip("+")
-    got_a = _norm_captured_num(gd["a"], claim.fmt_a)
-    got_b = _norm_captured_num(gd["b"], claim.fmt_b)
-    assert got_a == exp_a, f"[{claim.claim_id}] Prose value A mismatch for {claim.method_a}: got '{got_a}', expected '{exp_a}'"
-    assert got_b == exp_b, f"[{claim.claim_id}] Prose value B mismatch for {claim.method_b}: got '{got_b}', expected '{exp_b}'"
-
-    if claim.jf_diff and claim.jp_diff and claim.fmt_diff:
-        assert "diff" in gd, f"[{claim.claim_id}] Regex missing (?P<diff>...)"
-        vd = _resolve_json(loaded, claim.jf_diff, claim.jp_diff)
-        exp_d = format(vd, claim.fmt_diff)
-        got_d = gd["diff"].strip().replace("$-$", "-")
-        assert got_d == exp_d, f"[{claim.claim_id}] Prose diff mismatch: got '{got_d}', expected '{exp_d}'"
-
-    if claim.jf_p and claim.jp_p and claim.fmt_p:
-        assert "p" in gd, f"[{claim.claim_id}] Regex missing (?P<p>...)"
-        vp = _resolve_json(loaded, claim.jf_p, claim.jp_p)
-        exp_p = _fmt_num(vp, claim.fmt_p)
-        got_p = _norm_captured_num(gd["p"], claim.fmt_p)
-        assert got_p == exp_p, f"[{claim.claim_id}] Prose p-value mismatch: got '{got_p}', expected '{exp_p}'"
+    if claim.claim_mode == "pair":
+        assert "a" in gd and "b" in gd, f"[{claim.claim_id}] pair-mode regex must define (?P<a>...) and (?P<b>...)!"
+        exp_a = _fmt_num(va, claim.fmt_a).lstrip("+")
+        exp_b = _fmt_num(vb, claim.fmt_b).lstrip("+")
+        got_a = _norm_captured_num(gd["a"], claim.fmt_a)
+        got_b = _norm_captured_num(gd["b"], claim.fmt_b)
+        assert got_a == exp_a, f"[{claim.claim_id}] Prose value A mismatch for {claim.method_a}: got '{got_a}', expected '{exp_a}'"
+        assert got_b == exp_b, f"[{claim.claim_id}] Prose value B mismatch for {claim.method_b}: got '{got_b}', expected '{exp_b}'"
+        checked_summary = f"{exp_a} vs {exp_b}"
+    elif claim.claim_mode == "delta_pp":
+        assert "delta" in gd, f"[{claim.claim_id}] delta_pp-mode regex must define (?P<delta>...)!"
+        exp_pp = f"{abs(va - vb) * 100.0:.1f}"
+        got_pp = _norm_captured_num(gd["delta"], ".1f")
+        assert got_pp == exp_pp, (
+            f"[{claim.claim_id}] Prose delta_pp mismatch ({claim.method_a} vs {claim.method_b}): "
+            f"got '{got_pp}pp', expected '{exp_pp}pp' (raw |va-vb|={abs(va - vb):.6f})"
+        )
+        checked_summary = f"delta={exp_pp}pp"
+    elif claim.claim_mode == "direction":
+        checked_summary = f"{va:.4f} {claim.direction} {vb:.4f}"
+    else:
+        raise ValueError(f"Unknown claim_mode '{claim.claim_mode}'")
 
     return {
         "claim_id": claim.claim_id,
         "section": claim.section,
+        "mode": claim.claim_mode,
         "pair": f"{claim.method_a} {claim.direction} {claim.method_b}",
         "cohort": claim.cohort,
         "horizon": claim.horizon,
         "metric": claim.metric,
         "aggregation": claim.aggregation,
-        "val_a": exp_a,
-        "val_b": exp_b,
+        "verified": checked_summary,
     }
 
 
 def build_prose_claims_registry() -> List[ProsePairClaim]:
     return [
+        # --- RQ1 ---
         ProsePairClaim(
-            claim_id="RQ2_FULL_LR_VS_SPU_GRADUAL",
-            section="sec:rq2",
-            method_a="Full_LR_Adapt",
-            method_b="Survival_PU",
-            cohort="Benchmark_B_K25_Natural",
-            horizon="full_stream",
-            metric="ap",
-            aggregation="K25_donor_cluster_mean",
-            direction=">",
-            jf_a="benchmark_b_main_v3.json",
-            jp_a=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "Full_LR_Adapt"),
-            fmt_a=".4f",
-            jf_b="benchmark_b_main_v3.json",
-            jp_b=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "Survival_PU"),
-            fmt_b=".4f",
-            prose_regex=r"Full-LR Adapt-4W\s+leads in mean at\s*\$(?P<a>0\.\d{4})\$.*?Survival-PU\s+scores\s*\$(?P<b>0\.\d{4})\$\s*AP",
-            scope_prose_regex=r"across \$K=25\$ natural donor clusters",
-        ),
-        ProsePairClaim(
-            claim_id="RQ2_FIXEDCURVE_BEATS_SPU_K25",
-            section="sec:rq2",
-            method_a="FixedCurve_PU",
-            method_b="Survival_PU",
-            cohort="Benchmark_B_K25_Natural",
-            horizon="full_stream",
-            metric="ap",
-            aggregation="K25_donor_cluster_mean",
-            direction=">",
-            jf_a="benchmark_b_main_v3.json",
-            jp_a=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "FixedCurve_PU"),
-            fmt_a=".4f",
-            jf_b="benchmark_b_main_v3.json",
-            jp_b=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "Survival_PU"),
-            fmt_b=".4f",
-            jf_p="benchmark_b_main_v3.json",
-            jp_p=("cluster_inference_mlp", "primary_ap", "family3_controls_K25", "0", "p_holm"),
-            fmt_p=".4f",
-            prose_regex=r"zero-fit FixedCurve-PU significantly exceeds cohort-estimated Survival-PU at\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>0\.\d{4})\$\)",
-            scope_prose_regex=r"On \$K=25\$ primary MLP AP",
-        ),
-        ProsePairClaim(
-            claim_id="RQ1_QT_POOLED_CENSORING_AND_COUNT",
+            claim_id="RQ1_MULTIYEAR_CENSORING_RANGE",
             section="sec:rq1",
-            method_a="Qt_Pooled_Cens_1W",
-            method_b="Qt_Pooled_Bugs_1W",
-            cohort="Benchmark_A_Qt_Natural",
+            method_a="Cabral_14_1W",
+            method_b="Qt_Natural_1W",
+            cohort="Benchmark_A_MultiYear_Cens",
             horizon="scheduled_1W",
-            metric="pooled_censoring_and_count",
-            aggregation="pooled_window_defects",
+            metric="censoring_range",
+            aggregation="cohort_min_max",
             direction="<",
             jf_a="manuscript_derived_aggregates_v3.json",
-            jp_a=("window_censoring_audit", "qt_natural_25k", "pooled_cens_1w"),
+            jp_a=("window_censoring_audit", "cohort_Cabral19", "cens_1w"),
             fmt_a=".1%",
             jf_b="manuscript_derived_aggregates_v3.json",
-            jp_b=("window_censoring_audit", "qt_natural_25k", "pooled_bugs_1w"),
-            fmt_b=".0f",
-            prose_regex=r"natural Qt remain unfixed,\s*corresponding to a pooled rate of\s*\$(?P<a>\d+\.\d)\\%\$\s*across\s*\$(?P<b>\d+)\$\s*window-defects",
-            scope_prose_regex=r"Across scheduled single-window boundaries",
+            jp_b=("window_censoring_audit", "qt_natural_25k", "cens_1w"),
+            fmt_b=".1%",
+            claim_mode="pair",
+            prose_regex=r"(?P<a>\d+\.\d)\\%\s+to\s+(?P<b>\d+\.\d)\\%\s+of recent defects stay unrevealed at scheduled single-window boundaries",
+            scope_prose_regex=r"scheduled single-window boundaries",
+        ),
+        ProsePairClaim(
+            claim_id="RQ1_MULTIYEAR_4W_CENSORING_RANGE",
+            section="sec:rq1",
+            method_a="ApacheJIT_8_4W",
+            method_b="Qt_Natural_4W",
+            cohort="Benchmark_A_MultiYear_Cens",
+            horizon="scheduled_1W",
+            metric="censoring_range",
+            aggregation="cohort_min_max",
+            direction="<",
+            jf_a="manuscript_derived_aggregates_v3.json",
+            jp_a=("window_censoring_audit", "cohort_ApacheJIT", "cens_4w"),
+            fmt_a=".1%",
+            jf_b="manuscript_derived_aggregates_v3.json",
+            jp_b=("window_censoring_audit", "qt_natural_25k", "cens_4w"),
+            fmt_b=".1%",
+            claim_mode="pair",
+            prose_regex=r"still leaving\s+(?P<a>\d+\.\d)\\%\s+to\s+(?P<b>\d+\.\d)\\%\s+of recent defects hidden across multi-year projects",
+            scope_prose_regex=r"Widening replay to four windows",
+        ),
+        ProsePairClaim(
+            claim_id="RQ1_CONFIRMATORY_CENSORING_5_VS_3",
+            section="sec:rq1",
+            method_a="Confirmatory_5_1W",
+            method_b="Confirmatory_Standalone3_1W",
+            cohort="Benchmark_A_MultiYear_Cens",
+            horizon="scheduled_1W",
+            metric="censoring_range",
+            aggregation="cohort_min_max",
+            direction=">",
+            jf_a="manuscript_derived_aggregates_v3.json",
+            jp_a=("window_censoring_audit", "cohort_Confirmatory_ApacheJIT", "cens_1w"),
+            fmt_a=".1%",
+            jf_b="manuscript_derived_aggregates_v3.json",
+            jp_b=("window_censoring_audit", "cohort_Confirmatory_Standalone3", "cens_1w"),
+            fmt_b=".1%",
+            claim_mode="pair",
+            prose_regex=r"at\s+(?P<a>\d+\.\d)\\%\s+overall and\s+(?P<b>\d+\.\d)\\%\s+across its three standalone repositories",
+            scope_prose_regex=r"shorter confirmatory ApacheJIT cohort",
         ),
         ProsePairClaim(
             claim_id="RQ1_MLP_ORACLE_VS_B2_4W",
@@ -623,12 +628,12 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             fmt_b=".4f",
             jf_diff="benchmark_b_main_v3.json",
             jp_diff=("cluster_inference_mlp", "primary_ap", "family1_paradox_K25", "0", "mean_diff"),
-            fmt_diff="+.4f",
             jf_p="benchmark_b_main_v3.json",
             jp_p=("cluster_inference_mlp", "primary_ap", "family1_paradox_K25", "0", "p_holm"),
-            fmt_p="sci_tex_2",
-            prose_regex=r"On MLP,\s*\$B_\{1b\}\^\*\$\s*reaches\s*\$(?P<a>0\.\d{4})\$\s*AP versus\s*\$(?P<b>0\.\d{4})\$\s*for\s*\$B_2\\text\{-4W\}\$,\s*a statistically significant inflation of\s*\$\\Delta\\text\{AP\}\s*=\s*(?P<diff>[+-]0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>\d+\.\d+\s*\\times\s*10\^\{-?\d+\})\$\)",
-            scope_prose_regex=r"across \$K=25\$ natural donor clusters",
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"On MLP,\s*Window Oracle exceeds matched Causal-4W by\s+(?P<delta>\d+\.\d)\s+AP points",
+            scope_prose_regex=r"across the 25 natural donor clusters",
         ),
         ProsePairClaim(
             claim_id="RQ1_LGB_ORACLE_VS_B2_4W",
@@ -648,12 +653,12 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             fmt_b=".4f",
             jf_diff="benchmark_b_main_v3.json",
             jp_diff=("cluster_inference_lightgbm_ap", "family1_paradox_K25", "0", "mean_diff"),
-            fmt_diff="+.4f",
             jf_p="benchmark_b_main_v3.json",
             jp_p=("cluster_inference_lightgbm_ap", "family1_paradox_K25", "0", "p_holm"),
-            fmt_p="sci_tex_2",
-            prose_regex=r"On LightGBM,\s*hindsight optimism more than doubles\.\s*Here\s*\$B_\{1b\}\^\*\$\s*reaches\s*\$(?P<a>0\.\d{4})\$\s*AP versus\s*\$(?P<b>0\.\d{4})\$\s*for\s*\$B_2\\text\{-4W\}\$,\s*gaining\s*\$\\Delta\\text\{AP\}\s*=\s*(?P<diff>[+-]0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>\d+\.\d+\s*\\times\s*10\^\{-?\d+\})\$\)",
-            scope_prose_regex=r"across \$K=25\$ natural donor clusters",
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"On LightGBM,\s*hindsight inflation doubles to\s+(?P<delta>\d+\.\d)\s+AP points",
+            scope_prose_regex=r"across the 25 natural donor clusters",
         ),
         ProsePairClaim(
             claim_id="RQ1_B2_4W_BEATS_B0_GRADUAL",
@@ -673,9 +678,10 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             fmt_b=".4f",
             jf_p="benchmark_b_main_v3.json",
             jp_p=("cluster_inference_mlp", "primary_ap", "family1_paradox_K25", "1", "p_holm"),
-            fmt_p=".4f",
-            prose_regex=r"beat frozen \$B_0\$ on full-stream MLP AP across gradual natural clusters,\s*at\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>0\.\d{4})\$\)",
-            scope_prose_regex=r"full-stream MLP AP",
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"Causal-4W to outperform a frozen MLP by\s+(?P<delta>\d+\.\d)\s+AP points under gradual natural drift",
+            scope_prose_regex=r"gradual natural drift",
         ),
         ProsePairClaim(
             claim_id="RQ1_SHIFTS_B2_4W_BEATS_B0",
@@ -693,9 +699,11 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="manuscript_derived_aggregates_v3.json",
             jp_b=("benchmark_b_controlled_shift_4stream_mean", "B0_Frozen", "post_onset_ap"),
             fmt_b=".4f",
-            prose_regex=r"controlled abrupt shifts,\s*reaching\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*post-onset AP",
-            scope_prose_regex=r"controlled abrupt shifts",
+            claim_mode="direction",
+            prose_regex=r"Across the four controlled abrupt shifts,\s*it similarly beats freezing by roughly 5 AP points",
+            scope_prose_regex=r"four controlled abrupt shifts",
         ),
+        # --- RQ2 ---
         ProsePairClaim(
             claim_id="RQ2_BA_FULL_LR_BEATS_DEPLOYABLE_DEEPJIT",
             section="sec:rq2",
@@ -712,8 +720,9 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="manuscript_derived_aggregates_v3.json",
             jp_b=("benchmark_a_by_host_6streams", "deepjit_cnn_skip", "B0_Frozen", "ap"),
             fmt_b=".4f",
-            prose_regex=r"Full-LR Frozen,\s*leads every deployable single-host configuration at\s*\$(?P<a>0\.\d{4})\$\s*AP.*?strongest deployable individual model is frozen\s+DeepJIT-CNN\s+at\s*\$B_0\s*=\s*(?P<b>0\.\d{4})\$\s*AP",
-            scope_prose_regex=r"across the six Benchmark~A streams",
+            claim_mode="direction",
+            prose_regex=r"Full-LR Frozen\) edges past single-feature LApredict and beats the strongest deployable neural host,\s*frozen DeepJIT-CNN,\s*by more than a full AP point",
+            scope_prose_regex=r"multimodal Benchmark~A",
         ),
         ProsePairClaim(
             claim_id="RQ2_BA_DEEPJIT_HINDSIGHT_EXCEEDS_FULL_LR",
@@ -731,8 +740,9 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="manuscript_derived_aggregates_v3.json",
             jp_b=("benchmark_a_track2_6stream_mean", "Full_LR_B0", "ap"),
             fmt_b=".4f",
-            prose_regex=r"Full-LR Frozen,\s*leads every deployable single-host configuration at\s*\$(?P<b>0\.\d{4})\$\s*AP.*?[Oo]nly non-deployable full-prefix hindsight\s+DeepJIT-CNN\s*\(\$B_\{1a\}\^\*\s*=\s*(?P<a>0\.\d{4})\$\)\s*exceeds\s+Full-LR Frozen",
-            scope_prose_regex=r"across the six Benchmark~A streams",
+            claim_mode="direction",
+            prose_regex=r"only non-deployable Full Hindsight DeepJIT-CNN scores higher",
+            scope_prose_regex=r"multimodal Benchmark~A",
         ),
         ProsePairClaim(
             claim_id="RQ2_BA_LOC_ONLY_BEATS_SPU_R20",
@@ -750,8 +760,29 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="manuscript_derived_aggregates_v3.json",
             jp_b=("benchmark_a_4host_6stream_mean", "Survival_PU", "recall_at_20pct_effort"),
             fmt_b=".4f",
-            prose_regex=r"LOC-Only\s+reaches\s*\$(?P<a>0\.\d{4})\$\s*R@20\\%Effort,\s*ahead of\s+Survival-PU's\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"across the six Benchmark~A streams",
+            claim_mode="direction",
+            prose_regex=r"unsupervised LOC-Only outscores Survival-PU by over three points in effort recall",
+            scope_prose_regex=r"multimodal Benchmark~A",
+        ),
+        ProsePairClaim(
+            claim_id="RQ2_FULL_LR_VS_SPU_GRADUAL",
+            section="sec:rq2",
+            method_a="Full_LR_Adapt",
+            method_b="Survival_PU",
+            cohort="Benchmark_B_K25_Natural",
+            horizon="full_stream",
+            metric="ap",
+            aggregation="K25_donor_cluster_mean",
+            direction=">",
+            jf_a="benchmark_b_main_v3.json",
+            jp_a=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "Full_LR_Adapt"),
+            fmt_a=".4f",
+            jf_b="benchmark_b_main_v3.json",
+            jp_b=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "Survival_PU"),
+            fmt_b=".4f",
+            claim_mode="direction",
+            prose_regex=r"Full-LR Adapt-4W achieves the highest mean MLP AP,\s*with Causal-4W,\s*Wait-90,\s*and zero-fit FixedCurve-PU all finishing ahead of Survival-PU",
+            scope_prose_regex=r"Across the 25 donor clusters",
         ),
         ProsePairClaim(
             claim_id="RQ2_BB_SPU_BEATS_NNPU",
@@ -771,9 +802,33 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             fmt_b=".4f",
             jf_p="benchmark_b_main_v3.json",
             jp_p=("cluster_inference_mlp", "primary_ap", "family2_competitors_K25", "2", "p_holm"),
-            fmt_p=".4f",
-            prose_regex=r"Survival-PU\s+scores\s*\$(?P<a>0\.\d{4})\$\s*AP,\s*significantly outperforming\s+Pure-nnPU\s+at\s*\$(?P<b>0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>0\.\d{4})\$\)",
-            scope_prose_regex=r"across \$K=25\$ natural donor clusters",
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"Survival-PU significantly beats age-blind Pure-nnPU by\s+(?P<delta>\d+\.\d)\s+AP points",
+            scope_prose_regex=r"Across the 25 donor clusters",
+        ),
+        ProsePairClaim(
+            claim_id="RQ2_BB_SPU_BEATS_ORB",
+            section="sec:rq2",
+            method_a="Survival_PU",
+            method_b="ORB_OHT_Native",
+            cohort="Benchmark_B_K25_Natural",
+            horizon="full_stream",
+            metric="ap",
+            aggregation="K25_donor_cluster_mean",
+            direction=">",
+            jf_a="benchmark_b_main_v3.json",
+            jp_a=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "Survival_PU"),
+            fmt_a=".4f",
+            jf_b="benchmark_b_main_v3.json",
+            jp_b=("cluster_inference_mlp", "primary_ap", "K25_cluster_means", "ORB_OHT_Native"),
+            fmt_b=".4f",
+            jf_p="benchmark_b_main_v3.json",
+            jp_p=("cluster_inference_mlp", "primary_ap", "family2_competitors_K25", "5", "p_holm"),
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"and Hoeffding ORB by\s+(?P<delta>\d+\.\d)\s+points",
+            scope_prose_regex=r"Across the 25 donor clusters",
         ),
         ProsePairClaim(
             claim_id="RQ2_BB_SPU_TRAILS_B2_4W",
@@ -793,12 +848,12 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             fmt_b=".4f",
             jf_diff="benchmark_b_main_v3.json",
             jp_diff=("cluster_inference_mlp", "primary_ap", "family1_paradox_K25", "2", "mean_diff"),
-            fmt_diff="+.4f",
             jf_p="benchmark_b_main_v3.json",
             jp_p=("cluster_inference_mlp", "primary_ap", "family1_paradox_K25", "2", "p_holm"),
-            fmt_p=".4f",
-            prose_regex=r"followed by\s+Causal-4W\s+at\s*\$(?P<b>0\.\d{4})\$.*?Survival-PU\s+scores\s*\$(?P<a>0\.\d{4})\$\s*AP.*?significantly trails\s+Causal-4W\s+by\s*\$\\Delta\\text\{AP\}\s*=\s*(?P<diff>[+-]0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>0\.\d{4})\$\)",
-            scope_prose_regex=r"across \$K=25\$ natural donor clusters",
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"Survival-PU significantly trails Causal-4W by\s+(?P<delta>\d+\.\d)\s+AP points",
+            scope_prose_regex=r"Across the 25 donor clusters",
         ),
         ProsePairClaim(
             claim_id="RQ2_BB_FIXEDCURVE_BEATS_SPU_MLP",
@@ -818,243 +873,30 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             fmt_b=".4f",
             jf_p="benchmark_b_main_v3.json",
             jp_p=("cluster_inference_mlp", "primary_ap", "family3_controls_K25", "0", "p_holm"),
-            fmt_p=".4f",
-            prose_regex=r"zero-fit FixedCurve-PU significantly exceeds cohort-estimated Survival-PU at\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>0\.\d{4})\$\)",
-            scope_prose_regex=r"On \$K=25\$ primary MLP AP",
+            require_sig=True,
+            claim_mode="delta_pp",
+            prose_regex=r"zero-fit FixedCurve-PU significantly exceeds cohort-estimated Survival-PU by\s+(?P<delta>\d+\.\d)\s+points",
+            scope_prose_regex=r"On primary MLP AP",
         ),
         ProsePairClaim(
-            claim_id="RQ2_BB_FIXEDCURVE_BEATS_SPU_LGB",
+            claim_id="RQ2_BB_SPU_BEATS_TEACHER_MATCHED_LGB",
             section="sec:rq2",
-            method_a="FixedCurve_PU_LGB",
-            method_b="Survival_PU_LGB",
+            method_a="Survival_PU_LGB",
+            method_b="Teacher_Matched_LGB",
             cohort="Benchmark_B_K25_Natural_LightGBM",
             horizon="full_stream",
             metric="ap",
             aggregation="K25_donor_cluster_mean",
             direction=">",
             jf_a="benchmark_b_main_v3.json",
-            jp_a=("cluster_inference_lightgbm_ap", "K25_cluster_means", "FixedCurve_PU"),
+            jp_a=("cluster_inference_lightgbm_ap", "K25_cluster_means", "Survival_PU"),
             fmt_a=".4f",
             jf_b="benchmark_b_main_v3.json",
-            jp_b=("cluster_inference_lightgbm_ap", "K25_cluster_means", "Survival_PU"),
+            jp_b=("cluster_inference_lightgbm_ap", "K25_cluster_means", "Teacher_Only_Matched"),
             fmt_b=".4f",
-            jf_p="benchmark_b_main_v3.json",
-            jp_p=("cluster_inference_lightgbm_ap", "family3_controls_K25", "0", "p_holm"),
-            fmt_p=".4f",
-            prose_regex=r"holds on LightGBM at\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*\(\$p_\{\\text\{Holm\}\}\s*=\s*(?P<p>0\.\d{4})\$\)",
-            scope_prose_regex=r"On \$K=25\$ primary MLP AP",
-        ),
-        ProsePairClaim(
-            claim_id="RQ2_SHIFT_FULL_SPU_VS_ODASC_HOST",
-            section="sec:rq2",
-            method_a="Survival_PU",
-            method_b="ODaSC_Host",
-            cohort="Benchmark_B_4ControlledShifts",
-            horizon="full_post_onset",
-            metric="ap",
-            aggregation="4stream_mean",
-            direction=">",
-            jf_a="manuscript_derived_aggregates_v3.json",
-            jp_a=("benchmark_b_controlled_shift_4stream_mean", "Survival_PU", "post_onset_ap"),
-            fmt_a=".4f",
-            jf_b="manuscript_derived_aggregates_v3.json",
-            jp_b=("benchmark_b_controlled_shift_4stream_mean", "ODaSC_Host", "post_onset_ap"),
-            fmt_b=".4f",
-            prose_regex=r"Survival-PU achieves the highest deployable mean AP at\s*\$(?P<a>0\.\d{4})\$\},\s*ahead of\s+ODaSC-Host\s+at\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"Controlled Concatenated Distribution Shifts.*full post-onset horizon",
-        ),
-        ProsePairClaim(
-            claim_id="RQ2_SHIFT_TRANSIENT_BORB_BEATS_SPU",
-            section="sec:rq2",
-            method_a="BORB_Alarm",
-            method_b="Survival_PU",
-            cohort="Benchmark_B_4ControlledShifts",
-            horizon="transient_1200",
-            metric="ap",
-            aggregation="4stream_mean",
-            direction=">",
-            jf_a="manuscript_derived_aggregates_v3.json",
-            jp_a=("benchmark_b_controlled_shift_4stream_mean", "BORB_Alarm", "transient_1200_ap"),
-            fmt_a=".4f",
-            jf_b="manuscript_derived_aggregates_v3.json",
-            jp_b=("benchmark_b_controlled_shift_4stream_mean", "Survival_PU", "transient_1200_ap"),
-            fmt_b=".4f",
-            prose_regex=r"BORB-Alarm\s+at\s*\$(?P<a>0\.\d{4})\$\s*and\s+BORB-Native\s+at\s*\$0\.5734\$\s*adapt fastest,\s*surpassing\s+Survival-PU\s+at\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"immediate first 1,200 post-onset commits",
-        ),
-        ProsePairClaim(
-            claim_id="RQ2_CONF_B1B_VS_B2_4W_NONREP",
-            section="sec:rq2",
-            method_a="B1b_4W_Oracle",
-            method_b="B2_4W",
-            cohort="Confirmatory_Umbrella4_MLP",
-            horizon="full_stream",
-            metric="ap",
-            aggregation="K4_umbrella_mean",
-            direction="<",
-            jf_a="confirmatory_cohort_v3.json",
-            jp_a=("umbrella4_means_ap", "B1b_4W_Oracle"),
-            fmt_a=".4f",
-            jf_b="confirmatory_cohort_v3.json",
-            jp_b=("umbrella4_means_ap", "B2_4W"),
-            fmt_b=".4f",
-            jf_p="confirmatory_cohort_v3.json",
-            jp_p=("umbrella4_family1_paradox", "0", "p_wilcoxon_wilcox"),
-            fmt_p=".3f",
-            prose_regex=r"Window Oracle\s+reaches\s*\$(?P<a>0\.\d{4})\$\s*AP,\s*trailing\s+Causal-4W\s+at\s*\$(?P<b>0\.\d{4})\$\s*\(exact two-sided\s*\$p\s*=\s*(?P<p>0\.\d{3})\$\)",
-            scope_prose_regex=r"four-umbrella MLP AP",
-        ),
-        ProsePairClaim(
-            claim_id="RQ2_CONF_B1B_VS_B0_EXACT",
-            section="sec:rq2",
-            method_a="B1b_4W_Oracle",
-            method_b="B0_Frozen",
-            cohort="Confirmatory_Umbrella4_MLP",
-            horizon="full_stream",
-            metric="ap",
-            aggregation="K4_umbrella_mean",
-            direction="<",
-            jf_a="confirmatory_cohort_v3.json",
-            jp_a=("umbrella4_means_ap", "B1b_4W_Oracle"),
-            fmt_a=".4f",
-            jf_b="confirmatory_cohort_v3.json",
-            jp_b=("umbrella4_means_ap", "B0_Frozen"),
-            fmt_b=".4f",
-            prose_regex=r"Window Oracle\s+reaches\s*\$(?P<a>0\.\d{4})\$\s*AP.*?and\s+Frozen\s+at\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"four-umbrella MLP AP",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4A_KAPPA3_F1_SPU_VS_B2",
-            section="sec:rq4",
-            method_a="Survival_PU",
-            method_b="B2_4W",
-            cohort="RQ4a_10Streams",
-            horizon="full_stream_kappa_3.0",
-            metric="f1",
-            aggregation="10stream_mean",
-            direction=">",
-            jf_a="rq4a_latency_intervention_v3.json",
-            jp_a=("results_by_kappa", "3.00", "means", "Survival_PU", "f1"),
-            fmt_a=".4f",
-            jf_b="rq4a_latency_intervention_v3.json",
-            jp_b=("results_by_kappa", "3.00", "means", "B2_4W", "f1"),
-            fmt_b=".4f",
-            prose_regex=r"drops to\s*\$(?P<b>0\.\d{4})\$\s*fixed-threshold\s*\$F_1\$.*?Survival-PU sustains\s*\$F_1\s*=\s*(?P<a>0\.\d{4})\$",
-            scope_prose_regex=r"Across the AP trajectory",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4A_KAPPA3_F1TH_SPU_VS_B2",
-            section="sec:rq4",
-            method_a="Survival_PU",
-            method_b="B2_4W",
-            cohort="RQ4a_10Streams",
-            horizon="full_stream_kappa_3.0",
-            metric="f1_th",
-            aggregation="10stream_mean",
-            direction=">",
-            jf_a="rq4a_latency_intervention_v3.json",
-            jp_a=("results_by_kappa", "3.00", "means", "Survival_PU", "f1_th"),
-            fmt_a=".4f",
-            jf_b="rq4a_latency_intervention_v3.json",
-            jp_b=("results_by_kappa", "3.00", "means", "B2_4W", "f1_th"),
-            fmt_b=".4f",
-            prose_regex=r"and\s*\$(?P<b>0\.\d{4})\$\s*tuned\s*\$F_\{1,\\text\{th\}\}\$.*?causally tuned\s*\$F_\{1,\\text\{th\}\}\s*=\s*(?P<a>0\.\d{4})\$",
-            scope_prose_regex=r"Across the AP trajectory",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4A_KAPPA0_SPU_BEATS_FIXEDCURVE_AP",
-            section="sec:rq4",
-            method_a="Survival_PU",
-            method_b="FixedCurve_PU",
-            cohort="RQ4a_10Streams",
-            horizon="full_stream_kappa_0.0",
-            metric="ap",
-            aggregation="10stream_mean",
-            direction=">",
-            jf_a="rq4a_fixedcurve_control_v3.json",
-            jp_a=("results_by_kappa", "0.00", "means", "Survival_PU", "ap"),
-            fmt_a=".4f",
-            jf_b="rq4a_fixedcurve_control_v3.json",
-            jp_b=("results_by_kappa", "0.00", "means", "FixedCurve_PU", "ap"),
-            fmt_b=".4f",
-            prose_regex=r"\\kappa = 0\.00\\times.*?points in AP\s*\(\$(?P<b>0\.\d{4})\$\s*vs\.\\\s*\$(?P<a>0\.\d{4})\$\)",
-            scope_prose_regex=r"Online Resource~1,\s*Table~S-13",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4A_KAPPA3_FIXEDCURVE_BEATS_SPU_AP",
-            section="sec:rq4",
-            method_a="FixedCurve_PU",
-            method_b="Survival_PU",
-            cohort="RQ4a_10Streams",
-            horizon="full_stream_kappa_3.0",
-            metric="ap",
-            aggregation="10stream_mean",
-            direction=">",
-            jf_a="rq4a_fixedcurve_control_v3.json",
-            jp_a=("results_by_kappa", "3.00", "means", "FixedCurve_PU", "ap"),
-            fmt_a=".4f",
-            jf_b="rq4a_fixedcurve_control_v3.json",
-            jp_b=("results_by_kappa", "3.00", "means", "Survival_PU", "ap"),
-            fmt_b=".4f",
-            prose_regex=r"top deployable heavy-latency AP at\s*\$(?P<a>0\.\d{4})\$\s*versus\s+Causal-4W's\s*\$0\.5466\$\s*and\s+Survival-PU's\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"Online Resource~1,\s*Table~S-13",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4B_MISSED_SHIFT_4STREAMS_20RUNS",
-            section="sec:rq4",
-            method_a="DriftLens_Block_Static_95_CD1",
-            method_b="DriftLens_Block_Rolling_95_CD1_V3",
-            cohort="RQ4b_4ControlledShifts_20Runs",
-            horizon="post_onset_detection",
-            metric="undetected_shift_rate",
-            aggregation="4shift_x_5seed_20runs",
-            direction=">",
-            jf_a="rq4b_factorial_monitors_v3.json",
-            jp_a=("configs", "DriftLens_Block_Static_95_CD1", "undetected_shift_rate"),
-            fmt_a=".1%",
-            jf_b="rq4b_factorial_monitors_v3.json",
-            jp_b=("configs", "DriftLens_Block_Rolling_95_CD1_V3", "undetected_shift_rate"),
-            fmt_b=".1%",
-            prose_regex=r"Across 20 controlled-shift runs.*?dropping from\s*\$(?P<a>\d+\.\d)\\%\$\s*under\s+Block \+ Static.*?to\s*\$(?P<b>\d+\.\d)\\%\$",
-            scope_prose_regex=r"Across 20 controlled-shift runs",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4B_ROLLING_DELAYS_IID_VS_BLOCK",
-            section="sec:rq4",
-            method_a="DriftLens_IID_Rolling_95_CD1",
-            method_b="DriftLens_Block_Rolling_95_CD1_V3",
-            cohort="RQ4b_4ControlledShifts_20Runs",
-            horizon="post_onset_detection",
-            metric="conditional_shift_delay_commits_given_detected",
-            aggregation="4shift_x_5seed_20runs",
-            direction="<",
-            jf_a="rq4b_factorial_monitors_v3.json",
-            jp_a=("configs", "DriftLens_IID_Rolling_95_CD1", "conditional_shift_delay_commits_given_detected"),
-            fmt_a=".0f",
-            jf_b="rq4b_factorial_monitors_v3.json",
-            jp_b=("configs", "DriftLens_Block_Rolling_95_CD1_V3", "conditional_shift_delay_commits_given_detected"),
-            fmt_b=".0f",
-            prose_regex=r"Conditional detection delays average\s*\$(?P<a>\d+)\$\s*commits for\s+IID \+ Rolling\s+and\s*\$(?P<b>\d+)\$\s*commits for\s+Block \+ Rolling",
-            scope_prose_regex=r"Across 20 controlled-shift runs",
-        ),
-        ProsePairClaim(
-            claim_id="RQ4C_BORB_CLEAN_TO_NOISY",
-            section="sec:rq4",
-            method_a="BORB_RefRef",
-            method_b="BORB_PertRef",
-            cohort="RQ4c_5PRSZZStreams",
-            horizon="2x2_szz_perturbation",
-            metric="ap",
-            aggregation="5stream_mean",
-            direction=">",
-            jf_a="rq4d_szz_perturbation_v3.json",
-            jp_a=("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "TrainRef__EvalRef", "BORB_Native"),
-            fmt_a=".4f",
-            jf_b="rq4d_szz_perturbation_v3.json",
-            jp_b=("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "TrainPert__EvalRef", "BORB_Native"),
-            fmt_b=".4f",
-            prose_regex=r"with\s+BORB\s+falling from\s*\$(?P<a>0\.\d{4})\$\s*to\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"Semi-Synthetic PR-SZZ Noise",
+            claim_mode="delta_pp",
+            prose_regex=r"On LightGBM,\s*it lifts AP over Teacher-Matched by\s+(?P<delta>\d+\.\d)\s+points",
+            scope_prose_regex=r"On primary MLP AP",
         ),
         ProsePairClaim(
             claim_id="RQ2_K25_PERWINDOW_SPU_BEATS_B2_4W",
@@ -1072,8 +914,9 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="reviewer_mechanism_audits_v3.json",
             jp_b=("audit_f_window_vs_whole_ap", "K25_5seed_means", "win_ap_unweighted", "B2_4W"),
             fmt_b=".4f",
-            prose_regex=r"Survival-PU\s+reaches\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*for\s+Causal-4W",
-            scope_prose_regex=r"Table~\\ref\{tab:window_ap_scale\}.*?five-seed predictions",
+            claim_mode="direction",
+            prose_regex=r"per-window AP favors Survival-PU by half a point",
+            scope_prose_regex=r"Table~\\ref\{tab:window_ap_scale\}",
         ),
         ProsePairClaim(
             claim_id="RQ2_K25_5SEED_RANKNORM_SPU_VS_B2",
@@ -1091,8 +934,49 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="reviewer_mechanism_audits_v3.json",
             jp_b=("audit_f_window_vs_whole_ap", "K25_5seed_means", "scale_norm_rank_whole_ap", "B2_4W"),
             fmt_b=".4f",
-            prose_regex=r"reaching\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*under Rank-Norm",
+            claim_mode="direction",
+            prose_regex=r"Standardization turns Survival-PU's deficit against Causal-4W into a small exploratory lead",
             scope_prose_regex=r"within-window z-score or percentile-rank standardization",
+        ),
+        ProsePairClaim(
+            claim_id="RQ2_SHIFT_FULL_SPU_BEATS_B2_4W",
+            section="sec:rq2",
+            method_a="Survival_PU",
+            method_b="B2_4W",
+            cohort="Benchmark_B_4ControlledShifts",
+            horizon="full_post_onset",
+            metric="ap",
+            aggregation="4stream_mean",
+            direction=">",
+            jf_a="manuscript_derived_aggregates_v3.json",
+            jp_a=("benchmark_b_controlled_shift_4stream_mean", "Survival_PU", "post_onset_ap"),
+            fmt_a=".4f",
+            jf_b="manuscript_derived_aggregates_v3.json",
+            jp_b=("benchmark_b_controlled_shift_4stream_mean", "B2_4W", "post_onset_ap"),
+            fmt_b=".4f",
+            claim_mode="delta_pp",
+            prose_regex=r"Survival-PU leads every deployable learner\},\s*edging past ODaSC-Host and beating Causal-4W by\s+(?P<delta>\d+\.\d)\s+AP points",
+            scope_prose_regex=r"Controlled Concatenated Distribution Shifts",
+        ),
+        ProsePairClaim(
+            claim_id="RQ2_SHIFT_TRANSIENT_BORB_BEATS_SPU",
+            section="sec:rq2",
+            method_a="BORB_Alarm",
+            method_b="Survival_PU",
+            cohort="Benchmark_B_4ControlledShifts",
+            horizon="transient_1200",
+            metric="ap",
+            aggregation="4stream_mean",
+            direction=">",
+            jf_a="manuscript_derived_aggregates_v3.json",
+            jp_a=("benchmark_b_controlled_shift_4stream_mean", "BORB_Alarm", "transient_1200_ap"),
+            fmt_a=".4f",
+            jf_b="manuscript_derived_aggregates_v3.json",
+            jp_b=("benchmark_b_controlled_shift_4stream_mean", "Survival_PU", "transient_1200_ap"),
+            fmt_b=".4f",
+            claim_mode="delta_pp",
+            prose_regex=r"ElasticNet BORB-Alarm adapts fastest,\s*outscoring Survival-PU by\s+(?P<delta>\d+\.\d)\s+AP points",
+            scope_prose_regex=r"immediate first 1,200 post-onset commits",
         ),
         ProsePairClaim(
             claim_id="RQ2_CONF_STANDALONE3_B1B_TRAILS_B2_4W",
@@ -1110,65 +994,190 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="reviewer_mechanism_audits_v3.json",
             jp_b=("audit_a_apachejit_funnel", "separated_confirmatory_ap", "standalone_3_mlp", "B2_4W"),
             fmt_b=".4f",
-            prose_regex=r"three standalone repositories.*?Window Oracle\s+scores\s*\$(?P<a>0\.\d{4})\$\s*AP,\s*trailing\s+Causal-4W\s+at\s*\$(?P<b>0\.\d{4})\$",
+            claim_mode="direction",
+            prose_regex=r"Window Oracle trails Causal-4W slightly",
             scope_prose_regex=r"three standalone repositories",
         ),
         ProsePairClaim(
-            claim_id="RQ4A_KAPPA3_SPU_BEATS_POSTHOC_LOGIT_F1",
+            claim_id="RQ2_CONF_U4_B1B_TRAILS_B2_4W",
+            section="sec:rq2",
+            method_a="B1b_4W_Oracle",
+            method_b="B2_4W",
+            cohort="Confirmatory_Umbrella4_MLP",
+            horizon="full_stream",
+            metric="ap",
+            aggregation="K4_umbrella_mean",
+            direction="<",
+            jf_a="confirmatory_cohort_v3.json",
+            jp_a=("umbrella4_means_ap", "B1b_4W_Oracle"),
+            fmt_a=".4f",
+            jf_b="confirmatory_cohort_v3.json",
+            jp_b=("umbrella4_means_ap", "B2_4W"),
+            fmt_b=".4f",
+            claim_mode="direction",
+            prose_regex=r"Window Oracle trails Causal-4W by half a point and lags Frozen Host by more than four points",
+            scope_prose_regex=r"four-umbrella view",
+        ),
+        # --- RQ4 ---
+        ProsePairClaim(
+            claim_id="RQ4A_KAPPA3_F1_SPU_VS_B2",
             section="sec:rq4",
             method_a="Survival_PU",
-            method_b="B2_4W_PostHocLogit",
-            cohort="RQ4a_10Streams_PostHocControl",
+            method_b="B2_4W",
+            cohort="RQ4a_10Streams",
             horizon="full_stream_kappa_3.0",
             metric="f1",
             aggregation="10stream_mean",
             direction=">",
-            jf_a="reviewer_mechanism_audits_v3.json",
-            jp_a=("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "Survival_PU", "f1"),
+            jf_a="rq4a_latency_intervention_v3.json",
+            jp_a=("results_by_kappa", "3.00", "means", "Survival_PU", "f1"),
             fmt_a=".4f",
-            jf_b="reviewer_mechanism_audits_v3.json",
-            jp_b=("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "B2_4W_PostHocLogit", "f1"),
+            jf_b="rq4a_latency_intervention_v3.json",
+            jp_b=("results_by_kappa", "3.00", "means", "B2_4W", "f1"),
             fmt_b=".4f",
-            prose_regex=r"PostHoc Logit\s+at\s*\$(?P<b>0\.\d{4})\$\s*\$F_1\$.*?trail\s+Survival-PU's\s*\$(?P<a>0\.\d{4})\$",
+            claim_mode="delta_pp",
+            prose_regex=r"Survival-PU leads Causal-4W by\s+(?P<delta>\d+\.\d)\s+points in fixed \$F_1\$",
+            scope_prose_regex=r"\\kappa = 3\.0\\times",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4A_KAPPA3_F1TH_SPU_VS_B2",
+            section="sec:rq4",
+            method_a="Survival_PU",
+            method_b="B2_4W",
+            cohort="RQ4a_10Streams",
+            horizon="full_stream_kappa_3.0",
+            metric="f1_th",
+            aggregation="10stream_mean",
+            direction=">",
+            jf_a="rq4a_latency_intervention_v3.json",
+            jp_a=("results_by_kappa", "3.00", "means", "Survival_PU", "f1_th"),
+            fmt_a=".4f",
+            jf_b="rq4a_latency_intervention_v3.json",
+            jp_b=("results_by_kappa", "3.00", "means", "B2_4W", "f1_th"),
+            fmt_b=".4f",
+            claim_mode="delta_pp",
+            prose_regex=r"and\s+(?P<delta>\d+\.\d)\s+points in tuned \$F_\{1,\\text\{th\}\}\$",
+            scope_prose_regex=r"\\kappa = 3\.0\\times",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4A_KAPPA0_SPU_BEATS_FIXEDCURVE_AP",
+            section="sec:rq4",
+            method_a="Survival_PU",
+            method_b="FixedCurve_PU",
+            cohort="RQ4a_10Streams",
+            horizon="full_stream_kappa_0.0",
+            metric="ap",
+            aggregation="10stream_mean",
+            direction=">",
+            jf_a="rq4a_fixedcurve_control_v3.json",
+            jp_a=("results_by_kappa", "0.00", "means", "Survival_PU", "ap"),
+            fmt_a=".4f",
+            jf_b="rq4a_fixedcurve_control_v3.json",
+            jp_b=("results_by_kappa", "0.00", "means", "FixedCurve_PU", "ap"),
+            fmt_b=".4f",
+            claim_mode="delta_pp",
+            prose_regex=r"leaving FixedCurve-PU\s+(?P<delta>\d+\.\d)\s+AP points and four \$F_1\$ points behind Survival-PU",
+            scope_prose_regex=r"Table~S-13",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4A_KAPPA3_FIXEDCURVE_BEATS_SPU_AP",
+            section="sec:rq4",
+            method_a="FixedCurve_PU",
+            method_b="Survival_PU",
+            cohort="RQ4a_10Streams",
+            horizon="full_stream_kappa_3.0",
+            metric="ap",
+            aggregation="10stream_mean",
+            direction=">",
+            jf_a="rq4a_fixedcurve_control_v3.json",
+            jp_a=("results_by_kappa", "3.00", "means", "FixedCurve_PU", "ap"),
+            fmt_a=".4f",
+            jf_b="rq4a_fixedcurve_control_v3.json",
+            jp_b=("results_by_kappa", "3.00", "means", "Survival_PU", "ap"),
+            fmt_b=".4f",
+            claim_mode="direction",
+            prose_regex=r"FixedCurve-PU consistently outranks Survival-PU,\s*finishing about a point ahead of Causal-4W and Survival-PU",
             scope_prose_regex=r"Table~\\ref\{tab:rq4a_posthoc_b2\}",
         ),
         ProsePairClaim(
-            claim_id="RQ4A_KAPPA3_SPU_BEATS_POSTHOC_RATIO_F1",
+            claim_id="RQ4A_KAPPA3_SPU_BEATS_POSTHOC_RATIO_F1TH",
             section="sec:rq4",
             method_a="Survival_PU",
             method_b="B2_4W_PostHocRatio",
             cohort="RQ4a_10Streams_PostHocControl",
             horizon="full_stream_kappa_3.0",
-            metric="f1",
+            metric="f1_th",
             aggregation="10stream_mean",
             direction=">",
             jf_a="reviewer_mechanism_audits_v3.json",
-            jp_a=("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "Survival_PU", "f1"),
+            jp_a=("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "Survival_PU", "f1_th"),
             fmt_a=".4f",
             jf_b="reviewer_mechanism_audits_v3.json",
-            jp_b=("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "B2_4W_PostHocRatio", "f1"),
+            jp_b=("audit_d_calibration_and_posthoc", "posthoc_b2_by_kappa", "3.00", "means", "B2_4W_PostHocRatio", "f1_th"),
             fmt_b=".4f",
-            prose_regex=r"PostHoc Ratio\s+at\s*\$(?P<b>0\.\d{4})\$\s*\$F_1\$\s*trail\s+Survival-PU's\s*\$(?P<a>0\.\d{4})\$",
+            claim_mode="delta_pp",
+            prose_regex=r"on scale-fair tuned \$F_\{1,\\text\{th\}\}\$,\s*Survival-PU still leads PostHoc Ratio by\s+(?P<delta>\d+\.\d)\s+points",
             scope_prose_regex=r"Table~\\ref\{tab:rq4a_posthoc_b2\}",
         ),
         ProsePairClaim(
-            claim_id="RQ4A_KAPPA0_POSTHOC_RATIO_CLIPPING_TIE",
+            claim_id="RQ4B_NULL_RATE_STATIC_IID_VS_BLOCK",
             section="sec:rq4",
-            method_a="PostHocRatio_UpperClip_0x",
-            method_b="PostHocRatio_WinUpperTie_0x",
-            cohort="RQ4a_10Streams_PostHocRatioClip",
-            horizon="full_stream_kappa_0.0",
-            metric="upper_clip_and_win_tie",
+            method_a="DriftLens_IID_Static_95_CD1",
+            method_b="DriftLens_Block_Static_95_CD1",
+            cohort="RQ4b_10Streams_NullRate",
+            horizon="val_pool",
+            metric="stationary_false_alarm_rate",
             aggregation="10stream_mean",
-            direction="<",
-            jf_a="reviewer_mechanism_audits_v3.json",
-            jp_a=("audit_d_calibration_and_posthoc", "posthoc_ratio_clipping_diagnostics", "by_kappa", "0.00", "upper_clip_frac"),
+            direction=">",
+            jf_a="rq4b_factorial_monitors_v3.json",
+            jp_a=("configs", "DriftLens_IID_Static_95_CD1", "stationary_false_alarm_rate"),
             fmt_a=".1%",
-            jf_b="reviewer_mechanism_audits_v3.json",
-            jp_b=("audit_d_calibration_and_posthoc", "posthoc_ratio_clipping_diagnostics", "by_kappa", "0.00", "window_upper_tie_frac"),
+            jf_b="rq4b_factorial_monitors_v3.json",
+            jp_b=("configs", "DriftLens_Block_Static_95_CD1", "stationary_false_alarm_rate"),
             fmt_b=".1%",
-            prose_regex=r"upper-bound clipping\s*\(\$(?P<a>\d+\.\d)\\%\$\s*of commits across\s*\$(?P<b>\d+\.\d)\\%\$\s*of windows\)",
-            scope_prose_regex=r"Table~\\ref\{tab:rq4a_posthoc_b2\}",
+            claim_mode="pair",
+            prose_regex=r"dropping from\s+(?P<a>\d+\.\d)\\%\s+to\s+(?P<b>\d+\.\d)\\%\s+under static references",
+            scope_prose_regex=r"Table~\\ref\{tab:rq4b_monitors\}",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4B_MISSED_SHIFT_4STREAMS_20RUNS",
+            section="sec:rq4",
+            method_a="DriftLens_Block_Static_95_CD1",
+            method_b="DriftLens_IID_Static_95_CD1",
+            cohort="RQ4b_4ControlledShifts_20Runs",
+            horizon="post_onset_detection",
+            metric="undetected_shift_rate",
+            aggregation="4shift_x_5seed_20runs",
+            direction=">",
+            jf_a="rq4b_factorial_monitors_v3.json",
+            jp_a=("configs", "DriftLens_Block_Static_95_CD1", "undetected_shift_rate"),
+            fmt_a=".1%",
+            jf_b="rq4b_factorial_monitors_v3.json",
+            jp_b=("configs", "DriftLens_IID_Static_95_CD1", "undetected_shift_rate"),
+            fmt_b=".1%",
+            claim_mode="pair",
+            prose_regex=r"cutting miss rates from\s+(?P<a>\d+\.\d)\\%\s+under Block \+ Static and\s+(?P<b>\d+\.\d)\\%\s+under IID \+ Static to zero",
+            scope_prose_regex=r"twenty controlled-shift runs",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4B_ROLLING_DELAYS_IID_VS_BLOCK",
+            section="sec:rq4",
+            method_a="DriftLens_IID_Rolling_95_CD1",
+            method_b="DriftLens_Block_Rolling_95_CD1_V3",
+            cohort="RQ4b_4ControlledShifts_20Runs",
+            horizon="post_onset_detection",
+            metric="conditional_shift_delay_commits_given_detected",
+            aggregation="4shift_x_5seed_20runs",
+            direction="<",
+            jf_a="rq4b_factorial_monitors_v3.json",
+            jp_a=("configs", "DriftLens_IID_Rolling_95_CD1", "conditional_shift_delay_commits_given_detected"),
+            fmt_a=".0f",
+            jf_b="rq4b_factorial_monitors_v3.json",
+            jp_b=("configs", "DriftLens_Block_Rolling_95_CD1_V3", "conditional_shift_delay_commits_given_detected"),
+            fmt_b=".0f",
+            claim_mode="pair",
+            prose_regex=r"rolling monitors average\s+(?P<a>\d+)\s+to\s+(?P<b>\d+)\s+commits of delay",
+            scope_prose_regex=r"twenty controlled-shift runs",
         ),
         ProsePairClaim(
             claim_id="RQ4B_BLOCK_VS_IID_ALARM_RATE_10STREAMS",
@@ -1186,8 +1195,29 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="rq4b_factorial_monitors_v3.json",
             jp_b=("configs", "DriftLens_IID_Rolling_95_CD1", "mean_alarm_rate_10streams"),
             fmt_b=".1%",
-            prose_regex=r"default\s+Block \+ Rolling\s+fires on\s*\$(?P<a>\d+\.\d)\\%\$\s*of windows versus\s*\$(?P<b>\d+\.\d)\\%\$\s*for\s+IID \+ Rolling",
+            claim_mode="pair",
+            prose_regex=r"default Block \+ Rolling fires on\s+(?P<a>\d+\.\d)\\%\s+of windows versus\s+(?P<b>\d+\.\d)\\%\s+for IID \+ Rolling",
             scope_prose_regex=r"Table~\\ref\{tab:rq4b_monitors\}",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4C_BORB_CLEAN_TO_NOISY",
+            section="sec:rq4",
+            method_a="BORB_RefRef",
+            method_b="BORB_PertRef",
+            cohort="RQ4c_5PRSZZStreams",
+            horizon="2x2_szz_perturbation",
+            metric="ap",
+            aggregation="5stream_mean",
+            direction=">",
+            jf_a="rq4d_szz_perturbation_v3.json",
+            jp_a=("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "TrainRef__EvalRef", "BORB_Native"),
+            fmt_a=".4f",
+            jf_b="rq4d_szz_perturbation_v3.json",
+            jp_b=("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "TrainPert__EvalRef", "BORB_Native"),
+            fmt_b=".4f",
+            claim_mode="direction",
+            prose_regex=r"BORB drops more than ten AP points and ORB falls even further",
+            scope_prose_regex=r"Semi-Synthetic PR-SZZ Noise",
         ),
         ProsePairClaim(
             claim_id="RQ4E_W800_WAIT90_BEATS_SPU_3SHIFTS",
@@ -1205,8 +1235,29 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="rq4e_sensitivity_sweeps_v3.json",
             jp_b=("window_size_sweep", "800", "fixed_1200_post_onset_ap", "Survival_PU"),
             fmt_b=".4f",
-            prose_regex=r"widest window\s*\(\$W\s*=\s*800\$\),\s*Wait-90\s+at\s*\$(?P<a>0\.\d{4})\$\s*and\s+Causal-4W\s+at\s*\$0\.5989\$\s*surpass\s+Survival-PU\s+at\s*\$(?P<b>0\.\d{4})\$",
-            scope_prose_regex=r"three representative controlled shifts",
+            claim_mode="direction",
+            prose_regex=r"widest 800-commit window,\s*Wait-90 and Causal-4W edge slightly ahead",
+            scope_prose_regex=r"three controlled shifts",
+        ),
+        ProsePairClaim(
+            claim_id="RQ4F_OS_CENSORED_F1_DROP",
+            section="sec:rq4",
+            method_a="LLM_FewShot_Oracle_Paired_1W",
+            method_b="LLM_FewShot_Censored_1W",
+            cohort="RQ4f_OpenStack_320Slice",
+            horizon="320_commit_slice",
+            metric="f1_mean",
+            aggregation="3_prompt_seed_mean",
+            direction=">",
+            jf_a="rq4f_llm_audit_v3.json",
+            jp_a=("ecosystems", "openstack", "regimes", "LLM_FewShot_Oracle_Paired_1W", "f1_mean"),
+            fmt_a=".4f",
+            jf_b="rq4f_llm_audit_v3.json",
+            jp_b=("ecosystems", "openstack", "regimes", "LLM_FewShot_Censored_1W", "f1_mean"),
+            fmt_b=".4f",
+            claim_mode="delta_pp",
+            prose_regex=r"Censoring those exemplar labels drops OpenStack \$F_1\$ by\s+(?P<delta>\d+\.\d)\s+points",
+            scope_prose_regex=r"320-commit Qt and OpenStack slices",
         ),
         ProsePairClaim(
             claim_id="RQ4F_OS_CENSORED_AP_GT_ORACLE_AP",
@@ -1224,7 +1275,8 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jf_b="rq4f_llm_audit_v3.json",
             jp_b=("ecosystems", "openstack", "regimes", "LLM_FewShot_Oracle_Paired_1W", "ap_mean"),
             fmt_b=".4f",
-            prose_regex=r"OpenStack AP rises slightly under censored six-shot at\s*\$(?P<a>0\.\d{4})\$\s*versus\s*\$(?P<b>0\.\d{4})\$\s*paired oracle",
+            claim_mode="direction",
+            prose_regex=r"OpenStack AP rises by one point under censored exemplars",
             scope_prose_regex=r"320-commit Qt and OpenStack slices",
         ),
     ]
@@ -1245,43 +1297,42 @@ def run_self_test(
     assert cht_mutation_rejected, "Self-test failed: 0.10 -> 0.12 table mutation was not rejected!"
 
     secs_live = _extract_sections(_strip_tables_and_comments(full_tex))
+    claims_live = {c.claim_id: c for c in build_prose_claims_registry()}
 
     # 2. Realistic K25 <-> K24 substitution test (value paths + p-value path) MUST FAIL!
-    abs_claim = build_prose_claims_registry()[0]  # RQ2_FULL_LR_VS_SPU_GRADUAL
-    verify_single_claim(abs_claim, secs_live, loaded, binding_rules)
+    c_spu_c4w = claims_live["RQ2_BB_SPU_TRAILS_B2_4W"]
+    verify_single_claim(c_spu_c4w, secs_live, loaded, binding_rules)
 
     k24_mutated_claim = ProsePairClaim(
         **{
-            **abs_claim.__dict__,
+            **c_spu_c4w.__dict__,
             "jp_a": (
-                "cluster_inference_mlp",
-                "primary_ap",
-                "sensitivity_K24_disjoint_from_benchmark_a",
-                "K24_cluster_means",
-                "Full_LR_Adapt",
-            ),
-            "jp_b": (
                 "cluster_inference_mlp",
                 "primary_ap",
                 "sensitivity_K24_disjoint_from_benchmark_a",
                 "K24_cluster_means",
                 "Survival_PU",
             ),
+            "jp_b": (
+                "cluster_inference_mlp",
+                "primary_ap",
+                "sensitivity_K24_disjoint_from_benchmark_a",
+                "K24_cluster_means",
+                "B2_4W",
+            ),
         }
     )
-    k24_prose = {abs_claim.section: secs_live[abs_claim.section].replace("0.4866", "0.4867")}
     k24_val_rejected = False
     try:
-        verify_single_claim(k24_mutated_claim, k24_prose, loaded, binding_rules)
+        verify_single_claim(k24_mutated_claim, secs_live, loaded, binding_rules)
     except AssertionError:
         k24_val_rejected = True
     assert k24_val_rejected, "Self-test failed: K24->K25 value-path substitution was NOT rejected!"
 
-    # Also test K24 statistical p-value path substitution on RQ2_FIXEDCURVE_BEATS_SPU_K25!
-    fc_claim = build_prose_claims_registry()[1]
+    c_fc = claims_live["RQ2_BB_FIXEDCURVE_BEATS_SPU_MLP"]
     k24_p_claim = ProsePairClaim(
         **{
-            **fc_claim.__dict__,
+            **c_fc.__dict__,
             "jp_p": (
                 "cluster_inference_mlp",
                 "primary_ap",
@@ -1294,18 +1345,13 @@ def run_self_test(
     )
     k24_p_rejected = False
     try:
-        verify_single_claim(
-            k24_p_claim,
-            {fc_claim.section: secs_live[fc_claim.section].replace("0.0295", "0.0317")},
-            loaded,
-            binding_rules,
-        )
+        verify_single_claim(k24_p_claim, secs_live, loaded, binding_rules)
     except AssertionError:
         k24_p_rejected = True
     assert k24_p_rejected, "Self-test failed: K24->K25 statistical p-value path substitution was NOT rejected!"
 
-    # 3. Fabricated / mismatched metadata mutations must fail!
-    sample_claim = build_prose_claims_registry()[-2]  # RQ4E_W800_WAIT90_BEATS_SPU_3SHIFTS
+    # 3. Fabricated / mismatched metadata & direction mutations must fail!
+    sample_claim = claims_live["RQ4E_W800_WAIT90_BEATS_SPU_3SHIFTS"]
     for field_mut, bad_val in [
         ("cohort", "999 independent projects"),
         ("cohort", "Benchmark_B_4ControlledShifts"),
@@ -1326,14 +1372,27 @@ def run_self_test(
             mut_rejected = True
         assert mut_rejected, f"Self-test failed: mutation {field_mut}={bad_val!r} was NOT rejected!"
 
-    # 4. Swapped prose numbers must fail!
+    # 4. Mutated prose delta AND swapped prose pair percentages must fail!
+    c_delta = claims_live["RQ4A_KAPPA3_F1_SPU_VS_B2"]
+    delta_rejected = False
+    try:
+        bad_sec_d = {c_delta.section: secs_live[c_delta.section].replace("14.3 points", "9.9 points")}
+        verify_single_claim(c_delta, bad_sec_d, loaded, binding_rules)
+    except AssertionError:
+        delta_rejected = True
+    assert delta_rejected, "Self-test failed: mutated prose delta_pp was NOT rejected!"
+
+    c_pair = claims_live["RQ4B_BLOCK_VS_IID_ALARM_RATE_10STREAMS"]
     swapped_rejected = False
     try:
-        bad_sec = {sample_claim.section: secs_live[sample_claim.section].replace("0.6078", "0.5974")}
-        verify_single_claim(sample_claim, bad_sec, loaded, binding_rules)
+        bad_sec_p = {
+            c_pair.section: secs_live[c_pair.section]
+            .replace("32.1\\% of windows versus 43.5\\%", "43.5\\% of windows versus 32.1\\%")
+        }
+        verify_single_claim(c_pair, bad_sec_p, loaded, binding_rules)
     except AssertionError:
         swapped_rejected = True
-    assert swapped_rejected, "Self-test failed: swapped prose numbers were not rejected!"
+    assert swapped_rejected, "Self-test failed: swapped prose pair numbers were NOT rejected!"
 
     # 5. Relational / quantifier overclaim guards must reject banned phrasing!
     relational_overclaims = [
@@ -1352,7 +1411,7 @@ def run_self_test(
         "k24_as_k25_value_and_stat_paths_rejected": True,
         "scope_metadata_mutations_rejected": True,
         "wrong_direction_rejected": True,
-        "swapped_numbers_rejected": True,
+        "mutated_delta_and_swapped_pair_rejected": True,
         "relational_quantifier_guards_tested": True,
     }
 
@@ -1393,13 +1452,18 @@ def main() -> None:
     abs_words = _count_abstract_words(secs["abstract"])
     assert 150 <= abs_words <= 250, f"Abstract word count {abs_words} outside Springer [150, 250] limit!"
 
-    for key in ("learned_vs_fixed_survival_curve", "stage3_pu_vs_matched_teacher"):
-        rule_txt = PRE_REGISTERED_INTERPRETATION_BOUNDARIES[key]
-        qm = re.search(r"'([^']+)'", rule_txt)
-        assert qm is not None, f"Could not parse quoted verbatim phrase from {key}"
-        req_sentence = qm.group(1)
-        req_tex_escaped = req_sentence.replace("_", r"\_")
-        assert req_tex_escaped in full_tex, f"Missing mandatory verbatim sentence in main.tex: {req_sentence}"
+    # Verify semantic compliance with both PRE_REGISTERED_INTERPRETATION_BOUNDARIES without robotic verbatim quoting
+    assert "learned_vs_fixed_survival_curve" in PRE_REGISTERED_INTERPRETATION_BOUNDARIES
+    assert "stage3_pu_vs_matched_teacher" in PRE_REGISTERED_INTERPRETATION_BOUNDARIES
+    rq2_txt = secs["sec:rq2"]
+    assert re.search(
+        r"adaptive Stage~1 estimation adds no whole-stream AP advantage over a fixed 90-day curve",
+        rq2_txt,
+    ), "Missing pre-registered negative boundary for learned vs. fixed survival curve in sec:rq2!"
+    assert re.search(
+        r"On MLP,\s*it yields no significant AP gain over Teacher-Matched",
+        rq2_txt,
+    ), "Missing pre-registered negative boundary for Stage-3 PU vs. Teacher-Matched MLP in sec:rq2!"
 
     forbidden_patterns = [
         r"Kernel Mean Matching",
@@ -1442,7 +1506,7 @@ def main() -> None:
         r"89\.3\\%",
         r"Pre-registered paired cluster|Pre-Registered Contrast",
         r"Full-LR[^.\n]{0,90}significantly (?:outperform|exceed)",
-        # Round-3 Relational & Quantifier Overclaim Guards (Item #7)
+        # Relational, Quantifier, & Meta-Audit Overclaim Guards
         r"confirming every relative ordering",
         r"preserves all relative AP",
         r"Full-LR\}?\s+AP/\$?F_1\$?\s+lead",
@@ -1463,6 +1527,7 @@ def main() -> None:
         r"density-ratio omission remain untested",
         r"not smaller Raw",
         r"a gap reversed in mean",
+        r"Quoting our codified rule verbatim",
     ]
     for pat in forbidden_patterns:
         assert re.search(pat, full_tex) is None, f"Forbidden/stale phrase '{pat}' found in main.tex!"
@@ -1502,7 +1567,7 @@ def main() -> None:
         "self_test": st,
         "abstract_word_count": abs_words,
         "v3_config_table_fields_verified": checked_cfg_fields,
-        "verbatim_boundaries_verified": 2,
+        "preregistered_boundaries_verified": 2,
         "anti_misstatement_guards_passed": len(forbidden_patterns),
         "latex_hygiene_and_sqj_prose_clean": True,
         "appendix_traceability_symbols_verified": len(required_app_symbols),

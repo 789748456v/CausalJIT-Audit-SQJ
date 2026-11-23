@@ -969,7 +969,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 1,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -983,7 +983,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 2,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -997,7 +997,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 3,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -1011,7 +1011,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 4,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -1025,7 +1025,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 5,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -1038,7 +1038,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 6,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -1051,7 +1051,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 7,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -1064,7 +1064,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 8,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -1077,7 +1077,7 @@
   },
   {
     "table": "tab:or_bench_a_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 9,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -3103,7 +3103,7 @@
   },
   {
     "table": "tab:or_bench_b_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 1,
     "json_file": "benchmark_b_main_v3.json",
     "json_path": [
@@ -3117,7 +3117,7 @@
   },
   {
     "table": "tab:or_bench_b_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 2,
     "json_file": "benchmark_b_main_v3.json",
     "json_path": [
@@ -3132,7 +3132,7 @@
   },
   {
     "table": "tab:or_bench_b_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 3,
     "json_file": "benchmark_b_main_v3.json",
     "json_path": [
@@ -3146,7 +3146,7 @@
   },
   {
     "table": "tab:or_bench_b_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 4,
     "json_file": "benchmark_b_main_v3.json",
     "json_path": [
@@ -3160,7 +3160,7 @@
   },
   {
     "table": "tab:or_bench_b_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 5,
     "json_file": "benchmark_b_main_v3.json",
     "json_path": [
@@ -3174,7 +3174,7 @@
   },
   {
     "table": "tab:or_bench_b_full",
-    "row": "SPU (+Legacy Gate)",
+    "row": "SPU (+Gate)",
     "col": 7,
     "json_file": "manuscript_derived_aggregates_v3.json",
     "json_path": [
@@ -4574,7 +4574,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Single-Stage)",
+    "row": "Teacher-Exact ($1\\times$)",
     "col": 1,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4587,7 +4587,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Single-Stage)",
+    "row": "Teacher-Exact ($1\\times$)",
     "col": 2,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4600,7 +4600,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Single-Stage)",
+    "row": "Teacher-Exact ($1\\times$)",
     "col": 3,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4613,7 +4613,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Single-Stage)",
+    "row": "Teacher-Exact ($1\\times$)",
     "col": 4,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4626,7 +4626,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Single-Stage)",
+    "row": "Teacher-Exact ($1\\times$)",
     "col": 5,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4639,7 +4639,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Single-Stage)",
+    "row": "Teacher-Exact ($1\\times$)",
     "col": 6,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4652,7 +4652,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Step-Matched $2\\times$)",
+    "row": "Teacher-Matched ($2\\times$)",
     "col": 1,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4665,7 +4665,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Step-Matched $2\\times$)",
+    "row": "Teacher-Matched ($2\\times$)",
     "col": 2,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4678,7 +4678,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Step-Matched $2\\times$)",
+    "row": "Teacher-Matched ($2\\times$)",
     "col": 3,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4691,7 +4691,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Step-Matched $2\\times$)",
+    "row": "Teacher-Matched ($2\\times$)",
     "col": 4,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4704,7 +4704,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Step-Matched $2\\times$)",
+    "row": "Teacher-Matched ($2\\times$)",
     "col": 5,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4717,7 +4717,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Teacher-Only (Step-Matched $2\\times$)",
+    "row": "Teacher-Matched ($2\\times$)",
     "col": 6,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4730,7 +4730,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Survival-PU (+Legacy Gate)",
+    "row": "Survival-PU (+Gate)",
     "col": 1,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4743,7 +4743,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Survival-PU (+Legacy Gate)",
+    "row": "Survival-PU (+Gate)",
     "col": 2,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4756,7 +4756,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Survival-PU (+Legacy Gate)",
+    "row": "Survival-PU (+Gate)",
     "col": 3,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4769,7 +4769,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Survival-PU (+Legacy Gate)",
+    "row": "Survival-PU (+Gate)",
     "col": 4,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4782,7 +4782,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Survival-PU (+Legacy Gate)",
+    "row": "Survival-PU (+Gate)",
     "col": 5,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [
@@ -4795,7 +4795,7 @@
   },
   {
     "table": "tab:or_rq3_full",
-    "row": "Survival-PU (+Legacy Gate)",
+    "row": "Survival-PU (+Gate)",
     "col": 6,
     "json_file": "rq3_ablations_v3.json",
     "json_path": [

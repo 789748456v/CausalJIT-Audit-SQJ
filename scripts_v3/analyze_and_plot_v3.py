@@ -484,9 +484,9 @@ def plot_fig1_multimodal_audit(fig_dir: str, ba_j: Dict, derived: Dict) -> None:
         ("lightgbm_none", "LightGBM\n(SVD+Tab13)"),
     ]
     m_list = [
-        ("B1b_4W_Oracle", "B1b* (4W Oracle)", PALETTE["oracle"]),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"]),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"]),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"]),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"]),
+        ("B2_4W", "Causal-4W", PALETTE["b2"]),
         ("Wait_90", "Wait-90", PALETTE["wait"]),
         ("Pure_nnPU", "Pure-nnPU", PALETTE["nnpu"]),
         ("Teacher_Only_Matched", "Teacher-Matched", PALETTE["teacher"]),
@@ -523,9 +523,9 @@ def plot_fig2_trajectories_and_skip(fig_dir: str, ba_j: Dict) -> None:
     qt_cell = ba_j["cells"][f"qt_natural_25k__codebert__{chosen_skip}"]
     traj = qt_cell["seed0_window_trajectories"]
     for mk, lbl, col, ls, lw in [
-        ("B1b_4W_Oracle", "B1b* (4W Oracle)", PALETTE["oracle"], "--", 1.5),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"], "-.", 1.5),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"], "-", 1.8),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"], "--", 1.5),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"], "-.", 1.5),
+        ("B2_4W", "Causal-4W", PALETTE["b2"], "-", 1.8),
         ("Wait_90", "Wait-90", PALETTE["wait"], ":", 1.6),
         ("Survival_PU", "Survival-PU", PALETTE["spu"], "-", 2.1),
     ]:
@@ -559,8 +559,8 @@ def plot_fig2_trajectories_and_skip(fig_dir: str, ba_j: Dict) -> None:
     xb = np.arange(len(backbones))
     bw = 0.19
     series = [
-        ("B0_Frozen", "none", "B0 (No Skip)", "#94A3B8"),
-        ("B0_Frozen", chosen_skip, "B0 (+LinSkip)", PALETTE["b0"]),
+        ("B0_Frozen", "none", "Frozen (No Skip)", "#94A3B8"),
+        ("B0_Frozen", chosen_skip, "Frozen (+LinSkip)", PALETTE["b0"]),
         ("Survival_PU", "none", "Survival-PU (No Skip)", "#6EE7B7"),
         ("Survival_PU", chosen_skip, "Survival-PU (+LinSkip)", PALETTE["spu"]),
     ]
@@ -599,18 +599,18 @@ def plot_fig3_benchmark_b_clusters(fig_dir: str, bb_j: Dict, derived: Dict) -> N
     means25 = bb_j["cluster_inference_mlp"]["primary_ap"]["K25_cluster_means"]
     vecs25 = bb_j["cluster_inference_mlp"]["primary_ap"]["K25_per_cluster_vectors"]
     order_m = [
-        ("B1b_4W_Oracle", "B1b* (4W Oracle)", PALETTE["oracle"]),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"]),
         ("Survival_PU", "Survival-PU", PALETTE["spu"]),
         ("Teacher_Only_Matched", "Teacher-Matched", PALETTE["teacher"]),
-        ("FixedCurve_PU", "FixedCurve-PU (90d)", PALETTE["fixed"]),
+        ("FixedCurve_PU", "FixedCurve-PU", PALETTE["fixed"]),
         ("BORB_Native", "BORB (ElasticNet)", PALETTE["track2"]),
         ("ODaSC_OHT_Native", "ODaSC (Hoeffding)", "#D97706"),
         ("ORB_OHT_Native", "ORB (Hoeffding)", "#EA580C"),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"]),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"]),
         ("Full_LR_Adapt", "Full-LR (Adapt-4W)", "#64748B"),
         ("Wait_90", "Wait-90", PALETTE["wait"]),
         ("Pure_nnPU", "Pure-nnPU", PALETTE["nnpu"]),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"]),
+        ("B2_4W", "Causal-4W", PALETTE["b2"]),
         ("LOC_Only", "LOC-Only", "#94A3B8"),
     ]
     # Sort descending by K=25 mean AP (keeping Oracle at top if highest)
@@ -635,16 +635,16 @@ def plot_fig3_benchmark_b_clusters(fig_dir: str, bb_j: Dict, derived: Dict) -> N
     # Panel (b): Strictly Separated Controlled Shift Suite (4 Streams Post-Onset & First-1200 AP)
     sh_means = derived["benchmark_b_controlled_shift_4stream_mean"]
     sh_methods = [
-        ("B1b_4W_Oracle", "B1b* Oracle", PALETTE["oracle"]),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"]),
         ("Survival_PU", "Survival-PU", PALETTE["spu"]),
         ("ODaSC_Host", "ODaSC-Host", "#10B981"),
-        ("FixedCurve_PU", "FixedCurve", PALETTE["fixed"]),
-        ("B2_4W", "B2-4W", PALETTE["b2"]),
+        ("FixedCurve_PU", "FixedCurve-PU", PALETTE["fixed"]),
+        ("B2_4W", "Causal-4W", PALETTE["b2"]),
         ("Wait_90", "Wait-90", PALETTE["wait"]),
         ("BORB_Alarm", "BORB-Alarm", "#C2410C"),
-        ("BORB_Native", "BORB-Nat.", PALETTE["track2"]),
-        ("ODaSC_OHT_Native", "ODaSC-OHT", "#F59E0B"),
-        ("B0_Frozen", "B0 Frozen", PALETTE["b0"]),
+        ("BORB_Native", "BORB-Native", PALETTE["track2"]),
+        ("ODaSC_OHT_Native", "ODaSC", "#F59E0B"),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"]),
     ]
     xs = np.arange(len(sh_methods))
     v_post = [sh_means[mk]["post_onset_ap"] for mk, _, _ in sh_methods]
@@ -676,13 +676,13 @@ def plot_fig4_confirmatory_boundary(fig_dir: str, bb_j: Dict, conf_j: Dict) -> N
         ("conf_apache_zookeeper", "ZooKeeper\n(N=686, 49%)"),
     ]
     m_conf = [
-        ("ODaSC_OHT_Native", "ODaSC (OHT)", "#D97706"),
-        ("BORB_Native", "BORB (ENet)", PALETTE["track2"]),
-        ("ORB_OHT_Native", "ORB (OHT)", "#FB923C"),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"]),
-        ("B1b_4W_Oracle", "B1b* (4W Ora.)", PALETTE["oracle"]),
+        ("ODaSC_OHT_Native", "ODaSC (Hoeffding)", "#D97706"),
+        ("BORB_Native", "BORB (ElasticNet)", PALETTE["track2"]),
+        ("ORB_OHT_Native", "ORB (Hoeffding)", "#FB923C"),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"]),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"]),
         ("Survival_PU", "Survival-PU", PALETTE["spu"]),
-        ("B2_4W", "B2-4W (Cens.)", PALETTE["b2"]),
+        ("B2_4W", "Causal-4W", PALETTE["b2"]),
     ]
     xr = np.arange(len(repos))
     bw = 0.112
@@ -722,7 +722,7 @@ def plot_fig4_confirmatory_boundary(fig_dir: str, bb_j: Dict, conf_j: Dict) -> N
     ax2.scatter(conf_mo_x, conf_mo_y, s=76, marker="s", facecolors="none", edgecolors="#DC2626", linewidths=1.8, label="Confirmatory Hadoop Subproj.* (2; 0/2 > 0)")
     ax2.set_xscale("log")
     ax2.set_xlabel("Streaming Evaluation Horizon $N_{\\mathrm{eval}}$ (Commits, Log Scale)")
-    ax2.set_ylabel("Hindsight Optimism Gap $\\Delta\\mathrm{AP}(B_{1b}^* - B_2\\text{-4W})$")
+    ax2.set_ylabel("Hindsight Optimism Gap $\\Delta\\mathrm{AP}$ (Oracle $-$ Causal-4W)")
     ax2.set_title("(b) Horizon vs. Matched Oracle–Causal Gap (MLP)", fontweight="bold", fontsize=9.5, pad=10)
     ax2.legend(loc="upper left", frameon=True, facecolor="white", framealpha=0.94, fontsize=7.4)
     ax2.grid(linestyle=":", alpha=0.5)
@@ -737,7 +737,7 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
 
     # Panel (a): Survival estimator invariance & internal component ablations (AP)
     ab_rows = [
-        ("B1b_4W_Oracle", "B1b* (4W Oracle)", PALETTE["oracle"]),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"]),
         ("Survival_PU_Default", "Survival-PU (Cohort Incidence)", PALETTE["spu"]),
         ("SPU_KaplanMeier", "Survival-PU (Kaplan–Meier)", "#10B981"),
         ("SPU_WeibullCure", "Survival-PU (Weibull Cure)", "#34D399"),
@@ -746,8 +746,8 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
         ("SPU_NoShrinkage_m0_0", "w/o Anchor Shrinkage (m0=0)", "#818CF8"),
         ("SPU_FrozenAnchorTeacher", "Frozen Anchor Teacher", "#A78BFA"),
         ("SPU_NoBisection", "w/o Prevalence Bisection", "#F472B6"),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"]),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"]),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"]),
+        ("B2_4W", "Causal-4W", PALETTE["b2"]),
     ]
     yp = np.arange(len(ab_rows))
     vals = [sm[k]["ap"] for k, _, _ in ab_rows]
@@ -765,10 +765,10 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     # Panel (b): Dual-metric comparison (AP AND Recall@20%Effort) on Compute-Matched Teacher & Legacy Gate Controls
     ctrl_rows = [
         ("Survival_PU_Default", "Survival-PU\n(3-Stage)"),
-        ("Teacher_Only_Matched", "Teach-Only\n(Matched)"),
-        ("Teacher_Only_Exact", "Teach-Only\n(1x Budget)"),
+        ("Teacher_Only_Matched", "Teacher-\nMatched"),
+        ("Teacher_Only_Exact", "Teacher-\nExact"),
         ("SPU_WithLegacyGate", "Survival-PU\n(+Gate)"),
-        ("SPU_Fixed90d", "FixedCurve\n(90d)"),
+        ("SPU_Fixed90d", "FixedCurve-\nPU (90d)"),
     ]
     xc = np.arange(len(ctrl_rows))
     bw = 0.36
@@ -784,7 +784,7 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     ax2.set_xticklabels([l for _, l in ctrl_rows], fontsize=7.9)
     ax2.set_ylim(0, max(max(v_ap), max(v_r20)) * 1.22)
     ax2.set_ylabel("Score (Higher is Better)")
-    ax2.set_title("(b) Distillation, Compute-Matched & Legacy-Gate Controls", fontweight="bold")
+    ax2.set_title("(b) Distillation, Compute-Matched & Confidence-Gate Controls", fontweight="bold")
     ax2.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.92, fontsize=8.0)
     ax2.grid(axis="y", linestyle=":", alpha=0.5)
 
@@ -802,13 +802,13 @@ def plot_fig6_latency_and_drift_factorial(fig_dir: str, rq4a_j: Dict, rq4b_j: Di
     by_k_fc = rq4a_fc_j["results_by_kappa"]
 
     for mk, lbl, col, ls, mk_sym, src_dict in [
-        ("B1b_4W_Oracle", "B1b* (4W Oracle)", PALETTE["oracle"], "--", "s", by_k),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"], "-", "v", by_k),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"], "--", "s", by_k),
+        ("B2_4W", "Causal-4W", PALETTE["b2"], "-", "v", by_k),
         ("FixedCurve_PU", "FixedCurve-PU (Zero-Fit 90d)", PALETTE["fixed"], "-.", "P", by_k_fc),
         ("Survival_PU", "Survival-PU (Cohort Inc.)", PALETTE["spu"], "-", "o", by_k),
         ("Wait_90", "Wait-90", PALETTE["wait"], ":", "^", by_k),
         ("Pure_nnPU", "Pure-nnPU", PALETTE["nnpu"], ":", "d", by_k),
-        ("B0_Frozen", "B0 (Frozen — Pre-t0 Invariant)", PALETTE["b0"], "--", None, by_k),
+        ("B0_Frozen", "Frozen Host (Pre-t0 Invariant)", PALETTE["b0"], "--", None, by_k),
     ]:
         ys = [src_dict[kk]["means"][mk]["ap"] for kk in k_keys]
         ax1.plot(kappas, ys, label=lbl, color=col, linestyle=ls, marker=mk_sym, markersize=5, lw=1.8)
@@ -867,9 +867,9 @@ def plot_fig7_szz_window_sensitivity(fig_dir: str, rq4d_j: Dict, rq4e_j: Dict) -
         ("Survival_PU", "Survival-PU", PALETTE["spu"]),
         ("BORB_Native", "BORB (ElasticNet)", PALETTE["track2"]),
         ("ORB_OHT_Native", "ORB (Hoeffding)", "#FB923C"),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"]),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"]),
         ("Wait_90", "Wait-90", PALETTE["wait"]),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"]),
+        ("B2_4W", "Causal-4W", PALETTE["b2"]),
     ]
     xs = np.arange(len(cells))
     bw = 0.13
@@ -891,11 +891,11 @@ def plot_fig7_szz_window_sensitivity(fig_dir: str, rq4d_j: Dict, rq4e_j: Dict) -
     ws = [200, 400, 600, 800]
     w_sw = rq4e_j["window_size_sweep"]
     for mk, lbl, col, ls, m_sym in [
-        ("B1b_4W_Oracle", "B1b* Oracle", PALETTE["oracle"], "--", "s"),
+        ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"], "--", "s"),
         ("Survival_PU", "Survival-PU", PALETTE["spu"], "-", "o"),
         ("Wait_90", "Wait-90", PALETTE["wait"], "-.", "^"),
-        ("B2_4W", "B2-4W (Censored)", PALETTE["b2"], "-", "v"),
-        ("B0_Frozen", "B0 (Frozen)", PALETTE["b0"], ":", "d"),
+        ("B2_4W", "Causal-4W", PALETTE["b2"], "-", "v"),
+        ("B0_Frozen", "Frozen Host", PALETTE["b0"], ":", "d"),
     ]:
         yv = [w_sw[str(w)]["fixed_1200_post_onset_ap"][mk] for w in ws]
         ax2.plot(ws, yv, marker=m_sym, markersize=5, lw=1.8, linestyle=ls, color=col, label=lbl)
@@ -945,14 +945,14 @@ def plot_fig8_llm_and_runtime_forensics(fig_dir: str, llm_j: Dict, for_j: Dict, 
     # Panel (b): RQ5 Phase-Decomposed End-to-End Stream Runtime (Benchmark B 27-Stream Mean, Seconds)
     rt = derived["runtime_summary"]["benchmark_b_mlp_27streams_mean"]
     rt_methods = [
-        ("B0_Frozen", "B0\n(MLP)"),
-        ("B2_4W", "B2-4W\n(MLP)"),
+        ("B0_Frozen", "Frozen\n(MLP)"),
+        ("B2_4W", "Causal-4W\n(MLP)"),
         ("Wait_90", "Wait-90\n(MLP)"),
         ("Teacher_Only_Matched", "Teach-M.\n(MLP)"),
         ("Survival_PU", "SPU\n(MLP)"),
         ("BORB_Native", "BORB\n(Elast.)"),
-        ("ORB_OHT_Native", "ORB\n(OHT)"),
-        ("ODaSC_OHT_Native", "ODaSC\n(OHT)"),
+        ("ORB_OHT_Native", "ORB\n(Hoeff.)"),
+        ("ODaSC_OHT_Native", "ODaSC\n(Hoeff.)"),
     ]
     xr = np.arange(len(rt_methods))
     init_s = [(rt[k]["own_init_fit_ms"] + rt[k]["shared_anchor_init_ms"] + rt[k]["shared_monitor_init_ms"]) / 1000.0 for k, _ in rt_methods]
@@ -1127,8 +1127,8 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
     t_lbl = "tab:audit_censoring"
     rows_t1 = []
     for r_lbl, c_key, n_jf, n_jp, prev_jf, prev_jp in [
-        ("Qt Natural (Pure-13)", "qt_natural_25k", "data_provenance_audit_v3.json", ("benchmark_a", "qt_audit", "total_commits"), "data_provenance_audit_v3.json", ("benchmark_a", "qt_audit", "prevalence")),
-        ("OpenStack Natural (Pure-13)", "openstack_natural_13k", "data_provenance_audit_v3.json", ("benchmark_a", "openstack_audit", "total_commits"), "data_provenance_audit_v3.json", ("benchmark_a", "openstack_audit", "prevalence")),
+        ("Qt Natural (13-Metric)", "qt_natural_25k", "data_provenance_audit_v3.json", ("benchmark_a", "qt_audit", "total_commits"), "data_provenance_audit_v3.json", ("benchmark_a", "qt_audit", "prevalence")),
+        ("OpenStack Natural (13-Metric)", "openstack_natural_13k", "data_provenance_audit_v3.json", ("benchmark_a", "openstack_audit", "total_commits"), "data_provenance_audit_v3.json", ("benchmark_a", "openstack_audit", "prevalence")),
         ("Qt Shift (qtbase $\\to$ qtdecl)", "qt_abrupt_qtbase_qtdecl", "data_provenance_audit_v3.json", ("benchmark_a", "primary_streams", "2", "N"), "data_provenance_audit_v3.json", ("benchmark_a", "primary_streams", "2", "prevalence")),
         ("Qt Shift (Core $\\to$ UX)", "qt_abrupt_core_ux", "data_provenance_audit_v3.json", ("benchmark_a", "primary_streams", "3", "N"), "data_provenance_audit_v3.json", ("benchmark_a", "primary_streams", "3", "prevalence")),
         ("OS Shift (nova $\\to$ neutron)", "openstack_abrupt_nova_neut", "data_provenance_audit_v3.json", ("benchmark_a", "primary_streams", "4", "N"), "data_provenance_audit_v3.json", ("benchmark_a", "primary_streams", "4", "prevalence")),
@@ -1160,7 +1160,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Empirical verification latency and right-censoring audit across cohorts ($W=400$). Columns 5--6 report scheduled 400-commit boundary censoring; Column 7 reports fired-alarm $1W$ censoring. Asterisk (*) marks inclusion of the two Hadoop monorepo slices (Online Resource~1, Table~S-7).}\n"
+        "\\caption{Verification latency and right-censoring audit across cohorts at $W=400$. Columns 5--6 report scheduled boundary censoring, Column 7 reports fired-alarm censoring, and asterisks mark Hadoop monorepo slices (Table~S-7).}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lrrrrrr@{{}}}}\n\\toprule\n"
         "\\textbf{Stream / Cohort} & \\textbf{$N$} & \\textbf{Prev.} & \\textbf{Lag} & \\textbf{1W Sch.} & \\textbf{4W Sch.} & \\textbf{1W Alm.} \\\\\n\\midrule\n"
         + "\n".join(rows_t1)
@@ -1181,7 +1181,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         ("Pure_nnPU", "Pure-nnPU", True),
         ("FixedCurve_PU", "FixedCurve-PU", True),
         ("Teacher_Only_Matched", "Teacher-Matched", True),
-        ("Survival_PU_WithGate", "SPU (+Legacy Gate)", True),
+        ("Survival_PU_WithGate", "SPU (+Gate)", True),
         ("Survival_PU", "Survival-PU", True),
         ("Full_LR_B0", "Full-LR Frozen", False),
         ("LApredict_B0", "LApredict Frozen", False),
@@ -1248,7 +1248,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Benchmark A six-stream mean across four Track~1 hosts (showing leading DeepJIT-CNN, LightGBM, and 4-host means; full per-host columns in Online Resource~1, Table~S-3) and Track~2 baselines (5 seeds). Bold marks the best deployable value per column.}\n"
+        "\\caption{Benchmark A six-stream mean across four Track~1 hosts and Track~2 baselines over five seeds (full per-host breakdown in Table~S-3). Bold marks the best deployable value per column.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.8pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method} & \\textbf{DJIT} & \\textbf{LGBM} & \\textbf{AP} & \\textbf{$F_1$} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{R@20} & \\textbf{Br.$\\downarrow$} \\\\\n\\midrule\n"
         + "\n".join(rows_ba)
@@ -1311,7 +1311,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         ("FixedCurve_PU", "FixedCurve-PU", True),
         ("Teacher_Only_Exact", "Teacher-Exact", True),
         ("Teacher_Only_Matched", "Teacher-Matched", True),
-        ("Survival_PU_WithGate", "SPU (+Legacy Gate)", False),
+        ("Survival_PU_WithGate", "SPU (+Gate)", False),
         ("Survival_PU", "Survival-PU", True),
         ("LOC_Only", "LOC-Only", False),
         ("LApredict_B0", "LApredict Frozen", False),
@@ -1367,7 +1367,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Benchmark B evaluation across $K=25$ natural donor clusters ($K=24$ Benchmark-A-disjoint check), LightGBM host ($K=25$), and four controlled shifts (full post-onset AP; ROC-AUC in Online Resource~1, Table~S-5). Bold marks the best deployable value per column.}\n"
+        "\\caption{Benchmark B evaluation across 25 natural donor clusters, the 24-cluster disjoint check, LightGBM, and four controlled shifts (full metrics in Table~S-5). Bold marks the best deployable value per column.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lcccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method} & \\textbf{$K{=}25$} & \\textbf{$K{=}24$} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{Br.$\\downarrow$} & \\textbf{LGB} & \\textbf{Shift} \\\\\n\\midrule\n"
         + "\n".join(rows_bb)
@@ -1435,7 +1435,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Paired cluster-level Wilcoxon signed-rank inference with Holm--Bonferroni adjustment across $K=25$ natural donor clusters (whole-stream AP; $\\Delta\\mathrm{AP} = \\mathrm{AP}(A) - \\mathrm{AP}(B)$). Bold marks $p_{\\mathrm{Holm}} < 0.05$.}\n"
+        "\\caption{Paired cluster-level Wilcoxon signed-rank inference with Holm--Bonferroni adjustment across 25 natural donor clusters for whole-stream AP. Bold marks $p_{\\mathrm{Holm}} < 0.05$.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lcccc@{{}}}}\n\\toprule\n"
         "\\textbf{Contrast ($A$ vs.\\ $B$)} & \\textbf{$\\Delta\\mathrm{AP}$ [95\\% CI]} & \\textbf{W/T/L} & \\textbf{$d_z$} & \\textbf{$p_{\\mathrm{Holm}}$} \\\\\n\\midrule\n"
         + "\n".join(rows_hm)
@@ -1446,14 +1446,14 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
     t_lbl = "tab:confirmatory"
     rows_cf = []
     conf_methods = [
-        ("ODaSC_OHT_Native", "ODaSC (OHT)", False),
-        ("BORB_Native", "BORB (ENet)", False),
-        ("ORB_OHT_Native", "ORB (OHT)", False),
+        ("ODaSC_OHT_Native", "ODaSC (Hoeffding)", False),
+        ("BORB_Native", "BORB (ElasticNet)", False),
+        ("ORB_OHT_Native", "ORB (Hoeffding)", False),
         ("Full_LR_B0", "Full-LR Frozen", False),
         ("B1a_Full_Hindsight", "Full Hindsight", False),
         ("B0_Frozen", "Frozen Host", True),
         ("B1b_4W_Oracle", "Window Oracle", True),
-        ("Teacher_Only_Matched", "Teach-Matched", True),
+        ("Teacher_Only_Matched", "Teacher-Matched", True),
         ("B2_4W", "Causal-4W", True),
         ("Survival_PU", "Survival-PU", True),
         ("FixedCurve_PU", "FixedCurve-PU", True),
@@ -1485,7 +1485,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Out-of-sample evaluation on the untouched confirmatory ApacheJIT cohort (five repositories across four umbrella ecosystems). Asterisks (*) mark Hadoop monorepo slices whose clean commits reside in the umbrella key (Online Resource~1, Table~S-7). Bold marks the best deployable AP per column.}\n"
+        "\\caption{Out-of-sample AP on the five confirmatory ApacheJIT repositories and four umbrella ecosystems. Asterisks mark Hadoop subprojects whose clean commits reside under the umbrella key (Table~S-7); bold marks the best deployable AP per column.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.5pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method} & \\textbf{HDFS*} & \\textbf{MR*} & \\textbf{Spark} & \\textbf{Zepp.} & \\textbf{ZooK.} & \\textbf{U4 MLP} & \\textbf{U4 LGB} \\\\\n\\midrule\n"
         + "\n".join(rows_cf)
@@ -1507,9 +1507,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         ("SPU_NoBisection", "w/o Monotone Bisection"),
         ("SPU_NoCovariateWeight", "w/o Covariate Density Ratio"),
         ("SPU_FrozenAnchorTeacher", "Frozen Pre-Stream Teacher"),
-        ("Teacher_Only_Exact", "Teacher-Only (Single-Stage)"),
-        ("Teacher_Only_Matched", "Teacher-Only (Step-Matched $2\\times$)"),
-        ("SPU_WithLegacyGate", "Survival-PU (+Legacy Gate)"),
+        ("Teacher_Only_Exact", "Teacher-Exact ($1\\times$)"),
+        ("Teacher_Only_Matched", "Teacher-Matched ($2\\times$)"),
+        ("SPU_WithLegacyGate", "Survival-PU (+Gate)"),
         ("B0_Frozen", "Frozen Host"),
         ("B2_4W", "Causal-4W (Censored)"),
     ]
@@ -1539,7 +1539,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{RQ3 maturity-estimator sensitivity, single-factor component ablations, step-matched teacher controls, and legacy safety-gate ablation across 10 representative streams (5 seeds; ROC-AUC in Online Resource~1, Table~S-10). Bold marks the best deployable value per column.}\n"
+        "\\caption{RQ3 maturity-estimator sensitivity, internal ablations, teacher controls, and confidence-gating ablation across ten representative streams (full metrics in Table~S-10). Bold marks the best deployable value per column.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Variant / Control} & \\textbf{AP} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{R@20} & \\textbf{Br.$\\downarrow$} & \\textbf{Steps} \\\\\n\\midrule\n"
         + "\n".join(rows_r3)
@@ -1591,7 +1591,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{RQ4b $2\\times 2$ DriftLens bootstrap and refresh factorial ($p_{95}$, cooldown 1), Pote et al.\\ reference ($p_{98}$, cooldown 0), block-resampled validation-pool policy alarm rate (Null), missed controlled shifts (Miss), conditional delay in commits, and 10-stream AP for Causal-4W (C4W) and Survival-PU (SPU). Bold marks the lowest null rate and highest AP per column.}\n"
+        "\\caption{RQ4b $2\\times 2$ DriftLens bootstrap and refresh factorial, Pote et al.\\ reference, alternative block monitors, and periodic retraining across ten representative streams. Bold marks the lowest null rate and highest AP per column.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.5pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lcccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Monitor Configuration} & \\textbf{Alm.} & \\textbf{Null} & \\textbf{Miss} & \\textbf{Dly} & \\textbf{C4W} & \\textbf{SPU} \\\\\n\\midrule\n"
         + "\n".join(rows_m4)
@@ -1727,7 +1727,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{RQ4a future-only causal latency scaling across 10 representative streams (5 seeds; pre-$t_0$ supervision frozen so Frozen Host $0.4872$ AP is invariant across $\\kappa$). Bold marks the higher value between Causal-4W (C4W) and Survival-PU (SPU) per metric pair. Wait-90 columns and matched FixedCurve-PU controls appear in Online Resource~1 (Tables~S-12--S-13).}\n"
+        "\\caption{RQ4a future-only causal latency scaling across ten representative streams with frozen pre-$t_0$ supervision (Wait-90 and FixedCurve-PU mirrors in Tables~S-12--S-13). Bold marks the higher value between Causal-4W and Survival-PU per metric pair.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.2pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Latency Regime} & \\textbf{Ora.} & \\textbf{C4W AP} & \\textbf{SPU AP} & \\textbf{C4W $F_1$} & \\textbf{SPU $F_1$} & \\textbf{C4W $F_{1\\mathrm{t}}$} & \\textbf{SPU $F_{1\\mathrm{t}}$} \\\\\n\\midrule\n"
         + "\n".join(rows_ka)
@@ -1898,7 +1898,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{RQ4a symmetrical raw (no-Platt) versus shared 90-day Platt calibration and alarm-synchronized post-hoc Causal-4W controls (10 streams, 5 seeds; identical 90-day causal raw-score threshold search for $F_{1,\\mathrm{th}}$). The 90-day calibration pool suffers 5.0\\%, 46.2\\%, and 65.9\\% censoring at $\\kappa=0\\times, 1\\times, 3\\times$. Raw ECE and calibration slope appear in Online Resource~1 (Table~S-14). Bold marks the best value per $\\kappa$ block.}\n"
+        "\\caption{RQ4a raw versus shared 90-day Platt calibration and post-hoc Causal-4W controls across ten representative streams (raw ECE and slope in Table~S-14). Bold marks the best value per $\\kappa$ block.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.2pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Regime \\& Method} & \\textbf{AP} & \\textbf{WinAP} & \\textbf{$F_1$} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{Br$_{\\mathrm{raw}}\\downarrow$} & \\textbf{Br$_{90}\\downarrow$} & \\textbf{ECE$_{90}\\downarrow$} \\\\\n\\midrule\n"
         + "\n".join(rows_ph)
@@ -1941,7 +1941,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{RQ5 paired defect trade-off (Survival-PU minus Causal-4W; seed 42; 0 alarms on OpenStack CodeBERT) under fixed-0.5 thresholding, equal-cap whole-stream (Wh.) and 400-commit per-window (Win.) budgets, plus 5-seed windowed 20\\%-LOC recall delta ($\\Delta\\mathrm{WinR}_{20}$). Realized LOC consumption is 20.0\\%/20.0\\% on 7/8 rows (20.0\\%/19.8\\% on OS LightGBM); under Top-10\\% commit budgets, $\\mathrm{Net\\,FP} = -\\mathrm{Net\\,TP}$.}\n"
+        "\\caption{RQ5 paired defect trade-off of Survival-PU minus Causal-4W on a single representative seed under fixed-0.5 thresholding, equal-cap whole-stream and 400-commit per-window budgets, plus five-seed windowed 20\\%-LOC recall delta ($\\Delta\\mathrm{WinR}_{20}$).}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.2pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lrrrrrrr@{{}}}}\n\\toprule\n"
         "\\textbf{Host} & \\textbf{TP$_{0.5}$} & \\textbf{FP$_{0.5}$} & \\textbf{Wh.10} & \\textbf{Wn.10} & \\textbf{Wh.20L} & \\textbf{Wn.20L} & \\textbf{$\\Delta$WnR$_{20}$} \\\\\n\\midrule\n"
         + "\n".join(rows_pb)
@@ -2111,7 +2111,7 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Evaluation-granularity and cross-window score-comparability diagnostic across $K=25$ natural Benchmark~B clusters (5 seeds, 531 operational 400-commit windows, 0 excluded; prose $p$-values are exploratory unadjusted Pratt Wilcoxon tests distinct from Table~\\ref{tab:bench_b_holm}'s $p_{\\mathrm{Holm}}$). Bold marks the best deployable value per column.}\n"
+        "\\caption{Evaluation-granularity and cross-window score-comparability diagnostic across 25 natural Benchmark~B clusters over five seeds and 531 operational windows. Exploratory comparisons here are separate from Table~\\ref{tab:bench_b_holm}'s Holm--Bonferroni tests; bold marks the best deployable value per column.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.8pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method ($K{=}25$, 5 Seeds)} & \\textbf{Whole} & \\textbf{Win-Unw.} & \\textbf{Win-Pos} & \\textbf{Z-Norm} & \\textbf{Rank} \\\\\n\\midrule\n"
         + "\n".join(rows_wa)

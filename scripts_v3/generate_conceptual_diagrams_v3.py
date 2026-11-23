@@ -83,7 +83,7 @@ def build_fig0a_causal_timeline(fig_dir: str) -> None:
     ax.add_patch(p1)
     ax.text(
         0.035, 0.902,
-        "(a) Offline Retrospective Benchmark ($B_{1b}^*$ Window Oracle — Non-Deployable Hindsight Reference)",
+        "(a) Offline Retrospective Benchmark (Window Oracle — Non-Deployable Hindsight Reference)",
         ha="left", va="center", fontsize=10.3, fontweight="bold", color="#92400E"
     )
 
@@ -172,7 +172,7 @@ def build_fig0a_causal_timeline(fig_dir: str) -> None:
     )
     _box(
         ax, 0.352, 0.048, 0.285, 0.255,
-        "2. Naive Real-Time ($B_2$-1W/4W)",
+        "2. Naive Real-Time (Causal-1W/4W)",
         "Trains directly on $y_{\\mathrm{obs}}(t_{\\mathrm{alarm}})$.\nUnfixed defects act as $y=0$,\ncompressing posteriors downward\n(Right-Censoring Bias).",
         fc="#FEF2F2", ec="#DC2626", title_color="#B91C1C", title_fs=9.8, body_fs=8.9, linespacing=1.35
     )
@@ -202,7 +202,7 @@ def build_fig0b_architecture(fig_dir: str) -> None:
 
     ax.text(
         0.50, 0.958,
-        "Survival-PU: Three-Stage Input–Output Pipeline Triggered at Drift Alarm $t_{\\mathrm{alarm}}$ (Formulas in Section 4)",
+        "Survival-PU: Three-Stage Input–Output Pipeline Triggered at Drift Alarm $t_{\\mathrm{alarm}}$",
         ha="center", va="center", fontsize=11.6, fontweight="bold", color="#0F172A"
     )
 
@@ -225,13 +225,13 @@ def build_fig0b_architecture(fig_dir: str) -> None:
     _box(
         ax, 0.26, 0.55, 0.215, 0.33,
         "Stage 1: Maturity $c(a_i)$",
-        "Input: causal history\n($t_i \\leq t_{\\mathrm{alarm}}$, revealed fixes).\nCohort cumulative incidence\n(Eqs. 4–5).\nOutput: commit maturity $c_i$.",
+        "Input: causal history\n($t_i \\leq t_{\\mathrm{alarm}}$, revealed fixes).\nRisk-eligible cohort\ncumulative incidence.\nOutput: commit maturity $c_i$.",
         fc="#EFF6FF", ec="#2563EB", title_color="#1D4ED8", title_fs=10.0, body_fs=8.8, linespacing=1.34
     )
     _box(
         ax, 0.26, 0.13, 0.215, 0.34,
         "Stage 1 Control Curves",
-        "Swappable controls (RQ3/4a):\n• Kaplan–Meier Cure\n• Weibull Mixture-Cure\n• Zero-fit FixedCurve-PU\n  (90-day half-life prior)",
+        "Swappable controls:\n• Kaplan–Meier Cure\n• Weibull Mixture-Cure\n• Zero-fit FixedCurve-PU\n  (90-day half-life prior)",
         fc="#F8FAFC", ec="#64748B", title_color="#334155", title_fs=10.0, body_fs=8.9, linespacing=1.36
     )
     _arrow(ax, 0.3675, 0.482, 0.3675, 0.538, color="#64748B", lw=1.4)
@@ -246,7 +246,7 @@ def build_fig0b_architecture(fig_dir: str) -> None:
     _box(
         ax, 0.515, 0.13, 0.22, 0.34,
         "Stage 2: Prior $\\hat{\\pi}_{\\mathrm{target}}$",
-        "Input: calibration pool $\\mathcal{B}_{\\mathrm{cal}}$,\n$y_{i,\\mathrm{obs}}$, and $c_i$.\nClipped IP prevalence shrunk\ntoward mature anchor (Eq. 6).\nOutput: target prior $\\hat{\\pi}_{\\mathrm{target}}$.",
+        "Input: calibration pool $\\mathcal{B}_{\\mathrm{cal}}$,\n$y_{i,\\mathrm{obs}}$, and $c_i$.\nClipped IP prevalence shrunk\ntoward mature anchor.\nOutput: target prior $\\hat{\\pi}_{\\mathrm{target}}$.",
         fc="#FAF5FF", ec="#7C3AED", title_color="#5B21B6", title_fs=10.0, body_fs=8.8, linespacing=1.34
     )
 
@@ -254,7 +254,7 @@ def build_fig0b_architecture(fig_dir: str) -> None:
     _box(
         ax, 0.775, 0.48, 0.205, 0.40,
         "Stage 3: PU Distillation",
-        "Inputs: $\\eta_i^{(0)}$, $c_i$, $\\hat{\\pi}_{\\mathrm{target}}$.\nMonotone bisection $\\delta^*$ sets\nsoft targets $q_i(\\delta^*)$ (Eq. 7).\nFits student host on anchor\n+ $W_{\\mathrm{drift}}$ (weighted BCE).",
+        "Inputs: $\\eta_i^{(0)}$, $c_i$, $\\hat{\\pi}_{\\mathrm{target}}$.\nMonotone bisection $\\delta^*$ sets\nsoft targets $q_i(\\delta^*)$.\nFits student host on anchor\n+ $W_{\\mathrm{drift}}$ (weighted BCE).",
         fc="#ECFDF5", ec="#059669", title_color="#047857", title_fs=10.0, body_fs=8.8, linespacing=1.35
     )
     _box(
@@ -275,7 +275,7 @@ def build_fig0b_architecture(fig_dir: str) -> None:
 
     ax.text(
         0.50, 0.045,
-        "Default hyperparameters are specified in Table 2 (frozen prior to confirmatory unlock); step-matched Teacher-Only and Legacy Gate are isolated as controls.",
+        "Locked protocol hyperparameters appear in Appendix A; Teacher-Matched and confidence gating are isolated as controls.",
         ha="center", va="center", fontsize=8.8, style="italic", color="#475569"
     )
 

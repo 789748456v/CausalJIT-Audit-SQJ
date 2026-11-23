@@ -26,7 +26,7 @@ This replication package accompanies our causal supervision audit and cross-para
 
 ## Manuscript & Online Resource 1 Crosswalk
 
-Every empirical table cell across the **Main Manuscript** (`839` cells across `11` empirical tables) and **Online Resource 1** (`1,054` cells across `16` supplementary/full-column tables; **`1,893` total machine-verified cells**), plus all `33` locked `V3_CONFIG` fields and all key prose comparisons (`34` exact-path claims + `60` relational guards), is verified automatically against the archived JSON artifacts in this repository.
+Every empirical table cell across the **Main Manuscript** (`839` cells across `11` empirical tables) and **Online Resource 1** (`1,054` cells across `16` supplementary/full-column tables; **`1,893` total machine-verified cells**), plus all `33` locked `V3_CONFIG` fields and all key prose comparisons (`35` exact-path claims + `61` relational guards), is verified automatically against the archived JSON artifacts in this repository.
 
 | Document & Element | Backing Artifact File(s) in This Repository | Generator / Verifier Script |
 | :--- | :--- | :--- |
@@ -77,7 +77,7 @@ CausalJIT-Audit-SQJ/
 ├── scripts_v3/                                     # [Portable companion audits, plotting, assembly & verification]
 │   ├── verify_online_resource_v3.py                # [Tier 1] Verifies all 1,054 Online Resource 1 cells against results_v3
 │   ├── run_post_campaign_mechanism_checks_v3.py    # [Tier 1] Verifies pre-unlock lock + runs live Checks 2-14 (41 branches)
-│   ├── verify_prose_claims_v3.py                   # [Tier 1] Verifies V3_CONFIG, 34 exact-path claims & 60 relational guards
+│   ├── verify_prose_claims_v3.py                   # [Tier 1] Verifies V3_CONFIG, 35 exact-path claims & 61 relational guards
 │   ├── generate_conceptual_diagrams_v3.py          # [Tier 1] Regenerates conceptual vector/PNG diagrams (Fig. 1-2)
 │   ├── analyze_and_plot_v3.py                      # [Tier 1] Regenerates Fig. 3-10, 27 tables & both cell registries
 │   ├── build_manuscript_v3.py                      # [Tier 1] Assembles main.tex, online_resource.tex, Markdown & README
@@ -126,7 +126,7 @@ python src_v3/verify_manuscript_v3.py
 # 2. Verify all 1,054 Online Resource 1 table cells across 16 supplementary tables
 python scripts_v3/verify_online_resource_v3.py
 
-# 3. Verify all 33 V3_CONFIG table fields, 34 exact-path prose claims, 60 relational guards & adversarial self-tests
+# 3. Verify all 33 V3_CONFIG table fields, 35 exact-path prose claims, 61 relational guards & adversarial self-tests
 python scripts_v3/verify_prose_claims_v3.py
 
 # 4. Verify archived pre-unlock gate SHA-256 (766e3fd6...) and run live mechanism Checks 2-14 (41 prefix-invariant branches)
@@ -138,7 +138,7 @@ python scripts_v3/analyze_and_plot_v3.py
 python scripts_v3/build_manuscript_v3.py
 ```
 
-Compiling `manuscript/main.tex` and `manuscript/online_resource.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready **39-page Springer SQJ Main PDF** (`Section 6 Empirical Results` starting at page 13) and **11-page companion Online Resource 1 PDF** (`Online_Resource_1.pdf`), both with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
+Compiling `manuscript/main.tex` and `manuscript/online_resource.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready **38-page Springer SQJ Main PDF** (`Section 6 Empirical Results` starting at page 13) and **11-page companion Online Resource 1 PDF** (`Online_Resource_1.pdf`), both with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
 
 ### Tier 2 — Tabular Benchmark & Companion Audit Re-Execution
 
