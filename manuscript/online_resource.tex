@@ -1,0 +1,551 @@
+% Springer Software Quality Journal — Online Resource 1 (Supplementary Material)
+% Compilation: pdflatex online_resource && bibtex online_resource && pdflatex online_resource && pdflatex online_resource
+\RequirePackage{fix-cm}
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xurl}
+\usepackage{microtype}
+\usepackage[authoryear,round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+\setlength{\emergencystretch}{2.0em}
+\renewcommand{\arraystretch}{1.08}
+\raggedbottom
+\renewcommand{\thetable}{S-\arabic{table}}
+\renewcommand{\thesection}{S-\arabic{section}}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\title{\Large\textbf{Online Resource 1: Supplementary Tables, Full-Column Mirrors, and Companion Audit Details}\\[0.5em]
+\large Accompanying ``Detecting Drift Is Not Safe Retraining: Causal Supervision Boundaries for Adaptive Just-in-Time Defect Prediction''\\[0.3em]
+\normalsize\textit{Software Quality Journal} (Springer Nature)}
+
+\author{Zhijie Li$^1$, Shaoyang Xu$^1$, Ketong Liu$^1$, Shibo Meng$^1$, Feiran Gao$^2$, and Yuli Zhao$^{1,*}$\\[0.3em]
+\small $^1$Software College, Northeastern University, Shenyang 110169, China\\
+\small $^2$School of Computer Science and Technology, Beijing Institute of Technology, Beijing 100081, China\\
+\small $^*$Corresponding author: \texttt{zhaoyl@swc.neu.edu.cn}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent This companion document provides all 18 supplementary tables (Tables~S-1--S-18) referenced in the main manuscript. Every empirical cell across Tables~S-3--S-18 (1,054 cells across 16 supplementary tables) is verified programmatically against the 15 provenance-stamped JSON artifacts in \texttt{results\_v3/} via \texttt{scripts\_v3/\allowbreak verify\_\allowbreak online\_\allowbreak resource\_\allowbreak v3.py}.
+
+% ============================================================================
+% S1. Conceptual Positioning & Executed Specifications
+% ============================================================================
+\section{Conceptual Positioning and Executed Host/Competitor Specifications}
+\label{sec:or_specs}
+
+Table~\ref{tab:positioning} contrasts prior JIT-SDP, drift monitoring, verification-latency stream learning, PU learning, and SZZ auditing paradigms along update triggers, alarm-time supervision, and observed operating boundaries. Table~\ref{tab:backbone_specs} details the exact neural and gradient-boosted host constructors executed in \texttt{src\_v3/models\_and\_baselines\_v3.py}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Conceptual positioning relative to static JIT-SDP, unsupervised drift retraining, passive shift monitoring, verification-latency stream learners, canonical PU learning, and SZZ evaluation-bias auditing.}
+\label{tab:positioning}
+\fontsize{7.5}{9.0}\selectfont
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabularx}{\textwidth}{L{3.1cm}L{2.1cm}Y L{2.8cm}L{3.6cm}}
+\toprule
+\textbf{Paradigm / Study} & \textbf{Update Trigger} & \textbf{Supervision at $t_{\text{alarm}}$ / Step $t$} & \textbf{Unmatured $W_{\text{drift}}$} & \textbf{Empirical Regime / Boundary} \\
+\midrule
+Static JIT-SDP \citep{kamei2013large,hoang2019deepjit,feng2020codebert,zeng2021deep} (Frozen, Linear) & None (frozen) & Causal pre-stream prefix ($t \le t_0$) & Not used & Full-LR leads deployable Benchmark~A; stale after shift \\
+Pote-inspired oracle \citep{pote2026adaptive} (Window Oracle) & IID DriftLens & Hindsight $y^*$ ($t_{\text{fix}} > t_{\text{alarm}}$) & Non-causal oracle & Non-deployable counterfactual reference \\
+Pote-inspired causal \citep{pote2026adaptive} (Causal-1W/4W) & DriftLens & Observable $y_{\text{obs}}(t_{\text{alarm}})$ & Treated as $y=0$ & Competitive gradual AP ($4W$); $F_1$ drops under $3\times$ lag \\
+\citet{shah2026detecting} & Shift metrics & Passive monitoring only & Not applicable & Evaluates alert correlation without weight updates \\
+Delayed Window (Wait-90) & Block DriftLens & Revealed fixes $\vee$ age $a_i \ge 90\text{d}$ & $<90\text{d}$ unfixed dropped & Reduces $<90\text{d}$ FN noise; lags $W=200$ shifts \\
+\citet{cabral2019class} (ORB) & Per-event OHT & $90\text{d}$ clean + fast fixes + OBF Bagging & Excluded until $90\text{d}$ or fix & Lightweight CPU Hoeffding ensemble; sensitive to SZZ noise \\
+\citet{cabral2023borb} (BORB) & $200$-c / alarm & $90\text{d}$ clean + fixes + ElasticNet SGD & Excluded until $90\text{d}$ or fix & Best $K=25$ $F_{1,\text{th}}$ \& first-1,200 post-shift AP \\
+\citet{song2022odasc} (ODaSC) & Per-event OHT & $15\text{d}$ provisional $0$ + DenStream $\alpha_i$ & Provisional $0$ after $15\text{d}$ & Highest confirmatory AP; higher DenStream CPU cost \\
+\citet{chapelle2014modeling} (Delayed FB) & Online updates & Joint $p(x)$ + exp.\ $\lambda(x)$ delay MLE & Soft delayed-event likelihood & Display-ad delayed feedback; inspired global Weibull cure \\
+\citet{kiryo2017positive} (Pure-nnPU) & Block DriftLens & Disjoint $P$ vs.\ marginal $U$ under flat $\hat{\pi}$ & Age-blind unlabeled & Trails on $K=25$ AP \& $\kappa=3\times$ effort recall \\
+\citet{song2023waiting,bludau2026quantifying} & Offline audit & Eval waiting-time noise / PR-SZZ vs.\ B-SZZ & Static/eval focus & Audits retrospective eval waiting noise \& SZZ FP/FN rates \\
+\midrule
+\textbf{Survival-PU} & \textbf{Block DriftLens} & \textbf{Cohort $c(a_i)$ + IP $\hat{\pi}_{\text{target}}$ + PU targets} & \textbf{Age-weighted $q_i(\delta^*)$} & \textbf{Best full post-shift AP \& $3\times$-lag $F_1$/$F_{1,\text{th}}$; trails FixedCurve-PU on gradual AP} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Executed architectural, DriftLens monitoring-space, and optimization specifications across all five host predictors (\texttt{src\_v3/models\_and\_baselines\_v3.py}).}
+\label{tab:backbone_specs}
+\fontsize{7.5}{9.0}\selectfont
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabularx}{\textwidth}{L{2.3cm}L{2.7cm}Y L{2.8cm}L{3.7cm}}
+\toprule
+\textbf{Host Model} & \textbf{Causal Input Features} & \textbf{Architecture \& Linear-Residual Skip} & \textbf{DriftLens Space ($24$-D PCA)} & \textbf{Executed Init \& Per-Alarm Budgets} \\
+\midrule
+Attention-CNN \citep{pote2026adaptive} & $64$ msg + $128$ diff tokens + $13$ authoring metrics & $64$-D dual emb.; $k\in\{1,2,3\}$ 1D-CNN ($48$ filters $\to 144$-D); $6$-head self/cross-attn; $192\to 64$-D ($\text{drop}=0.30$) + frozen Tab-13 LR skip & $64$-D penultimate LayerNorm-ReLU vector $z_i$ & AdamW ($\text{bs}=128$); Init: $12$ ep., $\text{lr}=7{\times}10^{-4}$; Alarm ($\text{lr}=4.5{\times}10^{-4}$): $5$ ep.\ (Oracle, Causal, Wait, ODaSC-H), $6$ ep.\ (nnPU), $4{+}4$ ep.\ (SPU/Fixed), or step-matched cap \\
+CodeBERT \citep{feng2020codebert} & $768$-D msg + $768$-D diff (codebert-base) + $13$ metrics & Dual $128$-D LayerNorm-GELU adapters + $4$-head bimodal self-attn + $|a_m-a_c| \oplus (a_m\odot a_c) \to 160 \to 64$-D ($\text{drop}=0.25$) + frozen Tab-13 LR skip & $64$-D penultimate LayerNorm-GELU vector $z_i$ & AdamW ($\text{bs}=128$); Init: $12$ ep., $\text{lr}=8{\times}10^{-4}$; Alarm ($\text{lr}=4.5{\times}10^{-4}$): $5$ ep.\ (Oracle, Causal, Wait, ODaSC-H), $6$ ep.\ (nnPU), $4{+}4$ ep.\ (SPU/Fixed), or step-matched cap \\
+DeepJIT-CNN \citep{hoang2019deepjit} & $64$ msg + $128$ diff tokens + $13$ metrics & $64$-D dual emb.; parallel $k\in\{1,2,3\}$ 1D-CNNs ($64$ filters) + $48$-D metric MLP $\to 64$-D ($\text{drop}=0.25$) + frozen Tab-13 LR skip & $64$-D penultimate LayerNorm-GELU vector $z_i$ & AdamW ($\text{bs}=128$); Init: $12$ ep., $\text{lr}=7{\times}10^{-4}$; Alarm ($\text{lr}=4.5{\times}10^{-4}$): $5$ ep.\ (Oracle, Causal, Wait, ODaSC-H), $6$ ep.\ (nnPU), $4{+}4$ ep.\ (SPU/Fixed), or step-matched cap \\
+Tabular MLP (Bench B/C) & Standardized commit-time / PR-SZZ metrics ($D$-dim) & LayerNorm-GELU ($D\to 128$) + residual block ($128\to 128$) $\to 64$-D head ($\text{drop}=0.20$) & $64$-D penultimate LayerNorm-GELU vector $z_i$ & AdamW ($\text{bs}=128$); Init: $12$ ep., $\text{lr}=8{\times}10^{-4}$; Alarm ($\text{lr}=4.5{\times}10^{-4}$): $5$ ep.\ (Oracle, Causal, Wait, ODaSC-H), $6$ ep.\ (nnPU), $4{+}4$ ep.\ (SPU/Fixed), or step-matched cap \\
+LightGBM \citep{ke2017lightgbm} & $112$-D msg+diff SVD + $13$ metrics (or $D$ tab.) & Callable-objective GBDT, $\text{num\_leaves}=15$, $\text{lr}=0.05$, subsample $0.85$, colsample $0.85$, $\ell_1=0.1, \ell_2=1.0$ & $[x_{i,1:\min(D,48)}, z_i]$ with exact initial margin $z_i$ & Init: $90$ rounds; Alarm: fresh $75$-tree fit (Oracle, Causal, Wait, ODaSC-H, Teach-Exact), fresh $75{+}75$ fits (SPU/Fixed), fresh $150$-tree fit (Teach-Matched); 2 threads \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Executed Competitor Specifications (\texttt{src\_v3/stream\_competitors\_v3.py}).}
+All neural models optimize with AdamW (weight decay $10^{-4}$, batch size $128$, gradient-norm clip $1.0$, deterministic CuDNN). Token vocabularies ($8{,}000$ tokens), TF-IDF/SVD projections ($48$-D msg + $64$-D diff), and $z$-score scalers fit strictly on $[0, n_{\text{init}})$; initial host weights and frozen tabular skips train on $[0, n_{\text{init}}+n_{\text{val}})$ using $y_{\text{obs}}(t_{\text{start}})$.
+\begin{itemize}[leftmargin=1.6em,itemsep=0.06em]
+  \item \textbf{ORB (Hoeffding)} \citep{cabral2019class}: Ensemble of 10 \texttt{river.tree.HoeffdingTreeClassifier} learners ($\text{grace\_period}=200, \delta=10^{-7}, \tau=0.05$, \texttt{leaf\_prediction="nba"}) trained via OzaBagging \citep{oza2005online} on strict $t_{\text{event}} < t_{\text{commit}}$ events ($\text{waiting\_days}=90.0$ clean maturity plus revealed fixes), with duplicate clean-count noise filtering ($\text{count}>5$ skipped), EMA decay $0.99$, window $100$, $th=0.40, l_0=10, l_1=12, m=1.5$.
+  \item \textbf{BORB (ElasticNet) \& BORB-Alarm} \citep{cabral2023borb}: Single \texttt{SGDClassifier} (\texttt{loss="log\_loss"}, \texttt{penalty="elasticnet"}, $\alpha=0.02$, \texttt{l1\_ratio}$=0.15$, \texttt{learning\_rate="optimal"}) refreshed every 200 commits (BORB-Native) or strictly post-window upon DriftLens alarms (BORB-Alarm), running 20 inner skewed-resampling \texttt{partial\_fit} steps ($\text{max\_sample\_size}=2{,}000, th=0.40, l_0=10, l_1=12, m=1.5$) over revealed positives and unfixed commits aged $\ge 90.0$ days.
+  \item \textbf{ODaSC (Hoeffding)} \citep{song2022odasc}: Ensemble of 10 \texttt{river} Hoeffding trees ($\text{grace\_period}=200, \delta=10^{-7}, \tau=0.05$) consuming $t_{\text{event}} < t_{\text{commit}}$ events with $\text{waiting\_days}=15.0$ provisional negatives and \texttt{SongDenStreamConfidenceTracker} one-sided micro-cluster confidences ($\delta_{\text{thresh}}=0.85$, radius initialized from 15th pairwise distance percentile on $[0, \min(s_0, 250))$).
+  \item \textbf{Pure-nnPU} \citep{kiryo2017positive}: Disjoint historical confirmed positives $P$ and $4W$ unlabeled marginal pool $U$ trained with non-negative PU risk ($\beta=0.0, \gamma=1.0$; 6 neural epochs or unit pseudo-Hessian GBDT steps) using clipped inverse-maturity shrunk prior $\hat{\pi}_{\text{target}}$.
+\end{itemize}
+
+\clearpage
+% ============================================================================
+% S2. Complete Multi-Host Benchmark A, Benchmark B, & Controlled-Shift Mirrors
+% ============================================================================
+\section{Complete Benchmark A, Benchmark B, and Controlled-Shift Mirrors}
+\label{sec:or_rq2}
+
+Tables~\ref{tab:or_bench_a_full}--\ref{tab:shift_4streams} archive the full-column mirrors of Main Tables~2--3, the Benchmark~A provenance and feature-scope sensitivity check, and the per-stream breakdown across all four Benchmark~B controlled concatenated shifts.
+
+\begin{table}[!htbp]
+\centering
+\caption{Complete 10-column Benchmark A causal supervision audit across all four Track~1 hosts (Attention-CNN, CodeBERT, DeepJIT-CNN, LightGBM) and Track~2 baselines over six Qt and OpenStack streams (5 seeds; 13 commit-authoring metrics). Bold marks the best deployable value per column.}
+\label{tab:or_bench_a_full}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccccccc@{}}
+\toprule
+\textbf{Method} & \textbf{Att.} & \textbf{CodeB.} & \textbf{DJIT} & \textbf{LGBM} & \textbf{AP} & \textbf{$F_1$} & \textbf{$F_{1\mathrm{t}}$} & \textbf{R@20} & \textbf{Brier$\downarrow$} \\
+\midrule
+Window Oracle (4W) & 0.2936 & 0.3170 & 0.3188 & 0.3241 & 0.3134 & 0.2937 & 0.3105 & 0.6201 & 0.1265 \\
+\midrule
+Frozen Host & \textbf{0.3525} & 0.3208 & \textbf{0.3531} & \textbf{0.3356} & 0.3405 & 0.1342 & 0.2565 & 0.6374 & 0.1145 \\
+Causal-1W & 0.3382 & \textbf{0.3268} & 0.3173 & 0.2527 & 0.3087 & 0.1070 & 0.2388 & 0.6044 & 0.1182 \\
+Causal-4W & 0.3098 & 0.3210 & 0.3043 & 0.2824 & 0.3044 & 0.1650 & 0.2788 & 0.6132 & 0.1187 \\
+Wait-90 & 0.2932 & 0.3096 & 0.2990 & 0.2816 & 0.2959 & 0.2287 & 0.2865 & 0.6091 & 0.1227 \\
+Pure-nnPU & 0.3508 & 0.3263 & 0.3491 & 0.2673 & 0.3234 & 0.0919 & 0.2291 & 0.6222 & 0.1164 \\
+FixedCurve-PU & 0.2948 & 0.3104 & 0.3115 & 0.2908 & 0.3019 & 0.2645 & 0.2987 & 0.6148 & 0.1218 \\
+Teacher-Matched & 0.2859 & 0.3139 & 0.2938 & 0.3024 & 0.2990 & 0.2301 & 0.2892 & 0.6115 & 0.1225 \\
+SPU (+Legacy Gate) & 0.2848 & 0.3093 & 0.3071 & 0.2938 & 0.2988 & 0.2878 & 0.3027 & 0.6158 & 0.1251 \\
+Survival-PU & 0.2845 & 0.3098 & 0.3097 & 0.2898 & 0.2984 & 0.2907 & 0.3043 & 0.6156 & 0.1251 \\
+\midrule
+Full-LR Frozen & -- & -- & -- & -- & \textbf{0.3653} & \textbf{0.3939} & \textbf{0.3951} & \textbf{0.6728} & 0.1106 \\
+LApredict Frozen & -- & -- & -- & -- & 0.3601 & 0.3853 & 0.3773 & 0.6649 & \textbf{0.1105} \\
+Churn-LR Frozen & -- & -- & -- & -- & 0.3397 & 0.3736 & 0.3609 & 0.6520 & 0.1116 \\
+BORB (ElasticNet) & -- & -- & -- & -- & 0.3338 & 0.3525 & 0.3646 & 0.6643 & 0.1125 \\
+ORB (Hoeffding) & -- & -- & -- & -- & 0.2899 & 0.3470 & 0.3466 & 0.6602 & 0.1149 \\
+ODaSC (Hoeffding) & -- & -- & -- & -- & 0.2426 & 0.2389 & 0.3209 & 0.6616 & 0.1167 \\
+LOC-Only & -- & -- & -- & -- & 0.0794 & 0.0639 & 0.0639 & 0.6520 & 0.4207 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Benchmark A provenance and feature-scope sensitivity evaluated strictly on identical common evaluation commit IDs per ecosystem (CodeBERT with frozen linear skip, AP). Bold marks the highest deployable AP in each row.}
+\label{tab:bench_a_sens}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccc@{}}
+\toprule
+\textbf{Sensitivity Variant} & \textbf{Frozen} & \textbf{Oracle} & \textbf{Causal-4W} & \textbf{Wait-90} & \textbf{Survival-PU} \\
+\midrule
+Qt Pre-Merge 28 (CodeBERT) & 0.1472 & 0.1475 & \textbf{0.1603} & 0.1426 & 0.1446 \\
+Qt High-Conf. SZZ Only (CodeBERT) & 0.1583 & 0.1791 & \textbf{0.1720} & 0.1550 & 0.1650 \\
+Qt Drop Unlinked (CodeBERT) & 0.1654 & 0.1633 & \textbf{0.1912} & 0.1436 & 0.1479 \\
+OpenStack Pre-Merge 28 (CodeBERT) & \textbf{0.3332} & 0.2914 & 0.3024 & 0.2934 & 0.2894 \\
+OpenStack High-Conf. SZZ Only (CodeBERT) & \textbf{0.3571} & 0.3191 & 0.3285 & 0.3180 & 0.3191 \\
+OpenStack Drop Unlinked (CodeBERT) & \textbf{0.3530} & 0.3498 & 0.3408 & 0.3429 & 0.3428 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Complete 8-column Benchmark B evaluation including ROC-AUC across $K=25$ natural donor clusters ($K=24$ sensitivity), LightGBM ($K=25$), and four controlled shift streams. Bold marks the best deployable value per column.}
+\label{tab:or_bench_b_full}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccccc@{}}
+\toprule
+\textbf{Method} & \textbf{$K{=}25$} & \textbf{$K{=}24$} & \textbf{$F_{1\mathrm{t}}$} & \textbf{AUC} & \textbf{Br.$\downarrow$} & \textbf{LGB} & \textbf{Shift} \\
+\midrule
+Window Oracle (4W) & 0.5241 & 0.5237 & 0.4935 & 0.7803 & 0.1517 & 0.5409 & 0.6137 \\
+\midrule
+Frozen Host & 0.4566 & 0.4553 & 0.3725 & 0.7363 & 0.1662 & 0.4628 & 0.5064 \\
+Causal-1W & 0.4704 & 0.4689 & 0.4146 & 0.7375 & 0.1658 & 0.4529 & 0.5011 \\
+Causal-4W & 0.5004 & 0.4999 & 0.4638 & 0.7645 & 0.1568 & \textbf{0.4933} & 0.5578 \\
+Wait-90 & 0.4982 & 0.4980 & 0.4734 & 0.7634 & 0.1548 & 0.4425 & 0.5554 \\
+Pure-nnPU & 0.4461 & 0.4443 & 0.3621 & 0.7107 & 0.1649 & 0.4615 & 0.5017 \\
+ODaSC-Host & 0.4949 & 0.4944 & 0.4740 & 0.7621 & 0.1540 & -- & 0.5727 \\
+FixedCurve-PU & 0.4942 & 0.4946 & 0.4782 & 0.7643 & \textbf{0.1525} & 0.4680 & 0.5652 \\
+Teacher-Exact & 0.4802 & 0.4791 & 0.4684 & 0.7560 & 0.1567 & 0.4186 & 0.5461 \\
+Teacher-Matched & 0.4727 & 0.4711 & 0.4659 & 0.7524 & 0.1587 & 0.4240 & 0.5330 \\
+SPU (+Legacy Gate) & 0.4873 & 0.4870 & 0.4778 & 0.7602 & 0.1531 & -- & 0.5717 \\
+Survival-PU & 0.4866 & 0.4867 & 0.4795 & 0.7593 & \textbf{0.1525} & 0.4619 & \textbf{0.5764} \\
+\midrule
+LOC-Only & 0.1585 & 0.1610 & 0.1153 & 0.2245 & 0.4721 & -- & 0.2047 \\
+LApredict Frozen & 0.4684 & 0.4643 & 0.4416 & 0.7571 & 0.1585 & -- & 0.5529 \\
+Full-LR Adapt-4W & \textbf{0.5108} & \textbf{0.5108} & 0.4781 & \textbf{0.7749} & 0.1531 & -- & 0.5469 \\
+BORB (ElasticNet) & 0.4684 & 0.4663 & \textbf{0.5144} & 0.7463 & 0.1617 & -- & 0.5292 \\
+BORB-Alarm & 0.4800 & 0.4777 & 0.4912 & 0.7540 & 0.1611 & -- & 0.5461 \\
+ORB (Hoeffding) & 0.4468 & 0.4446 & 0.4736 & 0.7461 & 0.1734 & -- & 0.4928 \\
+ODaSC (Hoeffding) & 0.4626 & 0.4618 & 0.4951 & 0.7564 & 0.1702 & -- & 0.5257 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Per-stream breakdown across all four Benchmark~B controlled concatenated distribution-shift streams (MLP, 10 seeds): full post-onset AP (Post) and first 1,200 post-onset commits AP (1.2k). At the 1-hour splice boundary, 33.2\% (Nova$\to$Zulip), 60.0\% (Ignite$\to$Cassandra), 23.7\% (Airflow$\to$Pulsar), and 35.0\% (OS Nova$\to$Neutron) of revealed pre-onset fixes occur after the onset timestamp.}
+\label{tab:shift_4streams}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccccc@{}}
+\toprule
+\textbf{Method} & \textbf{N$\to$Z Post} & \textbf{N$\to$Z 1.2k} & \textbf{I$\to$C Post} & \textbf{I$\to$C 1.2k} & \textbf{A$\to$P Post} & \textbf{A$\to$P 1.2k} & \textbf{OS Post} & \textbf{OS 1.2k} \\
+\midrule
+Frozen Host & 0.5062 & 0.5618 & 0.7044 & 0.6618 & 0.3797 & 0.3994 & 0.4353 & 0.4287 \\
+Window Oracle (4W) & 0.5265 & 0.5699 & 0.7955 & 0.6964 & 0.6995 & 0.6827 & 0.4332 & 0.4289 \\
+\midrule
+Causal-4W (Censored) & 0.4758 & 0.5238 & 0.7584 & 0.6550 & 0.6074 & 0.5747 & 0.3895 & 0.3932 \\
+Wait-90 & 0.4020 & 0.3981 & 0.7702 & 0.6662 & 0.6419 & 0.6362 & 0.4074 & 0.4211 \\
+FixedCurve-PU & 0.4727 & 0.4727 & 0.7537 & 0.6726 & 0.6348 & 0.6341 & 0.3994 & 0.4113 \\
+Survival-PU & 0.4798 & 0.4836 & 0.7641 & 0.6799 & 0.6402 & 0.6369 & 0.4214 & 0.4358 \\
+ODaSC-Host & 0.4978 & 0.5607 & 0.7576 & 0.6504 & 0.6281 & 0.6119 & 0.4072 & 0.4113 \\
+BORB-Alarm & 0.4808 & 0.5741 & 0.7259 & 0.7588 & 0.5339 & 0.6210 & 0.4439 & 0.4184 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\clearpage
+% ============================================================================
+% S3. Confirmatory Data Funnel & 34-Stream Archive Follow-Up Audits
+% ============================================================================
+\section{Confirmatory Data-Construction Funnel and Archive Follow-Up Audits}
+\label{sec:or_funnel}
+
+Tables~\ref{tab:confirmatory_funnel}--\ref{tab:followup_sensitivity} document the upstream \texttt{apachejit\_total.csv} filtering funnel (reconciling the 11,964 clean \texttt{apache/hadoop} monorepo commits), observable archive-horizon follow-up across all 34 natural streams, and Benchmark~A sensitivity at $\ge 180\text{d}$ and $\ge 365\text{d}$ cutoffs.
+
+\begin{table}[!htbp]
+\centering
+\caption{Confirmatory ApacheJIT data-construction funnel from upstream \texttt{apachejit\_total.csv} (106,674 rows) through our chronological cutoff ($\text{author\_date} \le \text{2019-01-01}$, Cut) to evaluation splits. Upstream assigns 11,964 clean Hadoop monorepo commits to \texttt{apache/hadoop}; the three standalone repositories have no monorepo split.}
+\label{tab:confirmatory_funnel}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrrrrrr@{}}
+\toprule
+\textbf{Upstream Project Key} & \textbf{Raw $N$} & \textbf{Raw Pos} & \textbf{Raw Prev.} & \textbf{Cut $N$} & \textbf{Cut Prev.} & \textbf{Eval $N$} & \textbf{Eval Prev.} \\
+\midrule
+\texttt{apache/hadoop} (Monorepo Clean Only) & 11964 & 0 & 0.0\% & 10330 & 0.0\% & -- & -- \\
+\midrule
+\texttt{apache/hadoop-hdfs} (HDFS*) & 2907 & 2222 & 76.4\% & 2850 & 76.7\% & 1925 & 89.2\% \\
+\texttt{apache/hadoop-mapreduce} (MapRed.*) & 1321 & 838 & 63.4\% & 1318 & 63.5\% & 893 & 78.8\% \\
+\midrule
+\texttt{apache/spark} (Standalone) & 1465 & 632 & 43.1\% & 1273 & 46.5\% & 848 & 45.6\% \\
+\texttt{apache/zeppelin} (Standalone) & 1451 & 622 & 42.9\% & 1350 & 44.6\% & 900 & 55.2\% \\
+\texttt{apache/zookeeper} (Standalone) & 839 & 342 & 40.8\% & 686 & 48.5\% & 461 & 49.5\% \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Observable archive-horizon follow-up proxy audit across all 34 natural repository streams: minimum and median remaining window between evaluation commit timestamp and observable archive-horizon proxy $T_{\mathrm{end}} = \max(\max_i t_i, \max_{i:\, t_i^{\mathrm{fix}}<\infty} t_i^{\mathrm{fix}})$, plus maximum stream fraction with $<90$, $<180$, or $<365$ days of follow-up.}
+\label{tab:followup_audit}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrrrrr@{}}
+\toprule
+\textbf{Stream Cohort} & \textbf{Streams} & \textbf{Min Rem (d)} & \textbf{Med Rem (d)} & \textbf{Max $<$90d} & \textbf{Max $<$180d} & \textbf{Max $<$365d} \\
+\midrule
+Bench A Natural (Qt, OS) & 2 & 0.0 & 429.4 & 7.0\% & 15.5\% & 41.0\% \\
+Bench B: Cabral ICSE'19 (14) & 14 & 366.0 & 1054.0 & 0.0\% & 0.0\% & 0.0\% \\
+Bench B: ApacheJIT Dev (8) & 8 & 301.9 & 1822.7 & 0.0\% & 0.0\% & 0.7\% \\
+Bench B: PR-SZZ SQJ'26 (5) & 5 & 156.9 & 823.5 & 0.0\% & 2.4\% & 22.7\% \\
+Phase C: Confirmatory (5) & 5 & 388.8 & 2234.9 & 0.0\% & 0.0\% & 0.0\% \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Benchmark A archive follow-up sensitivity (seed 42; 4-host mean AP and $F_1$ plus Full-LR Frozen) restricting evaluation to commits with $\ge 180$ or $\ge 365$ days before $T_{\mathrm{end}}$. Bold marks the best deployable value per row.}
+\label{tab:followup_sensitivity}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrcccccc@{}}
+\toprule
+\textbf{Metric --- Slice} & \textbf{$N$} & \textbf{Prev.} & \textbf{Full-LR} & \textbf{Frozen} & \textbf{Oracle} & \textbf{Causal-4W} & \textbf{Wait-90} & \textbf{SPU} \\
+\midrule
+AP --- Qt (All) & 18204 & 5.4\% & \textbf{0.2248} & 0.2008 & 0.2048 & 0.1859 & 0.1631 & 0.1833 \\
+AP --- Qt ($\ge 180$d) & 15388 & 6.0\% & \textbf{0.2499} & 0.2219 & 0.2249 & 0.2069 & 0.1831 & 0.2038 \\
+AP --- Qt ($\ge 365$d) & 10747 & 6.1\% & \textbf{0.2545} & 0.2283 & 0.2260 & 0.2143 & 0.1900 & 0.2045 \\
+AP --- OS (All) & 3704 & 14.7\% & \textbf{0.4097} & 0.3756 & 0.3231 & 0.3333 & 0.3025 & 0.2964 \\
+AP --- OS ($\ge 180$d) & 3698 & 14.7\% & \textbf{0.4113} & 0.3773 & 0.3247 & 0.3352 & 0.3042 & 0.2983 \\
+AP --- OS ($\ge 365$d) & 2578 & 16.1\% & \textbf{0.4488} & 0.4101 & 0.4005 & 0.3850 & 0.3841 & 0.3903 \\
+\midrule
+$F_1$ --- Qt (All) & 18204 & 5.4\% & 0.2311 & 0.0515 & 0.2521 & 0.0284 & 0.1947 & \textbf{0.2406} \\
+$F_1$ --- Qt ($\ge 180$d) & 15388 & 6.0\% & 0.2567 & 0.0526 & 0.2743 & 0.0301 & 0.2027 & \textbf{0.2642} \\
+$F_1$ --- Qt ($\ge 365$d) & 10747 & 6.1\% & 0.2628 & 0.0635 & 0.2767 & 0.0364 & 0.2005 & \textbf{0.2635} \\
+$F_1$ --- OS (All) & 3704 & 14.7\% & \textbf{0.4408} & 0.0687 & 0.1961 & 0.1465 & 0.1965 & 0.2051 \\
+$F_1$ --- OS ($\ge 180$d) & 3698 & 14.7\% & \textbf{0.4422} & 0.0688 & 0.1967 & 0.1467 & 0.1970 & 0.2061 \\
+$F_1$ --- OS ($\ge 365$d) & 2578 & 16.1\% & \textbf{0.4863} & 0.0673 & 0.1664 & 0.1264 & 0.1544 & 0.1634 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\clearpage
+% ============================================================================
+% S4. RQ3 Full Ablations & 62-Alarm Unrevealed Mechanism Audit
+% ============================================================================
+\section{RQ3 Complete Ablation Table and 62-Alarm Unrevealed Mechanism Audit}
+\label{sec:or_rq3}
+
+Table~\ref{tab:or_rq3_full} gives the complete 7-column RQ3 ablation mirror including ROC-AUC. Table~\ref{tab:mechanism_audit} audits Stage~1--3 intermediate accuracy across all 62 seed-42 DriftLens alarms on the 10 representative streams ($74{,}400$ pool evaluations across $59{,}600$ unique commits), separating strictly unrevealed commits ($y_{\text{obs}}=0$) from the positive-writeback control while comparing Survival-PU against FixedCurve-PU. Reference maturity $c^*(a) = |\mathcal{P}|^{-1}\sum_{j \in \mathcal{P}} \mathbb{I}(\Delta_j \le a)$ is computed per stream over archive positives (counting unlinked defects as unrevealed at finite ages).
+
+\begin{table}[!htbp]
+\centering
+\caption{Complete 7-column RQ3 maturity-estimator sensitivity, component ablations, step-matched teacher controls, and legacy safety-gate ablation including ROC-AUC across 10 representative streams (5 seeds). Bold marks the best deployable value per column.}
+\label{tab:or_rq3_full}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccc@{}}
+\toprule
+\textbf{Variant / Control} & \textbf{AP} & \textbf{$F_{1,\mathrm{th}}$} & \textbf{ROC-AUC} & \textbf{R@20\%} & \textbf{Brier$\downarrow$} & \textbf{Opt.\ Steps} \\
+\midrule
+Window Oracle (4W) & 0.5980 & 0.5541 & 0.7985 & 0.6968 & 0.1658 & 382.2 \\
+\midrule
+Survival-PU (Default Cohort) & 0.5543 & 0.5395 & 0.7793 & 0.6920 & \textbf{0.1698} & 869.7 \\
+Survival-PU (Kaplan--Meier Cure) & 0.5624 & \textbf{0.5434} & 0.7826 & 0.6924 & 0.1701 & 868.0 \\
+Survival-PU (Weibull Mixture) & 0.5652 & 0.5389 & \textbf{0.7851} & 0.6913 & 0.1702 & 870.2 \\
+FixedCurve-PU (Zero-Fit 90d) & 0.5639 & 0.5391 & 0.7850 & 0.6924 & 0.1706 & 870.2 \\
+\midrule
+w/o Anchor Shrinkage ($m_0=0$) & 0.5447 & 0.5347 & 0.7753 & 0.6908 & 0.1725 & 869.7 \\
+w/o Monotone Bisection & 0.5436 & 0.5330 & 0.7753 & 0.6881 & 0.1747 & 869.7 \\
+w/o Covariate Density Ratio & 0.5558 & 0.5406 & 0.7797 & \textbf{0.6935} & 0.1704 & 869.7 \\
+Frozen Pre-Stream Teacher & 0.5229 & 0.5233 & 0.7544 & 0.6906 & 0.1745 & 446.8 \\
+\midrule
+Teacher-Only (Single-Stage) & 0.5371 & 0.5284 & 0.7718 & 0.6912 & 0.1752 & 422.9 \\
+Teacher-Only (Step-Matched $2\times$) & 0.5293 & 0.5258 & 0.7677 & 0.6871 & 0.1770 & 869.7 \\
+Survival-PU (+Legacy Gate) & 0.5521 & 0.5374 & 0.7790 & 0.6921 & 0.1704 & 869.7 \\
+\midrule
+Frozen Host & 0.4872 & 0.4063 & 0.7164 & 0.6515 & 0.1928 & 0.0 \\
+Causal-4W (Censored) & \textbf{0.5705} & 0.5132 & 0.7802 & 0.6808 & 0.1749 & 382.2 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Stage 1--3 intermediate audit across 62 fired DriftLens alarms on 10 representative streams (seed 42; 74,400 pool evaluations across 59,600 unique commits). Upper rows restrict to unrevealed commits ($y_{\mathrm{obs}}=0$); the bottom row adds fair positive writeback ($y_{\mathrm{obs}}=1 \to 1.0$) to the de-weighted teacher.}
+\label{tab:mechanism_audit}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrrrrrr@{}}
+\toprule
+\textbf{Pool Stratum ($\mathcal{B}_{\mathrm{cal}}$)} & \textbf{Evals} & \textbf{True $\pi^*$} & \textbf{Raw Br.} & \textbf{DeWt/WB Br.} & \textbf{Fix $q_i$ Br.} & \textbf{SPU $q_i$ Br.} & \textbf{SPU Bias} \\
+\midrule
+Unrev.\ Young ($<30$d) & 12778 & 0.195 & 0.1861 & 0.1456 & 0.1310 & 0.1373 & +0.0282 \\
+Unrev.\ Mid ($30$--$90$d) & 21741 & 0.156 & 0.1829 & 0.1319 & 0.1143 & 0.1233 & +0.0179 \\
+Unrev.\ Aged ($\ge 90$d) & 30226 & 0.154 & 0.1805 & 0.1227 & 0.1194 & 0.1181 & -0.0189 \\
+All Unrevealed ($y_{\mathrm{obs}}=0$) & 64745 & 0.163 & 0.1824 & 0.1303 & 0.1200 & 0.1236 & +0.0027 \\
+\midrule
+All Pool (+Writeback Ctrl) & 74400 & 0.271 & 0.1753 & 0.1134 & 0.1044 & 0.1076 & +0.0024 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\clearpage
+% ============================================================================
+% S5. RQ4 Extended Stress Tests
+% ============================================================================
+\section{RQ4 Extended Latency, Calibration, SZZ Noise, and Code-LLM Tables}
+\label{sec:or_rq4}
+
+Tables~\ref{tab:or_rq4a_kappa_full}--\ref{tab:rq4f_llm} archive the full 11-column RQ4a latency scaling table including Wait-90, the matched FixedCurve-PU Stage-1 misspecification control, the complete 10-column Raw versus 90-day Platt calibration table including raw ECE and calibration slope, the RQ4c $2\times 2$ semi-synthetic PR-SZZ perturbation table, and the RQ4e Code-LLM prompting study.
+
+\begin{table}[!htbp]
+\centering
+\caption{Complete 11-column RQ4a future-only causal latency scaling including Wait-90 across 10 representative streams (5 seeds; Frozen Host AP invariant at $0.4872$). Bold marks the highest deployable value per metric block.}
+\label{tab:or_rq4a_kappa_full}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccccccc@{}}
+\toprule
+\textbf{Latency Regime} & \textbf{Ora.} & \textbf{C4W AP} & \textbf{W90 AP} & \textbf{SPU AP} & \textbf{C4W $F_1$} & \textbf{W90 $F_1$} & \textbf{SPU $F_1$} & \textbf{C4W $F_{1\mathrm{t}}$} & \textbf{W90 $F_{1\mathrm{t}}$} & \textbf{SPU $F_{1\mathrm{t}}$} \\
+\midrule
+Oracle Post-$t_0$ ($B_{1b}^* = B_2$) & 0.5980 & 0.5980 & 0.5632 & 0.5763 & 0.5390 & 0.5163 & 0.5357 & 0.5774 & 0.5651 & 0.5666 \\
+\midrule
+$\kappa = 0.00\times$ (Zero Delay) & 0.5980 & \textbf{0.5974} & 0.5638 & 0.5760 & \textbf{0.5403} & 0.5175 & 0.5364 & \textbf{0.5755} & 0.5634 & 0.5643 \\
+$\kappa = 0.25\times$ (Fast Fixes) & 0.5980 & \textbf{0.5837} & 0.5603 & 0.5603 & 0.5264 & 0.5273 & \textbf{0.5353} & 0.5578 & \textbf{0.5609} & 0.5570 \\
+$\kappa = 0.50\times$ & 0.5980 & \textbf{0.5785} & 0.5600 & 0.5527 & 0.5093 & 0.5335 & \textbf{0.5363} & 0.5439 & \textbf{0.5520} & 0.5509 \\
+$\kappa = 1.00\times$ (Emp.\ SZZ) & 0.5980 & \textbf{0.5705} & 0.5607 & 0.5543 & 0.4687 & 0.5267 & \textbf{0.5377} & 0.5132 & 0.5309 & \textbf{0.5395} \\
+$\kappa = 1.50\times$ & 0.5980 & \textbf{0.5608} & 0.5567 & 0.5524 & 0.4361 & 0.5139 & \textbf{0.5339} & 0.4871 & 0.5110 & \textbf{0.5298} \\
+$\kappa = 2.00\times$ & 0.5980 & \textbf{0.5548} & 0.5529 & 0.5518 & 0.4137 & 0.5027 & \textbf{0.5348} & 0.4750 & 0.4965 & \textbf{0.5211} \\
+$\kappa = 3.00\times$ (Heavy Lat.) & 0.5980 & \textbf{0.5466} & 0.5460 & 0.5438 & 0.3825 & 0.4790 & \textbf{0.5259} & 0.4465 & 0.4736 & \textbf{0.5022} \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{RQ4a Stage-1 maturity-misspecification control: zero-fit 90-day FixedCurve-PU (Fix) versus adaptive cohort-incidence Survival-PU (SPU) across identical future-only latency regimes (10 streams, 5 seeds; exact parity with Table~S-12 on SPU). Bold marks the better estimator per metric (lower is better for post-Platt Brier loss).}
+\label{tab:rq4a_fixedcurve}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccccc@{}}
+\toprule
+\textbf{Latency Regime} & \textbf{Fix AP} & \textbf{SPU AP} & \textbf{Fix $F_1$} & \textbf{SPU $F_1$} & \textbf{Fix $F_{1\mathrm{t}}$} & \textbf{SPU $F_{1\mathrm{t}}$} & \textbf{Fix Br.$\downarrow$} & \textbf{SPU Br.$\downarrow$} \\
+\midrule
+Oracle Post-$t_0$ & 0.5527 & \textbf{0.5763} & 0.4935 & \textbf{0.5357} & 0.5607 & \textbf{0.5666} & 0.1693 & \textbf{0.1633} \\
+\midrule
+$\kappa = 0.00\times$ (Zero Delay) & 0.5544 & \textbf{0.5760} & 0.4964 & \textbf{0.5364} & 0.5593 & \textbf{0.5643} & 0.1687 & \textbf{0.1631} \\
+$\kappa = 0.25\times$ (Fast Fixes) & \textbf{0.5617} & 0.5603 & \textbf{0.5356} & 0.5353 & \textbf{0.5614} & 0.5570 & \textbf{0.1619} & 0.1622 \\
+$\kappa = 0.50\times$ & \textbf{0.5623} & 0.5527 & \textbf{0.5424} & 0.5363 & \textbf{0.5557} & 0.5509 & \textbf{0.1627} & 0.1635 \\
+$\kappa = 1.00\times$ (Emp.\ SZZ) & \textbf{0.5639} & 0.5543 & \textbf{0.5438} & 0.5377 & 0.5391 & \textbf{0.5395} & 0.1706 & \textbf{0.1698} \\
+$\kappa = 1.50\times$ & \textbf{0.5637} & 0.5524 & \textbf{0.5361} & 0.5339 & 0.5255 & \textbf{0.5298} & 0.1814 & \textbf{0.1780} \\
+$\kappa = 2.00\times$ & \textbf{0.5603} & 0.5518 & 0.5268 & \textbf{0.5348} & 0.5123 & \textbf{0.5211} & 0.1875 & \textbf{0.1853} \\
+$\kappa = 3.00\times$ (Heavy Lat.) & \textbf{0.5547} & 0.5438 & 0.5132 & \textbf{0.5259} & 0.4918 & \textbf{0.5022} & 0.1966 & \textbf{0.1945} \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Complete 10-column RQ4a symmetrical raw versus 90-day Platt calibration and post-hoc Causal-4W controls including raw ECE and 90-day calibration slope (10 streams, 5 seeds). Bold marks the best value per $\kappa$ block.}
+\label{tab:or_rq4a_posthoc_full}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccccccc@{}}
+\toprule
+\textbf{Regime \& Method} & \textbf{AP} & \textbf{WinAP} & \textbf{$F_1$} & \textbf{$F_{1,\mathrm{th}}$} & \textbf{Br$_{\mathrm{raw}}\downarrow$} & \textbf{ECE$_{\mathrm{raw}}\downarrow$} & \textbf{Br$_{90\mathrm{d}}\downarrow$} & \textbf{ECE$_{90\mathrm{d}}\downarrow$} & \textbf{Sl$_{90\mathrm{d}}$} \\
+\midrule
+$\kappa=0\times$: Causal-4W & \textbf{0.5974} & 0.6153 & 0.5403 & \textbf{0.5755} & 0.2021 & 0.1879 & \textbf{0.1543} & \textbf{0.0519} & 0.705 \\
+$\kappa=0\times$: Causal-4W + PostHoc Logit & 0.5377 & 0.6153 & 0.5046 & 0.5427 & 0.2110 & 0.1634 & 0.1754 & 0.0786 & 0.503 \\
+$\kappa=0\times$: Causal-4W + PostHoc Ratio & 0.5808 & 0.5977 & \textbf{0.5428} & 0.5620 & \textbf{0.1708} & \textbf{0.1091} & 0.1664 & 0.0693 & 0.582 \\
+$\kappa=0\times$: FixedCurve-PU & 0.5544 & 0.6075 & 0.4964 & 0.5593 & 0.2970 & 0.3184 & 0.1687 & 0.0712 & 0.560 \\
+$\kappa=0\times$: Survival-PU & 0.5760 & \textbf{0.6167} & 0.5364 & 0.5643 & 0.2278 & 0.2290 & 0.1631 & 0.0637 & 0.596 \\
+\midrule
+$\kappa=1\times$: Causal-4W & \textbf{0.5705} & 0.5863 & 0.4687 & 0.5132 & \textbf{0.1700} & \textbf{0.1071} & 0.1749 & 0.1171 & 0.693 \\
+$\kappa=1\times$: Causal-4W + PostHoc Logit & 0.5241 & 0.5863 & 0.4432 & 0.5091 & 0.2012 & 0.1281 & 0.1782 & 0.1140 & 0.628 \\
+$\kappa=1\times$: Causal-4W + PostHoc Ratio & 0.5580 & 0.5771 & 0.4375 & 0.5135 & 0.1728 & 0.1127 & 0.1822 & 0.1178 & 0.737 \\
+$\kappa=1\times$: FixedCurve-PU & 0.5639 & \textbf{0.5901} & \textbf{0.5438} & 0.5391 & 0.1833 & 0.1379 & 0.1706 & 0.1082 & 0.710 \\
+$\kappa=1\times$: Survival-PU & 0.5543 & 0.5893 & 0.5377 & \textbf{0.5395} & 0.2004 & 0.1641 & \textbf{0.1698} & \textbf{0.1040} & 0.698 \\
+\midrule
+$\kappa=3\times$: Causal-4W & 0.5466 & 0.5693 & 0.3825 & 0.4465 & 0.1738 & 0.1084 & 0.2017 & 0.1710 & 0.626 \\
+$\kappa=3\times$: Causal-4W + PostHoc Logit & 0.5086 & 0.5693 & 0.3593 & 0.4420 & 0.2020 & 0.1468 & 0.2018 & 0.1684 & 0.581 \\
+$\kappa=3\times$: Causal-4W + PostHoc Ratio & 0.5422 & 0.5657 & 0.3216 & 0.4543 & 0.1842 & 0.1412 & 0.1993 & 0.1614 & 0.711 \\
+$\kappa=3\times$: FixedCurve-PU & \textbf{0.5547} & \textbf{0.5735} & 0.5132 & 0.4918 & \textbf{0.1693} & \textbf{0.0973} & 0.1966 & 0.1654 & 0.696 \\
+$\kappa=3\times$: Survival-PU & 0.5438 & 0.5718 & \textbf{0.5259} & \textbf{0.5022} & 0.1822 & 0.1224 & \textbf{0.1945} & \textbf{0.1603} & 0.678 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{RQ4c $2\times 2$ frozen-prediction semi-synthetic SZZ perturbation across five Bludau \& Pretschner PR-SZZ streams ($\alpha_{\mathrm{FP}}=8.42\%,\;\beta_{\mathrm{FN}}=47.15\%$, independent permanent FN noise; AP). Bold marks the highest deployable AP in each row.}
+\label{tab:rq4d_szz}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccc@{}}
+\toprule
+\textbf{Train / Evaluation Cell} & \textbf{Frozen} & \textbf{Causal-4W} & \textbf{Wait-90} & \textbf{BORB} & \textbf{ORB} & \textbf{Survival-PU} \\
+\midrule
+Train: PR-SZZ Ref / Eval: PR-SZZ Ref & 0.4173 & \textbf{0.4641} & 0.4639 & 0.4224 & 0.4243 & 0.4488 \\
+Train: Noisy SZZ / Eval: PR-SZZ Ref & 0.3014 & 0.3768 & 0.3795 & 0.3187 & 0.2782 & \textbf{0.3802} \\
+Train: PR-SZZ Ref / Eval: Noisy SZZ & 0.2542 & 0.2685 & \textbf{0.2695} & 0.2546 & 0.2556 & 0.2658 \\
+Train: Noisy SZZ / Eval: Noisy SZZ & 0.2114 & 0.2377 & 0.2394 & 0.2190 & 0.2017 & \textbf{0.2397} \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{RQ4e audited Code-LLM evaluation (deepseek-flash, 6,400 logical evaluations across 6,819 HTTP attempts on 320-commit Qt and OpenStack slices) versus domain-trained JIT predictors (initial frozen checkpoints for alarm-triggered hosts, as 0 alarms fired before window 2). Bold marks the best causal value per column.}
+\label{tab:rq4f_llm}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccc@{}}
+\toprule
+\textbf{Model / Prompt Regime} & \textbf{Qt AP} & \textbf{Qt $F_1$} & \textbf{Qt AUC} & \textbf{OS AP} & \textbf{OS $F_1$} & \textbf{OS AUC} \\
+\midrule
+DeepSeek Zero-Shot (Causal) & 0.1925 & 0.1613 & 0.6565 & 0.3570 & 0.2558 & 0.7051 \\
+DeepSeek 6-Shot (Censored 1W) & 0.2282 & 0.2856 & 0.6882 & 0.4277 & 0.3876 & 0.7381 \\
+DeepSeek 6-Shot (Paired Oracle 1W) & 0.2378 & 0.2938 & 0.6933 & 0.4177 & 0.4946 & 0.7320 \\
+DeepSeek 6-Shot (Causal Mature $\ge 90$d) & 0.2091 & 0.2984 & 0.6641 & 0.4229 & 0.5072 & 0.7470 \\
+\midrule
+CodeBERT + LinSkip (Init Prefix, 0 Alarms) & 0.3401 & 0.0930 & 0.7875 & 0.5083 & 0.0588 & 0.8131 \\
+LightGBM SVD+Tab13 (Init Prefix, 0 Alarms) & 0.3719 & 0.1277 & \textbf{0.8110} & 0.4806 & 0.0000 & 0.8025 \\
+Full-LR Adapt-4W (Tabular-13) & 0.3719 & \textbf{0.3885} & 0.7779 & \textbf{0.5788} & \textbf{0.5954} & \textbf{0.8391} \\
+BORB ElasticNet (Tabular-13) & \textbf{0.4251} & 0.3687 & 0.7917 & 0.5216 & 0.5174 & 0.8133 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\paragraph{RQ4e Paired Prompting Protocol Details.}
+The 6,400 logical evaluations in Table~\ref{tab:rq4f_llm} queried \texttt{deepseek-flash} at \texttt{temperature=0.0} with strict JSON schema output across the first 320 evaluation commits of natural Qt and OpenStack. Across $6{,}819$ HTTP attempts, $419$ transient transport errors were retried and only two fell back to $0.50$, yielding a $99.97\%$ valid-response rate, $100\%$ JSON compliance across $6{,}398$ responses, and $99.95\%$ non-empty diff coverage. Zero-shot prompts supplied the commit message, truncated code diff, and 13 commit-authoring metrics. Paired 6-shot arms sampled identical historical $1W$ exemplars across three random seeds differing solely in $y_{\text{obs}}(t)$ versus $y^*$. The descriptive causal-mature arm drew aged $\ge 90\text{d}$ exemplars, reaching $0.5072$ $F_1$ on OpenStack and $0.2984$ on Qt.
+
+\clearpage
+% ============================================================================
+% S6. RQ5 Wall-Clock Runtime & Forensic Illustrations
+% ============================================================================
+\section{RQ5 Phase-Decomposed Runtime Telemetry and Forensic Illustrations}
+\label{sec:or_rq5}
+
+Table~\ref{tab:rq5_runtime} details standalone and incremental wall-clock runtime across 27 natural Benchmark~B streams, and Table~\ref{tab:rq5_forensics} archives the pre-declared high-confidence SZZ rescue illustrations on natural Qt.
+
+\begin{table}[!htbp]
+\centering
+\caption{RQ5 phase-decomposed wall-clock runtime telemetry on pre-extracted tabular features (milliseconds per stream, mean across 27 natural Benchmark B streams), separating standalone execution from incremental shared-backbone suite cost. Bold marks the lowest standalone runtime.}
+\label{tab:rq5_runtime}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrrrrr@{}}
+\toprule
+\textbf{Method} & \textbf{Pred.} & \textbf{Mon.} & \textbf{Adapt} & \textbf{Calib.} & \textbf{Stand.\ E2E} & \textbf{Incr.\ E2E} \\
+\midrule
+Frozen MLP & 30.6 & 0.0 & 0.0 & 201.2 & 3705.9 & 201.4 \\
+Causal-4W (MLP) & 89.8 & 555.9 & 4159.4 & 187.1 & 8639.4 & 4405.9 \\
+Wait-90 (MLP) & 88.9 & 555.9 & 4192.1 & 193.5 & 8677.7 & 4444.1 \\
+Pure-nnPU (MLP) & 88.7 & 555.9 & 4369.7 & 222.5 & 8884.0 & 4650.4 \\
+Teacher-Matched (MLP) & 90.8 & 555.9 & 9879.5 & 199.8 & 14373.2 & 10139.7 \\
+Survival-PU (MLP) & 89.6 & 555.9 & 9939.3 & 196.4 & 14428.4 & 10194.9 \\
+\midrule
+BORB ElasticNet (Track 2) & 734.4 & 0.0 & 2712.5 & 186.5 & 3698.2 & 3698.2 \\
+ORB Hoeffding (Track 2) & 567.9 & 0.0 & 954.1 & 189.9 & \textbf{2246.0} & 2246.0 \\
+ODaSC Hoeffding (Track 2) & 734.3 & 0.0 & 52272.2 & 187.1 & 69871.0 & 69871.0 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{RQ5 pre-declared SZZ-linked commit illustrations on natural Qt (CodeBERT with frozen linear skip; selected under pre-declared forensic rules requiring high-confidence McIntosh--Kamei SZZ links; Alarm \#1 at commit 9,900 had 88.19\% 4W censoring). Bold marks the highest deployable predicted risk per commit.}
+\label{tab:rq5_forensics}
+\fontsize{7.5}{9.0}\selectfont
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccccc@{}}
+\toprule
+\textbf{Repo:Inducing $\to$ Fix} & \textbf{Lag (d)} & \textbf{Frozen} & \textbf{Oracle} & \textbf{Causal-4W} & \textbf{Wait-90} & \textbf{BORB} & \textbf{Survival-PU} \\
+\midrule
+\texttt{qtquick1:9995a291} $\to$ \texttt{4a1505d5} & 148.2 & 0.5485 & 0.7775 & 0.0518 & 0.6608 & 0.8803 & \textbf{0.9589} \\
+\texttt{qtbase:fb3f47b6} $\to$ \texttt{ac2b15bd} & 25.9 & \textbf{0.9682} & 0.9399 & 0.0519 & 0.8868 & 0.8892 & 0.9543 \\
+\texttt{qtwebkit:0376f732} $\to$ \texttt{840e2817} & 181.9 & 0.5408 & 0.9744 & 0.0871 & \textbf{0.9775} & 0.6282 & 0.9754 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\paragraph{RQ5 Qualitative Commit Illustrations and Churn Skew.}
+Applying our pre-declared high-confidence forensic filter (lag $\ge 14\text{d}$, Frozen $\ge 0.45$, Causal-4W $\le 0.35$, Survival-PU $\ge 0.50$) on natural Qt CodeBERT seed 42 yields 22 rescue illustrations (Table~\ref{tab:rq5_forensics}), where Alarm~\#1 at commit $9{,}900$ experienced $88.19\%$ $4W$ censoring; zero alarms fired on OpenStack CodeBERT seed 42. Across full evaluation sets, high-confidence SZZ false-negative candidates skew smaller than all defects: $436$ Qt FNs have median $32$ versus $69$ LOC across all $981$ defects, and $477$ OpenStack FNs have median $74$ versus $89$ LOC. Conversely, high-score false positives skew larger than clean commits, with medians of $65$ versus $9$ LOC on Qt ($1{,}620$ FPs) and $146$ versus $19$ LOC on OpenStack ($18$ FPs), spanning $2$-LOC faults (\texttt{qtmultimedia:4bb75559}) to $570{,}767$-LOC imports (\texttt{qtwebkit:d441d6f3}).
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
