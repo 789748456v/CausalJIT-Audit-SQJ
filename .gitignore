@@ -1,0 +1,43 @@
+# Python caches & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+envs/
+.pytest_cache/
+
+# Generated intermediate build & packaging outputs
+build_artifacts/
+submission_sqj_final/
+
+# Large Tier-3 offline caches & raw corpora (Zenodo archive)
+data_sync/
+cache/multimodal_v3_pure13/*_cb.npz
+cache/multimodal_v3_pure13/*_tok.npz
+cache/multimodal_v3_pure13/*_svd.npz
+cache/multimodal_v3_pure13/*_meta.npz
+cache/multimodal_v3_sens/*.npz
+cache/codebert_v3/*.npz
+
+# API credentials (never commit)
+.llm_api/
+*.key
+
+# LaTeX build intermediates
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# OS & editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

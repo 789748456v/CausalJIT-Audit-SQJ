@@ -1,0 +1,350 @@
+[
+  {
+    "name": "qt_tier1_only",
+    "ecosystem": "qt",
+    "stream_kind": "sensitivity_tier1_only",
+    "feature_cols": [
+      "la",
+      "ld",
+      "nf",
+      "nd",
+      "ns",
+      "ent",
+      "ndev",
+      "age",
+      "nuc",
+      "aexp",
+      "arexp",
+      "asexp",
+      "asawr"
+    ],
+    "szz_mode": "tier1_only",
+    "N": 25704,
+    "n_init": 6000,
+    "n_val": 1500,
+    "stream_eval_N": 18204,
+    "prevalence": 0.07100062247121071,
+    "median_latency_days": 166.93903935185185,
+    "drift_onset_idx": -1,
+    "tok_meta": {
+      "vocab_msg": 8000,
+      "vocab_code": 8000,
+      "msg_len": 64,
+      "code_len": 128,
+      "tab_dim": 13,
+      "n_msg_chunks": 8,
+      "n_code_hunks": 8
+    },
+    "cb_meta": {
+      "cb_dim": 768,
+      "tab_dim": 13
+    },
+    "svd_meta": {
+      "svd_dim": 112,
+      "tab_dim": 13
+    },
+    "sha256": {
+      "tok": "65e6e16a93b0585726256fd3bb35b8ee5d2246765ba8e3967b695bb1cd23d988",
+      "cb": "c7d3e050fb1a01b52a3efdfa8815d1aa6de2ac8d4d44ab5899d82f073c5c5fe6",
+      "svd": "7972e997ebcf238c958d36c3447d7c878a3319e57533c7a26a090061851ea2aa",
+      "tab": "a84d15c15a0a95bd734eb983e793285590b740df6974da4db93e0e54c3acfb28",
+      "meta": "4d21a76d82ab01c9463fc3a26a91c4ff53f22eab903be95dfbab0675db761d37"
+    },
+    "aligned_to_primary_eval_N": 18204
+  },
+  {
+    "name": "qt_drop_unlinked",
+    "ecosystem": "qt",
+    "stream_kind": "sensitivity_drop_unlinked",
+    "feature_cols": [
+      "la",
+      "ld",
+      "nf",
+      "nd",
+      "ns",
+      "ent",
+      "ndev",
+      "age",
+      "nuc",
+      "aexp",
+      "arexp",
+      "asexp",
+      "asawr"
+    ],
+    "szz_mode": "drop_unlinked_pos",
+    "N": 25640,
+    "n_init": 5954,
+    "n_val": 1495,
+    "stream_eval_N": 18191,
+    "prevalence": 0.06868174726989079,
+    "median_latency_days": 163.06526620370371,
+    "drift_onset_idx": -1,
+    "tok_meta": {
+      "vocab_msg": 8000,
+      "vocab_code": 8000,
+      "msg_len": 64,
+      "code_len": 128,
+      "tab_dim": 13,
+      "n_msg_chunks": 8,
+      "n_code_hunks": 8
+    },
+    "cb_meta": {
+      "cb_dim": 768,
+      "tab_dim": 13
+    },
+    "svd_meta": {
+      "svd_dim": 112,
+      "tab_dim": 13
+    },
+    "sha256": {
+      "tok": "c9aadfbe21879488c7a7a91b92f3b595e1447b84ef65071b820f544aa0d90c07",
+      "cb": "bb8d6a479add303bfd772d3b6d770e3b8774234c9b3a08a383f891f6c64112d8",
+      "svd": "694058213b297814641191478e4b9b38c56279d5c337d342db78b9eb1c14994e",
+      "tab": "14e8a67af745406400e9850299b4a6e1326d4b4c8183dbcce614e67a505e0d74",
+      "meta": "38f7f68013f3da64375fd0f6cf3292387f844d5cec37cb4784eccf8b43e05a2a"
+    },
+    "aligned_to_primary_eval_N": 18204
+  },
+  {
+    "name": "qt_premerge28",
+    "ecosystem": "qt",
+    "stream_kind": "sensitivity_premerge28",
+    "feature_cols": [
+      "la",
+      "ld",
+      "nf",
+      "nd",
+      "ns",
+      "ent",
+      "revd",
+      "nrev",
+      "rtime",
+      "tcmt",
+      "hcmt",
+      "self",
+      "ndev",
+      "age",
+      "nuc",
+      "app",
+      "aexp",
+      "rexp",
+      "oexp",
+      "arexp",
+      "rrexp",
+      "orexp",
+      "asexp",
+      "rsexp",
+      "osexp",
+      "asawr",
+      "rsawr",
+      "osawr"
+    ],
+    "szz_mode": "tier12",
+    "N": 25704,
+    "n_init": 6000,
+    "n_val": 1500,
+    "stream_eval_N": 18204,
+    "prevalence": 0.07100062247121071,
+    "median_latency_days": 163.06526620370371,
+    "drift_onset_idx": -1,
+    "tok_meta": {
+      "vocab_msg": 8000,
+      "vocab_code": 8000,
+      "msg_len": 64,
+      "code_len": 128,
+      "tab_dim": 28,
+      "n_msg_chunks": 8,
+      "n_code_hunks": 8
+    },
+    "cb_meta": {
+      "cb_dim": 768,
+      "tab_dim": 28
+    },
+    "svd_meta": {
+      "svd_dim": 112,
+      "tab_dim": 28
+    },
+    "sha256": {
+      "tok": "8af3e975bbc4a84076940288bb7222ff695d5efa8791a2a3e0f03490738e78bc",
+      "cb": "721e1726e7b58e8d574b77ccff309924bdf37c61d0abca9f8a15d8a80298dd35",
+      "svd": "1de2c72fbbdd057b49ca77882bf1b7f9d1689706f4b07792cc32590b37f178d9",
+      "tab": "b4296bcea6bccf38ba1ce59d17c3acd0eea51b0c62a06fc9cd729779ca4c1140",
+      "meta": "b419eb4163188ba6c86575bc20f6729a4ec0556b55cd228040e85e4e3b1bed7b"
+    },
+    "aligned_to_primary_eval_N": 18204
+  },
+  {
+    "name": "openstack_tier1_only",
+    "ecosystem": "openstack",
+    "stream_kind": "sensitivity_tier1_only",
+    "feature_cols": [
+      "la",
+      "ld",
+      "nf",
+      "nd",
+      "ns",
+      "ent",
+      "ndev",
+      "age",
+      "nuc",
+      "aexp",
+      "arexp",
+      "asexp",
+      "asawr"
+    ],
+    "szz_mode": "tier1_only",
+    "N": 13304,
+    "n_init": 8600,
+    "n_val": 1000,
+    "stream_eval_N": 3704,
+    "prevalence": 0.12229404690318701,
+    "median_latency_days": 180.93417824074075,
+    "drift_onset_idx": -1,
+    "tok_meta": {
+      "vocab_msg": 8000,
+      "vocab_code": 8000,
+      "msg_len": 64,
+      "code_len": 128,
+      "tab_dim": 13,
+      "n_msg_chunks": 8,
+      "n_code_hunks": 8
+    },
+    "cb_meta": {
+      "cb_dim": 768,
+      "tab_dim": 13
+    },
+    "svd_meta": {
+      "svd_dim": 112,
+      "tab_dim": 13
+    },
+    "sha256": {
+      "tok": "49e7da5bc7c3fbcbdae8d56463c635c205d78260672a85e7c60593c85a52eca2",
+      "cb": "037a73cf2ae3ffbedff3e87201d49313a4fb044572cf052b0ac33acee029f607",
+      "svd": "79632399d184f6e2557f7e31f003208e0f35b4ee4c5beca2232b54e5cd20168d",
+      "tab": "6c0641bc4c7c3d276d6172c980623e763670e52b003051f586716802b8eae682",
+      "meta": "87197d8a4d8b434aac7d98c121af8c0bd60c72d4ab02fd9b16c0e2b91c35b4b0"
+    },
+    "aligned_to_primary_eval_N": 3704
+  },
+  {
+    "name": "openstack_drop_unlinked",
+    "ecosystem": "openstack",
+    "stream_kind": "sensitivity_drop_unlinked",
+    "feature_cols": [
+      "la",
+      "ld",
+      "nf",
+      "nd",
+      "ns",
+      "ent",
+      "ndev",
+      "age",
+      "nuc",
+      "aexp",
+      "arexp",
+      "asexp",
+      "asawr"
+    ],
+    "szz_mode": "drop_unlinked_pos",
+    "N": 13293,
+    "n_init": 8595,
+    "n_val": 999,
+    "stream_eval_N": 3699,
+    "prevalence": 0.121567742420823,
+    "median_latency_days": 178.73973958333335,
+    "drift_onset_idx": -1,
+    "tok_meta": {
+      "vocab_msg": 8000,
+      "vocab_code": 8000,
+      "msg_len": 64,
+      "code_len": 128,
+      "tab_dim": 13,
+      "n_msg_chunks": 8,
+      "n_code_hunks": 8
+    },
+    "cb_meta": {
+      "cb_dim": 768,
+      "tab_dim": 13
+    },
+    "svd_meta": {
+      "svd_dim": 112,
+      "tab_dim": 13
+    },
+    "sha256": {
+      "tok": "9d9ec268f3f4f4816bdaf001b828f78bd23972f1e52c0bae0fa95504b9069cc3",
+      "cb": "27cc016423393f3b72c2b9fa109b0c39a8c65f80a0ce66a41b677c9da9167a65",
+      "svd": "bd5d15dd0b4bd0a78a8c10e0f5d2e5466789e515748bfe2f95adec3a9fd4c008",
+      "tab": "4ca2d404d89b07df343b7323df12f6df79bf600bba1a7cf6cdcb1cc7cf7033cb",
+      "meta": "5e8a033db21d3df70674a47e26ecd55cd95515944606f73213d28b7633f55253"
+    },
+    "aligned_to_primary_eval_N": 3704
+  },
+  {
+    "name": "openstack_premerge28",
+    "ecosystem": "openstack",
+    "stream_kind": "sensitivity_premerge28",
+    "feature_cols": [
+      "la",
+      "ld",
+      "nf",
+      "nd",
+      "ns",
+      "ent",
+      "revd",
+      "nrev",
+      "rtime",
+      "tcmt",
+      "hcmt",
+      "self",
+      "ndev",
+      "age",
+      "nuc",
+      "app",
+      "aexp",
+      "rexp",
+      "oexp",
+      "arexp",
+      "rrexp",
+      "orexp",
+      "asexp",
+      "rsexp",
+      "osexp",
+      "asawr",
+      "rsawr",
+      "osawr"
+    ],
+    "szz_mode": "tier12",
+    "N": 13304,
+    "n_init": 8600,
+    "n_val": 1000,
+    "stream_eval_N": 3704,
+    "prevalence": 0.12229404690318701,
+    "median_latency_days": 178.73973958333335,
+    "drift_onset_idx": -1,
+    "tok_meta": {
+      "vocab_msg": 8000,
+      "vocab_code": 8000,
+      "msg_len": 64,
+      "code_len": 128,
+      "tab_dim": 28,
+      "n_msg_chunks": 8,
+      "n_code_hunks": 8
+    },
+    "cb_meta": {
+      "cb_dim": 768,
+      "tab_dim": 28
+    },
+    "svd_meta": {
+      "svd_dim": 112,
+      "tab_dim": 28
+    },
+    "sha256": {
+      "tok": "53202da8e43945a120d89be46bdbe9a4350da0fc2e8b1843d2a22d959493940d",
+      "cb": "585703ac225fa8a3c5c460a0230b3194b7d82b0dd07636486da0b79ec4b9a1d3",
+      "svd": "c63f0a706b688dac547af562c342cd3a51f56b6930757a649631b8af17dc3e16",
+      "tab": "b26f768b0165003ed11d0eaa22ef3c38d153123d9dd22472f0a15f7e6b5f49eb",
+      "meta": "5fe5a9961d3a65679af175b424dc5244e3af14bea196afcddcddf1c213c86fc1"
+    },
+    "aligned_to_primary_eval_N": 3704
+  }
+]

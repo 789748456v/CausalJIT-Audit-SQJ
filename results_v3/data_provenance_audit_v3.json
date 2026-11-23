@@ -1,0 +1,1586 @@
+{
+  "provenance": {
+    "generated_at_utc": "2026-11-17T15:02:50.760629+00:00",
+    "v3_config": {
+      "max_history_cohort": 6000,
+      "support_age_quantile": 0.85,
+      "min_risk_set": 120,
+      "min_observed_fixes": 15,
+      "c_min": 0.05,
+      "c_max": 0.96,
+      "tail_cap_max": 0.94,
+      "tail_cap_min": 0.6,
+      "fallback_half_life_days": 90.0,
+      "reliable_maturity_thresh": 0.45,
+      "max_reliable_commits": 2200,
+      "imp_weight_min": 0.5,
+      "imp_weight_max": 2.5,
+      "recency_min": 0.75,
+      "recency_max": 1.15,
+      "ht_floor_c": 0.1,
+      "ht_shrinkage_m0": 50.0,
+      "pi_min": 0.02,
+      "pi_max": 0.7,
+      "teacher_sharpness": 1.15,
+      "llm_blend_weight": 0.25,
+      "max_anchor_commits": 2000,
+      "drift_emphasis_gamma": 1.4,
+      "maturity_weight_floor": 0.45,
+      "posterior_p_min": 0.003,
+      "posterior_p_max": 0.997,
+      "bisection_lo": -8.0,
+      "bisection_hi": 8.0,
+      "bisection_iters": 28,
+      "lgb_init_rounds": 90,
+      "lgb_alarm_rounds": 75,
+      "neural_teacher_epochs": 4,
+      "neural_student_epochs": 4,
+      "neural_adapt_lr": 0.00045,
+      "window_size_default": 400,
+      "drift_pca_dim": 24,
+      "drift_block_pct": 95.0,
+      "drift_cooldown_windows": 1,
+      "n46_ref_static_pct": 98.0,
+      "n46_ref_cooldown_windows": 0,
+      "drift_bootstrap_reps": 250,
+      "fixed_transient_commits": 1200,
+      "primary_endpoint": "ap",
+      "secondary_endpoints": [
+        "roc_auc",
+        "f1",
+        "f1_th",
+        "gmean",
+        "brier_cal",
+        "ece_cal",
+        "recall_at_20pct_effort"
+      ],
+      "forensic_rules": {
+        "allowed_tiers": [
+          "Tier1_McIntosh_CSV"
+        ],
+        "min_censoring_latency_days": 14.0,
+        "rescue_min_b0": 0.45,
+        "rescue_max_b2": 0.35,
+        "rescue_min_spu": 0.5,
+        "fn_max_b2": 0.35,
+        "fn_max_spu": 0.35,
+        "fp_min_spu": 0.7,
+        "max_cases_per_category": 3
+      }
+    },
+    "code_sha256": {
+      "build_codebert_cache_v3.py": "01e693989fd1927e3845e817a876f82ffa4baf97d51761d4415f6b624e2d074e",
+      "config_v3.py": "b9867295acd3411aa9e3c1d77db15b16625aceb0fdbcf2325f5cfedaf8e00aa1",
+      "data_audit_v3.py": "13359e55d85394357acbb3a5bca6e6d1a136aff1d7bf7fdc1a3e1d9198980ddd",
+      "metrics_and_stats_v3.py": "b757719af20adcbc10d39839c6058d03c8e2d67fe15ff1493a86119a4f3197e5",
+      "models_and_baselines_v3.py": "813acab4caeb1180faacd953472032c0346662db4c644aac5f549bfd86ae4df6",
+      "run_v3_experiments.py": "e14430b2f7454eb32f5a18c52e45a9e5af613cd9099b47e6cd5feae94d2a4ab3",
+      "run_v3_llm_and_forensics.py": "28e7166a1350b7dc0b238e3a9d72642650dc0e9fa74eb67f05f16ad853cea9fc",
+      "stream_competitors_v3.py": "84dc53c6ce5753cdcb5c5d9291dd688e4b037bc5498ed36c4fc373af65441baa",
+      "survival_estimators_v3.py": "e2d95aeaf346a3ea692f2b8a64b1d5485be65efae8aaf9f3e2fcf0d1f45d412f",
+      "verify_manuscript_v3.py": "e25f3a4f1b6604da92c9a591732f2945e30546959d5f3ad76686d2ae8edb206a",
+      "verify_mechanisms_and_protocol_v3.py": "4eaa3f677cb1023f54f74e990e3c12c5d721e6886928804a84b1faf51b11c2ec"
+    },
+    "codebert_v3_encoder_provenance": {
+      "generated_at_utc": "2026-11-17T08:16:26.382054+00:00",
+      "encoder_model_id": "microsoft/codebert-base",
+      "encoder_config_sha256": "9542964951ffcf5549fa795b13a70a52755543480eeee04d327fac828dfa879f",
+      "pooling_rule": "0.5 * CLS + 0.5 * masked_token_mean (msg_max_len=96, code_max_len=192, fp16)",
+      "missing_modality_policy": "preserve_empty_string_no_message_fallback",
+      "torch_version": "2.14.1+cu126",
+      "transformers_version": "5.23.0",
+      "datasets": {
+        "openstack": {
+          "npz_file": "codebert_openstack_v3.npz",
+          "npz_sha256": "7fd38e2b8724fab653596a6a973c73ee6288dcaa667c81472294de653cd68331",
+          "n_commits": 13304,
+          "n_missing_diffs": 10,
+          "unique_empty_diff_code_vectors": 1,
+          "empty_diff_code_vs_msg_median_cosine": 0.848285,
+          "commit_ids_sha256": "2ec1e71088f0222b94c9f69363f21ec8ddfd0817ef457fa3b4609154963a2424",
+          "msgs_text_sha256": "02242a3e6a82751f63153f7d25d0a92e2fc6adba3008b2e3589fc99a88d945d1",
+          "codes_text_sha256": "e9e76a1e5e8142b777063184835b7bdfef108fc9a6c87eda4381de8324ba084c",
+          "elapsed_sec": 19.32
+        },
+        "qt": {
+          "npz_file": "codebert_qt_v3.npz",
+          "npz_sha256": "7e27b64c4b7cf209d3654ab58d0df150586c9a61dc1f3883119d670330349671",
+          "n_commits": 25704,
+          "n_missing_diffs": 262,
+          "unique_empty_diff_code_vectors": 1,
+          "empty_diff_code_vs_msg_median_cosine": 0.842576,
+          "commit_ids_sha256": "a21081ecb0dc285dbf7956f79551323244fb19bb6c6eb10a106c82e6b7b3138e",
+          "msgs_text_sha256": "733423537f388572f0e7180d55c5683c31ae11e3b481fa4a5ca3649c27b592a8",
+          "codes_text_sha256": "b40a9544c41c03811d2e84ed20e7a22b31904a7e0b20ed1d37952497cd1f30d3",
+          "elapsed_sec": 37.32
+        }
+      }
+    }
+  },
+  "confirmatory_locked_untouched": false,
+  "temporal_provenance_notes": {
+    "Benchmark_A_Primary": "Archival author_date historical replay of merged Qt/OpenStack artifacts using ONLY 13 commit-time change/diffusion/history/author-experience features (0 Gerrit review fields); not certified as initial unreviewed patch-set-1 push capture because merged diffs/messages can incorporate review revisions while retaining Git author_date. Empty diffs (`Qt: 262`, `OpenStack: 10`) are preserved as empty PAD sequences without message substitution. Retroactive SZZ links (`fix_ts < commit_ts`) are strictly quarantined to `+inf`.",
+    "Benchmark_B_Cabral19_ApacheJIT": "Archival Git author_date historical replay with Kamei CommitGuru change/diffusion/history/author-experience metrics (0 review fields) and earliest SZZ bug-fixing commit reveal timestamps (any `fix_ts < commit_ts` strictly quarantined to `+inf`).",
+    "Benchmark_B_N60_PRSZZ": "Post-PR-review main-branch integration triage ordered by Git committer date (`commit_commitment_date`), retaining Bludau & Pretschner (PROMISE 2022 / SQJ 2026) M1 AST + PR-workflow + reviewer metrics computed up to the inner commit while explicitly stripping post-closure/target columns ['is_bug_fixing_commit', 'is_bug_inducing_commit', 'commit_creation_date', 'commit_commitment_date', 'pr_creation_date', 'inner_commit_in_pr_creation_date', 'pr_finish_date', 'pr_duration', 'was_merged', 'was_squashed', 'was_rebased', 'nth_commit_since_beginning', 'nth_commit_since_release'] and converting post-2021H1 sentinels to `+inf`."
+  },
+  "benchmark_a": {
+    "qt_audit": {
+      "total_commits": 25704,
+      "total_buggy": 1825,
+      "prevalence": 0.07100062247121071,
+      "missing_diff_commits_count": 262,
+      "missing_diff_rate": 0.010192966075319016,
+      "revealed_tier1": 1734,
+      "revealed_tier2": 27,
+      "retroactive_links_quarantined_to_inf": 0,
+      "tier3_excluded_to_inf": 20,
+      "unlinked_kept_as_inf": 44,
+      "unlinked_dropped": 0,
+      "verified_reveal_coverage_of_buggy": 0.9649315068493151,
+      "median_latency_days": 163.06526620370371,
+      "p75_latency_days": 359.0500578703704
+    },
+    "openstack_audit": {
+      "total_commits": 13304,
+      "total_buggy": 1627,
+      "prevalence": 0.12229404690318701,
+      "missing_diff_commits_count": 10,
+      "missing_diff_rate": 0.000751653638003608,
+      "revealed_tier1": 1609,
+      "revealed_tier2": 7,
+      "retroactive_links_quarantined_to_inf": 0,
+      "tier3_excluded_to_inf": 4,
+      "unlinked_kept_as_inf": 7,
+      "unlinked_dropped": 0,
+      "verified_reveal_coverage_of_buggy": 0.9932390903503381,
+      "median_latency_days": 178.73973958333335,
+      "p75_latency_days": 348.63697916666666
+    },
+    "primary_streams": [
+      {
+        "name": "qt_natural_25k",
+        "ecosystem": "qt",
+        "stream_kind": "natural_ecosystem",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 25704,
+        "n_init": 6000,
+        "n_val": 1500,
+        "stream_eval_N": 18204,
+        "prevalence": 0.07100062247121071,
+        "median_latency_days": 163.06526620370371,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "35cf4a94fea9cc3d302351b6480f1e14b563191089416ea679065c568839e2dc",
+          "cb": "218721114593cafacd423c913bd2f6778b61268de688e098971e8fd544b79a27",
+          "svd": "2fc5f7893e42b11bb1006561e954acdca7c25f5878a90003c72e70b20d2fa8ee",
+          "tab": "79b1d7358fc98dc114202305964862876d472e5f385628c32de492b315921691",
+          "meta": "b419eb4163188ba6c86575bc20f6729a4ec0556b55cd228040e85e4e3b1bed7b"
+        }
+      },
+      {
+        "name": "openstack_natural_13k",
+        "ecosystem": "openstack",
+        "stream_kind": "natural_ecosystem",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 13304,
+        "n_init": 8600,
+        "n_val": 1000,
+        "stream_eval_N": 3704,
+        "prevalence": 0.12229404690318701,
+        "median_latency_days": 178.73973958333335,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "1036ac6077d27b5bb51e67afcf7ab874ecfc3656833375bb4451b8621e5ec145",
+          "cb": "8bb44d99bd2aee93d8213296eb69f5c9af6a6c9a93eb8d7d3204c7fa9474a0fd",
+          "svd": "518599ac8f72963c47818831ba09e4f116f44fbbcab29def8ee5320267e1dd73",
+          "tab": "7c3e80969dee4ca4e6079623c94965c3916e9fd54a5730403108ad25b55ec6d8",
+          "meta": "5fe5a9961d3a65679af175b424dc5244e3af14bea196afcddcddf1c213c86fc1"
+        }
+      },
+      {
+        "name": "qt_abrupt_qtbase_qtdecl",
+        "ecosystem": "qt",
+        "stream_kind": "controlled_subsystem_shift",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 9500,
+        "n_init": 4500,
+        "n_val": 1000,
+        "stream_eval_N": 4000,
+        "prevalence": 0.09694736842105263,
+        "median_latency_days": 238.60741319444446,
+        "drift_onset_idx": 5500,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "a91c58a45a5f1f9272fe301315789df9affd45f88a300bcb0753b4e62a1a6fa0",
+          "cb": "e1fb6f1c5f185533ced3b4dd2c060b5b22800f759ed558b4ea106e861582e0f6",
+          "svd": "6d9b031c957404e0e27fd865b8ae66d2859981ecec9bb2a9f7d95ed267a2bdf9",
+          "tab": "98891f44aa4feed32e7992a6edb73e79e4c54d3ef8fe0e42fa17e093eabeecd7",
+          "meta": "47f88047c731bd02a70b5203b71ac6472f30f55b6786d44693c1a0b91e24f795"
+        }
+      },
+      {
+        "name": "qt_abrupt_core_ux",
+        "ecosystem": "qt",
+        "stream_kind": "controlled_subsystem_shift",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 8000,
+        "n_init": 4200,
+        "n_val": 1000,
+        "stream_eval_N": 2800,
+        "prevalence": 0.089875,
+        "median_latency_days": 275.0366203703704,
+        "drift_onset_idx": 5200,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "6096db1274ad0a9103b9f27b91c5cc850e31aa96822e4f3d5a846ac67cce5875",
+          "cb": "0e8242d0e725b50f0236ab2a07f3356490af7f836aa914f12af53c4c80b170c4",
+          "svd": "3e7ccce7f6848c9c69a36491b6aa981a612533d77e7097f5d48c2a8b73ffa34c",
+          "tab": "4c776d275dd0989eb7b43b1822949c51db80c3f90b3bb88e089e3a76a6aaecbb"
+        }
+      },
+      {
+        "name": "openstack_abrupt_nova_neut",
+        "ecosystem": "openstack",
+        "stream_kind": "controlled_subsystem_shift",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 6000,
+        "n_init": 3400,
+        "n_val": 800,
+        "stream_eval_N": 1800,
+        "prevalence": 0.1655,
+        "median_latency_days": 159.88872106481483,
+        "drift_onset_idx": 4200,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "e275fbc0780961ac974f4b36c196bbf65b16e472187863088fae6ee86287bef6",
+          "cb": "a57eefa6d6536ed165c349d14556b353c048d9ddc983031f2a1943ecfec58766",
+          "svd": "92e86bc9920ff49faf8c337875d011789eb276d6170972b5973787172c0b24a0",
+          "tab": "398f13919b5ff44583635a2d5f5898c9333d01ae8bbd9fe7de8726411e9d6c59",
+          "meta": "435f863294a2714683a544c0a1b54291fbe91284f968974c08ab09cf3ec72a24"
+        }
+      },
+      {
+        "name": "openstack_abrupt_comp_stor",
+        "ecosystem": "openstack",
+        "stream_kind": "controlled_subsystem_shift",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 7100,
+        "n_init": 3400,
+        "n_val": 800,
+        "stream_eval_N": 2900,
+        "prevalence": 0.13338028169014085,
+        "median_latency_days": 153.1394386574074,
+        "drift_onset_idx": 4200,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "bbe279520d33576c83b155ab621fe20b991293193b8ef48373fba23f061a9de4",
+          "cb": "41b68f97036f34d4664afdd972008ae1794a477e72b0da5e47bdbc64cfb3132d",
+          "svd": "b06bbd1f224c052c2f0821e73b7e21cf33433f67667cb07d2c1a7438a0623760",
+          "tab": "234a69f851b5a7759ca4cf5da0f05b130eaad25d142bc2cc1ab205390cbdc97d"
+        }
+      }
+    ],
+    "sensitivity_streams": [
+      {
+        "name": "qt_tier1_only",
+        "ecosystem": "qt",
+        "stream_kind": "sensitivity_tier1_only",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier1_only",
+        "N": 25704,
+        "n_init": 6000,
+        "n_val": 1500,
+        "stream_eval_N": 18204,
+        "prevalence": 0.07100062247121071,
+        "median_latency_days": 166.93903935185185,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "65e6e16a93b0585726256fd3bb35b8ee5d2246765ba8e3967b695bb1cd23d988",
+          "cb": "c7d3e050fb1a01b52a3efdfa8815d1aa6de2ac8d4d44ab5899d82f073c5c5fe6",
+          "svd": "7972e997ebcf238c958d36c3447d7c878a3319e57533c7a26a090061851ea2aa",
+          "tab": "a84d15c15a0a95bd734eb983e793285590b740df6974da4db93e0e54c3acfb28",
+          "meta": "4d21a76d82ab01c9463fc3a26a91c4ff53f22eab903be95dfbab0675db761d37"
+        },
+        "aligned_to_primary_eval_N": 18204
+      },
+      {
+        "name": "qt_drop_unlinked",
+        "ecosystem": "qt",
+        "stream_kind": "sensitivity_drop_unlinked",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "drop_unlinked_pos",
+        "N": 25640,
+        "n_init": 5954,
+        "n_val": 1495,
+        "stream_eval_N": 18191,
+        "prevalence": 0.06868174726989079,
+        "median_latency_days": 163.06526620370371,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "c9aadfbe21879488c7a7a91b92f3b595e1447b84ef65071b820f544aa0d90c07",
+          "cb": "bb8d6a479add303bfd772d3b6d770e3b8774234c9b3a08a383f891f6c64112d8",
+          "svd": "694058213b297814641191478e4b9b38c56279d5c337d342db78b9eb1c14994e",
+          "tab": "14e8a67af745406400e9850299b4a6e1326d4b4c8183dbcce614e67a505e0d74",
+          "meta": "38f7f68013f3da64375fd0f6cf3292387f844d5cec37cb4784eccf8b43e05a2a"
+        },
+        "aligned_to_primary_eval_N": 18204
+      },
+      {
+        "name": "qt_premerge28",
+        "ecosystem": "qt",
+        "stream_kind": "sensitivity_premerge28",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "revd",
+          "nrev",
+          "rtime",
+          "tcmt",
+          "hcmt",
+          "self",
+          "ndev",
+          "age",
+          "nuc",
+          "app",
+          "aexp",
+          "rexp",
+          "oexp",
+          "arexp",
+          "rrexp",
+          "orexp",
+          "asexp",
+          "rsexp",
+          "osexp",
+          "asawr",
+          "rsawr",
+          "osawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 25704,
+        "n_init": 6000,
+        "n_val": 1500,
+        "stream_eval_N": 18204,
+        "prevalence": 0.07100062247121071,
+        "median_latency_days": 163.06526620370371,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 28,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 28
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 28
+        },
+        "sha256": {
+          "tok": "8af3e975bbc4a84076940288bb7222ff695d5efa8791a2a3e0f03490738e78bc",
+          "cb": "721e1726e7b58e8d574b77ccff309924bdf37c61d0abca9f8a15d8a80298dd35",
+          "svd": "1de2c72fbbdd057b49ca77882bf1b7f9d1689706f4b07792cc32590b37f178d9",
+          "tab": "b4296bcea6bccf38ba1ce59d17c3acd0eea51b0c62a06fc9cd729779ca4c1140",
+          "meta": "b419eb4163188ba6c86575bc20f6729a4ec0556b55cd228040e85e4e3b1bed7b"
+        },
+        "aligned_to_primary_eval_N": 18204
+      },
+      {
+        "name": "openstack_tier1_only",
+        "ecosystem": "openstack",
+        "stream_kind": "sensitivity_tier1_only",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "tier1_only",
+        "N": 13304,
+        "n_init": 8600,
+        "n_val": 1000,
+        "stream_eval_N": 3704,
+        "prevalence": 0.12229404690318701,
+        "median_latency_days": 180.93417824074075,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "49e7da5bc7c3fbcbdae8d56463c635c205d78260672a85e7c60593c85a52eca2",
+          "cb": "037a73cf2ae3ffbedff3e87201d49313a4fb044572cf052b0ac33acee029f607",
+          "svd": "79632399d184f6e2557f7e31f003208e0f35b4ee4c5beca2232b54e5cd20168d",
+          "tab": "6c0641bc4c7c3d276d6172c980623e763670e52b003051f586716802b8eae682",
+          "meta": "87197d8a4d8b434aac7d98c121af8c0bd60c72d4ab02fd9b16c0e2b91c35b4b0"
+        },
+        "aligned_to_primary_eval_N": 3704
+      },
+      {
+        "name": "openstack_drop_unlinked",
+        "ecosystem": "openstack",
+        "stream_kind": "sensitivity_drop_unlinked",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "ndev",
+          "age",
+          "nuc",
+          "aexp",
+          "arexp",
+          "asexp",
+          "asawr"
+        ],
+        "szz_mode": "drop_unlinked_pos",
+        "N": 13293,
+        "n_init": 8595,
+        "n_val": 999,
+        "stream_eval_N": 3699,
+        "prevalence": 0.121567742420823,
+        "median_latency_days": 178.73973958333335,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 13,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 13
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 13
+        },
+        "sha256": {
+          "tok": "9d9ec268f3f4f4816bdaf001b828f78bd23972f1e52c0bae0fa95504b9069cc3",
+          "cb": "27cc016423393f3b72c2b9fa109b0c39a8c65f80a0ce66a41b677c9da9167a65",
+          "svd": "bd5d15dd0b4bd0a78a8c10e0f5d2e5466789e515748bfe2f95adec3a9fd4c008",
+          "tab": "4ca2d404d89b07df343b7323df12f6df79bf600bba1a7cf6cdcb1cc7cf7033cb",
+          "meta": "5e8a033db21d3df70674a47e26ecd55cd95515944606f73213d28b7633f55253"
+        },
+        "aligned_to_primary_eval_N": 3704
+      },
+      {
+        "name": "openstack_premerge28",
+        "ecosystem": "openstack",
+        "stream_kind": "sensitivity_premerge28",
+        "feature_cols": [
+          "la",
+          "ld",
+          "nf",
+          "nd",
+          "ns",
+          "ent",
+          "revd",
+          "nrev",
+          "rtime",
+          "tcmt",
+          "hcmt",
+          "self",
+          "ndev",
+          "age",
+          "nuc",
+          "app",
+          "aexp",
+          "rexp",
+          "oexp",
+          "arexp",
+          "rrexp",
+          "orexp",
+          "asexp",
+          "rsexp",
+          "osexp",
+          "asawr",
+          "rsawr",
+          "osawr"
+        ],
+        "szz_mode": "tier12",
+        "N": 13304,
+        "n_init": 8600,
+        "n_val": 1000,
+        "stream_eval_N": 3704,
+        "prevalence": 0.12229404690318701,
+        "median_latency_days": 178.73973958333335,
+        "drift_onset_idx": -1,
+        "tok_meta": {
+          "vocab_msg": 8000,
+          "vocab_code": 8000,
+          "msg_len": 64,
+          "code_len": 128,
+          "tab_dim": 28,
+          "n_msg_chunks": 8,
+          "n_code_hunks": 8
+        },
+        "cb_meta": {
+          "cb_dim": 768,
+          "tab_dim": 28
+        },
+        "svd_meta": {
+          "svd_dim": 112,
+          "tab_dim": 28
+        },
+        "sha256": {
+          "tok": "53202da8e43945a120d89be46bdbe9a4350da0fc2e8b1843d2a22d959493940d",
+          "cb": "585703ac225fa8a3c5c460a0230b3194b7d82b0dd07636486da0b79ec4b9a1d3",
+          "svd": "c63f0a706b688dac547af562c342cd3a51f56b6930757a649631b8af17dc3e16",
+          "tab": "b26f768b0165003ed11d0eaa22ef3c38d153123d9dd22472f0a15f7e6b5f49eb",
+          "meta": "5fe5a9961d3a65679af175b424dc5244e3af14bea196afcddcddf1c213c86fc1"
+        },
+        "aligned_to_primary_eval_N": 3704
+      }
+    ]
+  },
+  "benchmark_b": {
+    "natural_streams": [
+      {
+        "name": "cabral_brackets",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "brackets",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.22673333333333334,
+        "revealed_buggy_count": 3401,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 21.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "e33f4406d422cfcdd7c52c610866bb5a80892c66a31eaf2a282a777f6b2c7357"
+      },
+      {
+        "name": "cabral_broadleaf",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "broadleaf",
+        "overlaps_benchmark_a": false,
+        "N": 12832,
+        "dim": 18,
+        "n_init": 3200,
+        "n_val": 1000,
+        "stream_eval_N": 8632,
+        "prevalence": 0.18695448877805487,
+        "revealed_buggy_count": 2399,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 50.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "6e9a39b9d8a0b2593b5eae20ebdb21e164240a652a897b9f2f362b417b88ba0c"
+      },
+      {
+        "name": "cabral_camel",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_camel",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.15713333333333335,
+        "revealed_buggy_count": 2357,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 21.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "c8c5c959097424fb65a21f0570610b23214b3bb736054389dec937e54fa037ea"
+      },
+      {
+        "name": "cabral_fabric",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "fabric",
+        "overlaps_benchmark_a": false,
+        "N": 12474,
+        "dim": 18,
+        "n_init": 3100,
+        "n_val": 1000,
+        "stream_eval_N": 8374,
+        "prevalence": 0.2060285393618727,
+        "revealed_buggy_count": 2570,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 41.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "0894e7d9f27c4f2ddcf549ee17fb26bbf143285b13c7dff48ce12adfecb6f57e"
+      },
+      {
+        "name": "cabral_jgroups",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "jgroups",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.16053333333333333,
+        "revealed_buggy_count": 2408,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 111.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "41854019271b52ca86061646be56b66a8491a9dc26967bc3a4dcd5e0dd3a6ed2"
+      },
+      {
+        "name": "cabral_matplotlib",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "matplotlib",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.17973333333333333,
+        "revealed_buggy_count": 2696,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 136.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "251f2f0d87f70419e9faaa6d59f80420d7dfdfcf48468b2260954caaac65a3a9"
+      },
+      {
+        "name": "cabral_neutron",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "openstack",
+        "overlaps_benchmark_a": true,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.24013333333333334,
+        "revealed_buggy_count": 3602,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 154.5,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "a5ef28166ddf74b115afcddfcfe2ba4afa89d76d5badbf5141dec2ec35e5e5f2"
+      },
+      {
+        "name": "cabral_nova",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "openstack",
+        "overlaps_benchmark_a": true,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.15746666666666667,
+        "revealed_buggy_count": 2362,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 197.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "1401dfd8e57a2e248570a44f84e63dc60827999671e06d8a8eaee97fb082b6a3"
+      },
+      {
+        "name": "cabral_npm",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "npm",
+        "overlaps_benchmark_a": false,
+        "N": 7092,
+        "dim": 18,
+        "n_init": 1800,
+        "n_val": 550,
+        "stream_eval_N": 4742,
+        "prevalence": 0.1924703891708968,
+        "revealed_buggy_count": 1365,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 119.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "c7cdbe9ffa906b76db8bf09136e966a38cc8da8650f6c18aa3256fd167a759a7"
+      },
+      {
+        "name": "cabral_sentry",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "sentry",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.2356,
+        "revealed_buggy_count": 3534,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 73.5,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "6beafc65b7f7c9eb8bc83396eaeb9e724a5d985c25b49690368bf518d48f748d"
+      },
+      {
+        "name": "cabral_spring",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "spring_integration",
+        "overlaps_benchmark_a": false,
+        "N": 8275,
+        "dim": 18,
+        "n_init": 2100,
+        "n_val": 650,
+        "stream_eval_N": 5525,
+        "prevalence": 0.27395770392749247,
+        "revealed_buggy_count": 2267,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 440.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "90cf6b2588a6e163af325867f445d31a59e110d1a568cc60d43275340dfe4e74"
+      },
+      {
+        "name": "cabral_tomcat",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_tomcat",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.2773333333333333,
+        "revealed_buggy_count": 4160,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 172.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "e2e231179336dfb209bcaabd8578fff42a046cad17bcc483612ac178b51f1dd7"
+      },
+      {
+        "name": "cabral_wagtail",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "wagtail",
+        "overlaps_benchmark_a": false,
+        "N": 7408,
+        "dim": 18,
+        "n_init": 1900,
+        "n_val": 600,
+        "stream_eval_N": 4908,
+        "prevalence": 0.128914686825054,
+        "revealed_buggy_count": 955,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 100.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "a06054f05888b6ac10904ff31dc0a25a224bf1d5e93e65096b615e4edc51d9e5"
+      },
+      {
+        "name": "cabral_zulip",
+        "cohort": "Cabral19",
+        "stream_kind": "natural_project",
+        "donor_cluster": "zulip",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 18,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.2662,
+        "revealed_buggy_count": 3993,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 102.0,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "796bca8350521edad405334225acd1d9ff54fe027b506c60719d8d6c60128f26"
+      },
+      {
+        "name": "apache_activemq",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_activemq",
+        "overlaps_benchmark_a": false,
+        "N": 6057,
+        "dim": 17,
+        "n_init": 1500,
+        "n_val": 500,
+        "stream_eval_N": 4057,
+        "prevalence": 0.23179791976225855,
+        "revealed_buggy_count": 1404,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 568.3373321759259,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "b5c63177125171c42a17c13f131c33f9c9d8500861bf1134fe8fce8a491a6c05"
+      },
+      {
+        "name": "apache_camel",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_camel",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 17,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.1442,
+        "revealed_buggy_count": 2163,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 308.7170138888889,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "9280dfa7f413364344550298bf485607f528c0951d44c47e725af11218e09115"
+      },
+      {
+        "name": "apache_cassandra",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_cassandra",
+        "overlaps_benchmark_a": false,
+        "N": 8095,
+        "dim": 17,
+        "n_init": 2000,
+        "n_val": 650,
+        "stream_eval_N": 5445,
+        "prevalence": 0.3830759728227301,
+        "revealed_buggy_count": 3101,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 143.05694444444444,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "4bc3e3891a69f95553e13b042bdd2d9e59c008dca81ed9d1703380c273122ee6"
+      },
+      {
+        "name": "apache_flink",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_flink",
+        "overlaps_benchmark_a": false,
+        "N": 8937,
+        "dim": 17,
+        "n_init": 2200,
+        "n_val": 700,
+        "stream_eval_N": 6037,
+        "prevalence": 0.26709186527917644,
+        "revealed_buggy_count": 2387,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 107.40100694444445,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "f906b4dc2cf0dd9cf66aebad242ea648f410d12167abd7df41a2187dbbd74668"
+      },
+      {
+        "name": "apache_groovy",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_groovy",
+        "overlaps_benchmark_a": false,
+        "N": 7631,
+        "dim": 17,
+        "n_init": 1900,
+        "n_val": 600,
+        "stream_eval_N": 5131,
+        "prevalence": 0.2082295898309527,
+        "revealed_buggy_count": 1589,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 568.6302430555555,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "68f186d953ba2016e4238d652afd239ee0932312165f0965d0e8407713a46caa"
+      },
+      {
+        "name": "apache_hbase",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_hbase",
+        "overlaps_benchmark_a": false,
+        "N": 8181,
+        "dim": 17,
+        "n_init": 2000,
+        "n_val": 650,
+        "stream_eval_N": 5531,
+        "prevalence": 0.4536120278694536,
+        "revealed_buggy_count": 3711,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 140.14228009259259,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "7347687d0382fd3e516ae83218d3be0bffddf39225316e612410fa69bcad457a"
+      },
+      {
+        "name": "apache_hive",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_hive",
+        "overlaps_benchmark_a": false,
+        "N": 6427,
+        "dim": 17,
+        "n_init": 1600,
+        "n_val": 500,
+        "stream_eval_N": 4327,
+        "prevalence": 0.6444686478917069,
+        "revealed_buggy_count": 4141,
+        "unrevealed_inf_buggy_count": 1,
+        "retroactive_fixes_cleaned_to_inf": 1,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 98.7903587962963,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "a6018e2365ba335d48ee6660ee58f41b9e1a55b13a2e71ce8bf2fa6907856274"
+      },
+      {
+        "name": "apache_ignite",
+        "cohort": "ApacheJIT",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_ignite",
+        "overlaps_benchmark_a": false,
+        "N": 11563,
+        "dim": 17,
+        "n_init": 2900,
+        "n_val": 950,
+        "stream_eval_N": 7713,
+        "prevalence": 0.1995156966185246,
+        "revealed_buggy_count": 2307,
+        "unrevealed_inf_buggy_count": 0,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 0,
+        "median_latency_days": 139.00288194444445,
+        "prediction_time_semantics": "git_author_date_historical_replay",
+        "feature_availability_semantics": "commit_author_time_kamei_metrics_no_review_cols",
+        "label_availability_semantics": "earliest_szz_bugfix_commit_timestamp",
+        "sha256": "bba995833cea606085ad683973d1751555245a73498886e8ee3786425373eff4"
+      },
+      {
+        "name": "n60_airflow",
+        "cohort": "N60_PRSZZ",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_airflow",
+        "overlaps_benchmark_a": false,
+        "N": 8960,
+        "dim": 92,
+        "n_init": 2200,
+        "n_val": 700,
+        "stream_eval_N": 6060,
+        "prevalence": 0.24285714285714285,
+        "revealed_buggy_count": 1890,
+        "unrevealed_inf_buggy_count": 286,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 286,
+        "median_latency_days": 190.94326388888888,
+        "prediction_time_semantics": "git_committer_integration_date",
+        "feature_availability_semantics": "post_pr_review_integration_time_ast_and_pr_workflow_metrics",
+        "label_availability_semantics": "earliest_automated_prszz_bugfix_commit_timestamp",
+        "sha256": "0706f283779f4ca835b28ab2693b3d458b1f38ad9e6c0138f0120af99820f2c5"
+      },
+      {
+        "name": "n60_angular",
+        "cohort": "N60_PRSZZ",
+        "stream_kind": "natural_project",
+        "donor_cluster": "angular",
+        "overlaps_benchmark_a": false,
+        "N": 15000,
+        "dim": 92,
+        "n_init": 3500,
+        "n_val": 1000,
+        "stream_eval_N": 10500,
+        "prevalence": 0.15613333333333335,
+        "revealed_buggy_count": 2314,
+        "unrevealed_inf_buggy_count": 28,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 28,
+        "median_latency_days": 84.7358738425926,
+        "prediction_time_semantics": "git_committer_integration_date",
+        "feature_availability_semantics": "post_pr_review_integration_time_ast_and_pr_workflow_metrics",
+        "label_availability_semantics": "earliest_automated_prszz_bugfix_commit_timestamp",
+        "sha256": "e629804c521d49f426f035cc20069045dba39765eab9f9531ad653ed94fe1418"
+      },
+      {
+        "name": "n60_jenkins",
+        "cohort": "N60_PRSZZ",
+        "stream_kind": "natural_project",
+        "donor_cluster": "jenkins",
+        "overlaps_benchmark_a": false,
+        "N": 10140,
+        "dim": 92,
+        "n_init": 2500,
+        "n_val": 800,
+        "stream_eval_N": 6840,
+        "prevalence": 0.04763313609467456,
+        "revealed_buggy_count": 417,
+        "unrevealed_inf_buggy_count": 66,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 66,
+        "median_latency_days": 202.63496527777778,
+        "prediction_time_semantics": "git_committer_integration_date",
+        "feature_availability_semantics": "post_pr_review_integration_time_ast_and_pr_workflow_metrics",
+        "label_availability_semantics": "earliest_automated_prszz_bugfix_commit_timestamp",
+        "sha256": "a1259ea5f8651971d44784bb662eb4252ee836dc7a13d718460fa934ccd9f8d5"
+      },
+      {
+        "name": "n60_kafka",
+        "cohort": "N60_PRSZZ",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_kafka",
+        "overlaps_benchmark_a": false,
+        "N": 6646,
+        "dim": 92,
+        "n_init": 1700,
+        "n_val": 550,
+        "stream_eval_N": 4396,
+        "prevalence": 0.260758350887752,
+        "revealed_buggy_count": 1602,
+        "unrevealed_inf_buggy_count": 131,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 131,
+        "median_latency_days": 120.53622685185186,
+        "prediction_time_semantics": "git_committer_integration_date",
+        "feature_availability_semantics": "post_pr_review_integration_time_ast_and_pr_workflow_metrics",
+        "label_availability_semantics": "earliest_automated_prszz_bugfix_commit_timestamp",
+        "sha256": "11d5945d9677569f7a84e3d016b095be5d7e1ecc222b0229f593919c6085332c"
+      },
+      {
+        "name": "n60_pulsar",
+        "cohort": "N60_PRSZZ",
+        "stream_kind": "natural_project",
+        "donor_cluster": "apache_pulsar",
+        "overlaps_benchmark_a": false,
+        "N": 4919,
+        "dim": 92,
+        "n_init": 1500,
+        "n_val": 500,
+        "stream_eval_N": 2919,
+        "prevalence": 0.3092091888595243,
+        "revealed_buggy_count": 1271,
+        "unrevealed_inf_buggy_count": 250,
+        "retroactive_fixes_cleaned_to_inf": 0,
+        "sentinel_fixes_cleaned_to_inf": 250,
+        "median_latency_days": 164.68519675925927,
+        "prediction_time_semantics": "git_committer_integration_date",
+        "feature_availability_semantics": "post_pr_review_integration_time_ast_and_pr_workflow_metrics",
+        "label_availability_semantics": "earliest_automated_prszz_bugfix_commit_timestamp",
+        "sha256": "b455789f5139bbddaf76fbd1f1449b8115703c060f0e724d69bb3a8d4607ddff"
+      }
+    ],
+    "controlled_shift_streams": [
+      {
+        "name": "abrupt_nova_zulip",
+        "cohort": "ControlledShift",
+        "stream_kind": "synthetic_concatenated_shift",
+        "donor_clusters": [
+          "openstack",
+          "zulip"
+        ],
+        "N": 11000,
+        "dim": 18,
+        "n_init": 3200,
+        "n_val": 800,
+        "drift_onset_idx": 5500,
+        "prevalence": 0.334,
+        "sha256": "9ef2a70267d59c14b741598ac91e2d3cc2d30838f4bd816b122c48cbe1036f39"
+      },
+      {
+        "name": "abrupt_ignite_cassandra",
+        "cohort": "ControlledShift",
+        "stream_kind": "synthetic_concatenated_shift",
+        "donor_clusters": [
+          "apache_ignite",
+          "apache_cassandra"
+        ],
+        "N": 10200,
+        "dim": 17,
+        "n_init": 3000,
+        "n_val": 800,
+        "drift_onset_idx": 5200,
+        "prevalence": 0.2691176470588235,
+        "sha256": "00e878060a7f23f40079fecbd8fc713acb06ca8fe17c9a9734c9f86d14a45d67"
+      },
+      {
+        "name": "abrupt_airflow_pulsar",
+        "cohort": "ControlledShift",
+        "stream_kind": "synthetic_concatenated_shift",
+        "donor_clusters": [
+          "apache_airflow",
+          "apache_pulsar"
+        ],
+        "N": 9400,
+        "dim": 92,
+        "n_init": 2800,
+        "n_val": 700,
+        "drift_onset_idx": 4800,
+        "prevalence": 0.27404255319148935,
+        "sha256": "4ba24b5245dba8f73f0b8e2880d2205831fe6809076c25bc79c0041c3b70d81d"
+      },
+      {
+        "name": "abrupt_deepjit_nova_neutron_pure13",
+        "cohort": "ControlledShift",
+        "stream_kind": "controlled_subsystem_shift_pure13",
+        "donor_clusters": [
+          "openstack"
+        ],
+        "N": 6000,
+        "dim": 125,
+        "n_init": 3400,
+        "n_val": 800,
+        "drift_onset_idx": 4200,
+        "prevalence": 0.1655,
+        "sha256": "63bdbc27f93f6c0ba9829516f688fd30bc44763b114f3b5b282255d080352a8c"
+      }
+    ],
+    "donor_cluster_summary": {
+      "n_natural_streams": 27,
+      "K_independent_ecosystem_clusters": 25,
+      "K_benchmark_a_disjoint_clusters": 24,
+      "merged_multi_stream_clusters": {
+        "apache_camel": [
+          "apache_camel",
+          "cabral_camel"
+        ],
+        "openstack": [
+          "cabral_neutron",
+          "cabral_nova"
+        ]
+      },
+      "cluster_members": {
+        "angular": [
+          "n60_angular"
+        ],
+        "apache_activemq": [
+          "apache_activemq"
+        ],
+        "apache_airflow": [
+          "n60_airflow"
+        ],
+        "apache_camel": [
+          "apache_camel",
+          "cabral_camel"
+        ],
+        "apache_cassandra": [
+          "apache_cassandra"
+        ],
+        "apache_flink": [
+          "apache_flink"
+        ],
+        "apache_groovy": [
+          "apache_groovy"
+        ],
+        "apache_hbase": [
+          "apache_hbase"
+        ],
+        "apache_hive": [
+          "apache_hive"
+        ],
+        "apache_ignite": [
+          "apache_ignite"
+        ],
+        "apache_kafka": [
+          "n60_kafka"
+        ],
+        "apache_pulsar": [
+          "n60_pulsar"
+        ],
+        "apache_tomcat": [
+          "cabral_tomcat"
+        ],
+        "brackets": [
+          "cabral_brackets"
+        ],
+        "broadleaf": [
+          "cabral_broadleaf"
+        ],
+        "fabric": [
+          "cabral_fabric"
+        ],
+        "jenkins": [
+          "n60_jenkins"
+        ],
+        "jgroups": [
+          "cabral_jgroups"
+        ],
+        "matplotlib": [
+          "cabral_matplotlib"
+        ],
+        "npm": [
+          "cabral_npm"
+        ],
+        "openstack": [
+          "cabral_neutron",
+          "cabral_nova"
+        ],
+        "sentry": [
+          "cabral_sentry"
+        ],
+        "spring_integration": [
+          "cabral_spring"
+        ],
+        "wagtail": [
+          "cabral_wagtail"
+        ],
+        "zulip": [
+          "cabral_zulip"
+        ]
+      }
+    },
+    "sentinel_fixes_cleaned_to_inf": {
+      "n60_airflow": 286,
+      "n60_angular": 28,
+      "n60_jenkins": 66,
+      "n60_kafka": 131,
+      "n60_pulsar": 250
+    }
+  }
+}

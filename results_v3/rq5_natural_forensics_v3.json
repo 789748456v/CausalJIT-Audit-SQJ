@@ -1,0 +1,668 @@
+{
+  "provenance": {
+    "generated_at_utc": "2026-11-17T15:18:45.649577+00:00",
+    "v3_config": {
+      "max_history_cohort": 6000,
+      "support_age_quantile": 0.85,
+      "min_risk_set": 120,
+      "min_observed_fixes": 15,
+      "c_min": 0.05,
+      "c_max": 0.96,
+      "tail_cap_max": 0.94,
+      "tail_cap_min": 0.6,
+      "fallback_half_life_days": 90.0,
+      "reliable_maturity_thresh": 0.45,
+      "max_reliable_commits": 2200,
+      "imp_weight_min": 0.5,
+      "imp_weight_max": 2.5,
+      "recency_min": 0.75,
+      "recency_max": 1.15,
+      "ht_floor_c": 0.1,
+      "ht_shrinkage_m0": 50.0,
+      "pi_min": 0.02,
+      "pi_max": 0.7,
+      "teacher_sharpness": 1.15,
+      "llm_blend_weight": 0.25,
+      "max_anchor_commits": 2000,
+      "drift_emphasis_gamma": 1.4,
+      "maturity_weight_floor": 0.45,
+      "posterior_p_min": 0.003,
+      "posterior_p_max": 0.997,
+      "bisection_lo": -8.0,
+      "bisection_hi": 8.0,
+      "bisection_iters": 28,
+      "lgb_init_rounds": 90,
+      "lgb_alarm_rounds": 75,
+      "neural_teacher_epochs": 4,
+      "neural_student_epochs": 4,
+      "neural_adapt_lr": 0.00045,
+      "window_size_default": 400,
+      "drift_pca_dim": 24,
+      "drift_block_pct": 95.0,
+      "drift_cooldown_windows": 1,
+      "n46_ref_static_pct": 98.0,
+      "n46_ref_cooldown_windows": 0,
+      "drift_bootstrap_reps": 250,
+      "fixed_transient_commits": 1200,
+      "primary_endpoint": "ap",
+      "secondary_endpoints": [
+        "roc_auc",
+        "f1",
+        "f1_th",
+        "gmean",
+        "brier_cal",
+        "ece_cal",
+        "recall_at_20pct_effort"
+      ],
+      "forensic_rules": {
+        "allowed_tiers": [
+          "Tier1_McIntosh_CSV"
+        ],
+        "min_censoring_latency_days": 14.0,
+        "rescue_min_b0": 0.45,
+        "rescue_max_b2": 0.35,
+        "rescue_min_spu": 0.5,
+        "fn_max_b2": 0.35,
+        "fn_max_spu": 0.35,
+        "fp_min_spu": 0.7,
+        "max_cases_per_category": 3
+      }
+    },
+    "code_sha256": {
+      "build_codebert_cache_v3.py": "01e693989fd1927e3845e817a876f82ffa4baf97d51761d4415f6b624e2d074e",
+      "config_v3.py": "b9867295acd3411aa9e3c1d77db15b16625aceb0fdbcf2325f5cfedaf8e00aa1",
+      "data_audit_v3.py": "13359e55d85394357acbb3a5bca6e6d1a136aff1d7bf7fdc1a3e1d9198980ddd",
+      "metrics_and_stats_v3.py": "b757719af20adcbc10d39839c6058d03c8e2d67fe15ff1493a86119a4f3197e5",
+      "models_and_baselines_v3.py": "813acab4caeb1180faacd953472032c0346662db4c644aac5f549bfd86ae4df6",
+      "run_v3_experiments.py": "e14430b2f7454eb32f5a18c52e45a9e5af613cd9099b47e6cd5feae94d2a4ab3",
+      "run_v3_llm_and_forensics.py": "28e7166a1350b7dc0b238e3a9d72642650dc0e9fa74eb67f05f16ad853cea9fc",
+      "stream_competitors_v3.py": "84dc53c6ce5753cdcb5c5d9291dd688e4b037bc5498ed36c4fc373af65441baa",
+      "survival_estimators_v3.py": "e2d95aeaf346a3ea692f2b8a64b1d5485be65efae8aaf9f3e2fcf0d1f45d412f",
+      "verify_manuscript_v3.py": "e25f3a4f1b6604da92c9a591732f2945e30546959d5f3ad76686d2ae8edb206a",
+      "verify_mechanisms_and_protocol_v3.py": "4eaa3f677cb1023f54f74e990e3c12c5d721e6886928804a84b1faf51b11c2ec"
+    },
+    "manifest_sha256": {}
+  },
+  "ecosystems": {
+    "qt": {
+      "stream_name": "qt_natural_25k",
+      "authoritative_filter_config": {
+        "allowed_tiers": [
+          "Tier1_McIntosh_CSV"
+        ],
+        "min_censoring_latency_days": 14.0,
+        "rescue_min_b0": 0.45,
+        "rescue_max_b2": 0.35,
+        "rescue_min_spu": 0.5,
+        "fn_max_b2": 0.35,
+        "fn_max_spu": 0.35,
+        "fp_min_spu": 0.7,
+        "max_cases_per_category": 3
+      },
+      "candidate_counts": {
+        "n_rescue_candidates_matched": 22,
+        "n_false_negative_candidates_matched": 436,
+        "n_false_positive_candidates_matched": 1620
+      },
+      "interpretive_note": "Selected deterministically under frozen `V3_CONFIG.forensic_rules` without fallback loosening (`Tier1_McIntosh_CSV` required for positive defects). Cases illustrate prequential score divergence following censored alarm updates alongside honest FN/FP failure modes, rather than standalone single-commit causal proof.",
+      "rescues": [
+        {
+          "case_type": "score_divergence_under_censored_alarm",
+          "eval_offset": 4779,
+          "repo": "qtquick1",
+          "inducing_sha": "9995a2910d8a5f0317fe3adeb54f838b99ab31a8",
+          "commit_date_utc": "2012-12-03",
+          "fix_sha": "4a1505d5177d42ad2369d207be402a7846fd564a",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2013-04-30",
+          "latency_days": 148.2,
+          "y_true": 1,
+          "effort_loc": 88.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 1,
+            "n_prior_alarms_before_prediction": 1,
+            "last_alarm_end_commit_idx": 9900,
+            "last_alarm_date_utc": "2012-08-11",
+            "last_alarm_4W_true_bugs": 144,
+            "last_alarm_4W_revealed_bugs": 17,
+            "last_alarm_4W_censored_false_negatives": 127,
+            "last_alarm_4W_censoring_rate": 0.8819
+          },
+          "subject": "add a method that allows registration of files to types there is currently no way in c++ to duplicate the functionality of a qmldir file in ",
+          "diff_excerpt": "file: doc/src/declarative/qtdeclarative.qdoc\n+\n+/*!\n+  \\fn int qmlRegisterType(const char *url, const char *uri, int versionMajor, int versionMinor, const char *qmlName);\n+  \\relates QDeclarativeEngine\n+\n+  This function registers a type in the QML system with the name \\a qmlName, in the library imported from \\a uri having the\n+  version number composed from \\a versionMajor and \\a versionMinor. The type is defined by the QML file located at \\a url.\n+\n+  Normally QML files can be loaded as types directly from other QML files, or using a qmldir file. This function allows\n+  registration of files to types from a C++ module, such as when the type mapping needs to be procedurally determined at startup.\n+\n+  #include <QtDeclarative> to use this function.\n+\n+  Returns non-zero if the registration was sucessful.\n+*/\nfile: src/declarative/qml/qdeclarative.h\n+#include <QtCore/qurl.h>",
+          "scores": {
+            "B0_Frozen": 0.5485,
+            "B1b_4W_Oracle": 0.7775,
+            "B2_4W": 0.0518,
+            "Wait_90": 0.6608,
+            "Teacher_Only_Matched": 0.9895,
+            "BORB_Native": 0.8803,
+            "ORB_OHT_Native": 0.7994,
+            "Survival_PU": 0.9589
+          }
+        },
+        {
+          "case_type": "score_divergence_under_censored_alarm",
+          "eval_offset": 16852,
+          "repo": "qtbase",
+          "inducing_sha": "fb3f47b638fcdeb68c68fbda4943f4fbb22261c6",
+          "commit_date_utc": "2014-06-05",
+          "fix_sha": "ac2b15bdd0fa960644b956fbc9a8bf9fe5ff68f5",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2014-07-01",
+          "latency_days": 25.9,
+          "y_true": 1,
+          "effort_loc": 58.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 1,
+            "n_prior_alarms_before_prediction": 1,
+            "last_alarm_end_commit_idx": 9900,
+            "last_alarm_date_utc": "2012-08-11",
+            "last_alarm_4W_true_bugs": 144,
+            "last_alarm_4W_revealed_bugs": 17,
+            "last_alarm_4W_censored_false_negatives": 127,
+            "last_alarm_4W_censoring_rate": 0.8819
+          },
+          "subject": "android : report something sensible for screen geometry we ca n't get the actual screen geometry on android , but in qt 5.3.0 we would alway",
+          "diff_excerpt": "file: src/plugins/platforms/android/androidjnimain.cpp\n-                            jint /*widthPixels*/, jint /*heightPixels*/,\n+                            jint widthPixels, jint heightPixels,\n-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,desktopHeightPixels,\n-                                                                qRound(double(desktopWidthPixels)  / xdpi * 25.4),\n-                                                                qRound(double(desktopHeightPixels) / ydpi * 25.4));\n+        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,\n+                                                              desktopHeightPixels,\n+                                                              qRound(double(desktopWidthPixels)  / xdpi * 25.4),\n+                                                              qRound(double(desktopHeightPixels) / ydpi * 25.4),\n+                                                              widthPixels,\n+                                                              heightPixels);\n+        m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);\nfile: src/plugins/platforms/android/qandroidplatformintegration.cpp\n+int QAndroidPlatformIntegration::m_defaultScreenWidth = 320;\n+int QAndroidPlatformIntegration::m_defaultScreenHeight = 455;\n-    m_primaryScreen->setGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));\n+    m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));",
+          "scores": {
+            "B0_Frozen": 0.9682,
+            "B1b_4W_Oracle": 0.9399,
+            "B2_4W": 0.0519,
+            "Wait_90": 0.8868,
+            "Teacher_Only_Matched": 0.9834,
+            "BORB_Native": 0.8892,
+            "ORB_OHT_Native": 0.7983,
+            "Survival_PU": 0.9543
+          }
+        },
+        {
+          "case_type": "score_divergence_under_censored_alarm",
+          "eval_offset": 8691,
+          "repo": "qtwebkit",
+          "inducing_sha": "0376f73239d78abcd99fcb2dec82e8d1b5132296",
+          "commit_date_utc": "2013-05-27",
+          "fix_sha": "840e2817de1eda68f656f9764f824898ebf6d9c2",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2013-11-25",
+          "latency_days": 181.9,
+          "y_true": 1,
+          "effort_loc": 64.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 1,
+            "n_prior_alarms_before_prediction": 1,
+            "last_alarm_end_commit_idx": 9900,
+            "last_alarm_date_utc": "2012-08-11",
+            "last_alarm_4W_true_bugs": 144,
+            "last_alarm_4W_revealed_bugs": 17,
+            "last_alarm_4W_censored_false_negatives": 127,
+            "last_alarm_4W_censoring_rate": 0.8819
+          },
+          "subject": "[ qt ] [ win ] input events are n't mapped properly with windowless plugins . https : //bugs.webkit.org/show_bug.cgi ? id=116094 reviewed by",
+          "diff_excerpt": "file: Source/WebCore/platform/qt/QWebPageClient.h\n+    virtual QPoint mapToOwnerWindow(const QPoint&) const = 0;\nfile: Source/WebCore/plugins/win/PluginViewWin.cpp\n+static inline IntPoint contentsToNativeWindow(FrameView* view, const IntPoint& point)\n+{\n+#if PLATFORM(QT)\n+    // Our web view's QWidget isn't necessarily a native window itself. Map the position\n+    // all the way up to the QWidget associated with the HWND returned as NPNVnetscapeWindow.\n+    PlatformPageClient client = view->hostWindow()->platformPageClient();\n+    return client->mapToOwnerWindow(view->contentsToWindow(point));\n+#else\n+    return view->contentsToWindow(point);\n+#endif\n+}\n+\n+static inline IntRect contentsToNativeWindow(FrameView* view, const IntRect& rect)\n+{\n+#if PLATFORM(QT)",
+          "scores": {
+            "B0_Frozen": 0.5408,
+            "B1b_4W_Oracle": 0.9744,
+            "B2_4W": 0.0871,
+            "Wait_90": 0.9775,
+            "Teacher_Only_Matched": 0.9815,
+            "BORB_Native": 0.6282,
+            "ORB_OHT_Native": 0.3564,
+            "Survival_PU": 0.9754
+          }
+        }
+      ],
+      "false_negative_failures": [
+        {
+          "case_type": "false_negative_miss",
+          "eval_offset": 488,
+          "repo": "qtactiveqt",
+          "inducing_sha": "5b264430d7121adda49b3ea4283a28cfe8e9a499",
+          "commit_date_utc": "2012-05-22",
+          "fix_sha": "27a802f1988cf228936596e42f968b5ce8b0f2ad",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2012-11-26",
+          "latency_days": 188.2,
+          "y_true": 1,
+          "effort_loc": 7.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "fix olecolortoqcolor ( ) in qt 4.8 this function used qcolormap : :hpal ( ) , which is no longer available . however , it appears from qcolo",
+          "diff_excerpt": "file: src/activeqt/shared/qaxtypes.cpp\n-#include <qcolormap.h>\n-    /* FIXME 4.10.2011: was \"desc.bmp.hpal = QColormap::hPal();\", but\n-     * with Lighthouse, QColormap no longer has a handle. */\n-    Q_UNIMPLEMENTED();\n-    return QColor();\n-/*  FIXME: 4.10.2011:\n-    COLORREF cref;\n-    OleTranslateColor(col, QColormap::hPal(), &cref);\n-    return QColor(GetRValue(cref),GetGValue(cref),GetBValue(cref));\n-\n-*/\n+    return QColor(GetRValue(col),GetGValue(col),GetBValue(col));",
+          "scores": {
+            "B0_Frozen": 0.002,
+            "B1b_4W_Oracle": 0.002,
+            "B2_4W": 0.002,
+            "Wait_90": 0.002,
+            "Teacher_Only_Matched": 0.002,
+            "BORB_Native": 0.1792,
+            "ORB_OHT_Native": 0.1541,
+            "Survival_PU": 0.002
+          }
+        },
+        {
+          "case_type": "false_negative_miss",
+          "eval_offset": 201,
+          "repo": "qtmultimedia",
+          "inducing_sha": "4bb755598bf2abb762d0458dadb9f7a9feba32c3",
+          "commit_date_utc": "2012-05-11",
+          "fix_sha": "464ed66119ba065a8604ceed9963b2626a9ca586",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2014-03-21",
+          "latency_days": 679.7,
+          "y_true": 1,
+          "effort_loc": 2.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "qgstreamermetadataprovider : fix keys not mapped properly . add a key which is mapped against the qgstreamermetadatakeylookup , not the orig",
+          "diff_excerpt": "file: src/plugins/gstreamer/mediaplayer/qgstreamermetadataprovider.cpp\n-         allTags.insert(i.key());\n+         allTags.insert(key);",
+          "scores": {
+            "B0_Frozen": 0.0021,
+            "B1b_4W_Oracle": 0.0021,
+            "B2_4W": 0.0021,
+            "Wait_90": 0.0021,
+            "Teacher_Only_Matched": 0.0021,
+            "BORB_Native": 0.2147,
+            "ORB_OHT_Native": 0.3415,
+            "Survival_PU": 0.0021
+          }
+        },
+        {
+          "case_type": "false_negative_miss",
+          "eval_offset": 1656,
+          "repo": "qtbase",
+          "inducing_sha": "27cefd85f3e70b4d5e31261710e4361814c742dd",
+          "commit_date_utc": "2012-07-09",
+          "fix_sha": "2828072d509fd052aaae18fee59d9b4f5d079717",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2013-11-12",
+          "latency_days": 490.9,
+          "y_true": 1,
+          "effort_loc": 12.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "linuxfb : remove qfbwindow : :setvisible qfbwindow : :setvisible does n't call into the base class implementation and thus suppresses the de",
+          "diff_excerpt": "file: src/platformsupport/fbconvenience/qfbscreen.cpp\n-                    if (!mWindowStack[layerIndex]->isVisible())\n+                    if (!mWindowStack[layerIndex]->window()->isVisible())\nfile: src/platformsupport/fbconvenience/qfbwindow.cpp\n-    : QPlatformWindow(window), mBackingStore(0), mVisible(false)\n+    : QPlatformWindow(window), mBackingStore(0)\n-void QFbWindow::setVisible(bool visible)\n-{\n-    mVisible = visible;\n-    platformScreen()->invalidateRectCache();\n-    platformScreen()->setDirty(geometry());\n-}\n-\nfile: src/platformsupport/fbconvenience/qfbwindow_p.h\n-    virtual void setVisible(bool visible);\n-    virtual bool isVisible() { return mVisible; }\n-\n-    bool mVisible;",
+          "scores": {
+            "B0_Frozen": 0.0022,
+            "B1b_4W_Oracle": 0.0022,
+            "B2_4W": 0.0022,
+            "Wait_90": 0.0022,
+            "Teacher_Only_Matched": 0.0022,
+            "BORB_Native": 0.3289,
+            "ORB_OHT_Native": 0.2456,
+            "Survival_PU": 0.0022
+          }
+        }
+      ],
+      "false_positive_alarms": [
+        {
+          "case_type": "false_positive_alarm",
+          "eval_offset": 10881,
+          "repo": "qtwebkit",
+          "inducing_sha": "d441d6f39bb846989d95bcf5caf387b42414718d",
+          "commit_date_utc": "2013-09-13",
+          "fix_sha": "",
+          "fix_tier": "clean",
+          "fix_date_utc": "unrevealed_in_history",
+          "latency_days": null,
+          "y_true": 0,
+          "effort_loc": 570767.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 1,
+            "n_prior_alarms_before_prediction": 1,
+            "last_alarm_end_commit_idx": 9900,
+            "last_alarm_date_utc": "2012-08-11",
+            "last_alarm_4W_true_bugs": 144,
+            "last_alarm_4W_revealed_bugs": 17,
+            "last_alarm_4W_censored_false_negatives": 127,
+            "last_alarm_4W_censoring_rate": 0.8819
+          },
+          "subject": "import qt5x2 branch of qtwebkit for qt 5.2 importing a new snapshot of webkit . change-id : i2d01ad12cdc8af8cb015387641120a9d7ea5f10c review",
+          "diff_excerpt": "-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)\n-PROJECT(WebKit)\n-\n-# Set a default build type if and only if user did not define one as command\n-# line options and he did not give custom CFLAGS or CXXFLAGS. Otherwise, flags\n-# from default build type would overwrite user-defined ones.\n-IF (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_C_FLAGS AND NOT CMAKE_CXX_FLAGS)\n-    SET(CMAKE_BUILD_TYPE Release)\n-ENDIF ()\n-\n-# -----------------------------------------------------------------------------\n-# Default library type\n-# -----------------------------------------------------------------------------\n-SET(ENABLE_WEBCORE ON)\n-\n-IF (NOT ENABLE_WEBKIT AND NOT ENABLE_WEBKIT2)\n-    SET(ENABLE_WEBKIT ON)\n-ENDIF ()",
+          "scores": {
+            "B0_Frozen": 0.9016,
+            "B1b_4W_Oracle": 0.9971,
+            "B2_4W": 0.9184,
+            "Wait_90": 0.988,
+            "Teacher_Only_Matched": 0.9326,
+            "BORB_Native": 0.9907,
+            "ORB_OHT_Native": 0.8795,
+            "Survival_PU": 0.9993
+          }
+        },
+        {
+          "case_type": "false_positive_alarm",
+          "eval_offset": 10105,
+          "repo": "qtdeclarative",
+          "inducing_sha": "b480fa83a632b2ae5606e2870b47358328b479a2",
+          "commit_date_utc": "2013-08-14",
+          "fix_sha": "",
+          "fix_tier": "clean",
+          "fix_date_utc": "unrevealed_in_history",
+          "latency_days": null,
+          "y_true": 0,
+          "effort_loc": 2997.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 1,
+            "n_prior_alarms_before_prediction": 1,
+            "last_alarm_end_commit_idx": 9900,
+            "last_alarm_date_utc": "2012-08-11",
+            "last_alarm_4W_true_bugs": 144,
+            "last_alarm_4W_revealed_bugs": 17,
+            "last_alarm_4W_censored_false_negatives": 127,
+            "last_alarm_4W_censoring_rate": 0.8819
+          },
+          "subject": "new scenegraph renderer and atlas textures . the renderer tries to batch primitives together where possible , isolate non-changing subparts ",
+          "diff_excerpt": "file: dist/changes-5.2.0\n+ - QSGMaterialShader::compile() will not be called on all instances anymore.\n+   To enforce the old behavior, set the QSGMaterial::CustomCompilation flag.\n+\n+ - QSGMaterialShader::activate() and QSGMaterialShader::deactivate() are\n+   no longer responsible for calling glEnableVertexAttribPointer(),\n+   glDisableVertexAttribPointer() and binding the shader program. This is\n+   now done by the renderer. Reimplementations of these functions which\n+   are not calling the baseclass will need to take this into account.\n+\n+ - The scene graph now requires a call to QSGNode::markDirty() with the\n+   flag QSGNode::DirtySubtreeBlocked whenever the state of\n+   QSGNode::isSubtreeBlocked() is changed.\n+\n+- New scene graph renderer should reduce state changes, number of draw calls,\n+  CPU->GPU bandwidth and generally improve performance.\n+\n+- Textures in the scene graph can now be entered into an atlas, facilitating",
+          "scores": {
+            "B0_Frozen": 0.8855,
+            "B1b_4W_Oracle": 0.9779,
+            "B2_4W": 0.5581,
+            "Wait_90": 0.9982,
+            "Teacher_Only_Matched": 0.9975,
+            "BORB_Native": 0.993,
+            "ORB_OHT_Native": 0.9563,
+            "Survival_PU": 0.9983
+          }
+        },
+        {
+          "case_type": "false_positive_alarm",
+          "eval_offset": 7424,
+          "repo": "qtbase",
+          "inducing_sha": "34999402898886a969094a39587909ab6764e568",
+          "commit_date_utc": "2013-03-20",
+          "fix_sha": "",
+          "fix_tier": "clean",
+          "fix_date_utc": "unrevealed_in_history",
+          "latency_days": null,
+          "y_true": 0,
+          "effort_loc": 32207.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 1,
+            "n_prior_alarms_before_prediction": 1,
+            "last_alarm_end_commit_idx": 9900,
+            "last_alarm_date_utc": "2012-08-11",
+            "last_alarm_4W_true_bugs": 144,
+            "last_alarm_4W_revealed_bugs": 17,
+            "last_alarm_4W_censored_false_negatives": 127,
+            "last_alarm_4W_censoring_rate": 0.8819
+          },
+          "subject": "update bundled sqlite to 3.7.16.1 change-id : ia7d73d44c1e7707e81c022268b3a6df6d85703a5 reviewed-by : thiago macieira < thiago.macieira @ in",
+          "diff_excerpt": "file: src/3rdparty/sqlite/shell.c\n-#if defined(_WIN32) || defined(WIN32)\n+#if (defined(_WIN32) || defined(WIN32)) && !defined(_CRT_SECURE_NO_WARNINGS)\n+/*\n+** Enable large-file support for fopen() and friends on unix.\n+*/\n+#ifndef SQLITE_DISABLE_LFS\n+# define _LARGE_FILE       1\n+# ifndef _FILE_OFFSET_BITS\n+#   define _FILE_OFFSET_BITS 64\n+# endif\n+# define _LARGEFILE_SOURCE 1\n+#endif\n+\n-#if !defined(_WIN32) && !defined(WIN32) && !defined(__OS2__)\n+#if !defined(_WIN32) && !defined(WIN32)\n-#ifdef __OS2__\n-# include <unistd.h>",
+          "scores": {
+            "B0_Frozen": 0.9389,
+            "B1b_4W_Oracle": 0.9847,
+            "B2_4W": 0.5192,
+            "Wait_90": 0.9828,
+            "Teacher_Only_Matched": 0.9821,
+            "BORB_Native": 0.9908,
+            "ORB_OHT_Native": 0.5202,
+            "Survival_PU": 0.9959
+          }
+        }
+      ]
+    },
+    "openstack": {
+      "stream_name": "openstack_natural_13k",
+      "authoritative_filter_config": {
+        "allowed_tiers": [
+          "Tier1_McIntosh_CSV"
+        ],
+        "min_censoring_latency_days": 14.0,
+        "rescue_min_b0": 0.45,
+        "rescue_max_b2": 0.35,
+        "rescue_min_spu": 0.5,
+        "fn_max_b2": 0.35,
+        "fn_max_spu": 0.35,
+        "fp_min_spu": 0.7,
+        "max_cases_per_category": 3
+      },
+      "candidate_counts": {
+        "n_rescue_candidates_matched": 0,
+        "n_false_negative_candidates_matched": 477,
+        "n_false_positive_candidates_matched": 18
+      },
+      "interpretive_note": "Selected deterministically under frozen `V3_CONFIG.forensic_rules` without fallback loosening (`Tier1_McIntosh_CSV` required for positive defects). Cases illustrate prequential score divergence following censored alarm updates alongside honest FN/FP failure modes, rather than standalone single-commit causal proof.",
+      "rescues": [],
+      "false_negative_failures": [
+        {
+          "case_type": "false_negative_miss",
+          "eval_offset": 496,
+          "repo": "cinder",
+          "inducing_sha": "25d9de61a46c0c39c85b014ab8e2490a31ddeb1a",
+          "commit_date_utc": "2013-10-14",
+          "fix_sha": "dafe048f2f36d221242036c159271d7544ad39e3",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2014-09-23",
+          "latency_days": 343.6,
+          "y_true": 1,
+          "effort_loc": 1.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "fix indentation errors in drivers just some pylint fixes . change-id : i1f851726a7c8285884121da097be574c447fa39c",
+          "diff_excerpt": "file: cinder/volume/drivers/eqlx.py\n-            return self._run_ssh(\n-                args, attempts=self.configuration.eqlx_cli_max_retries)\n+        return self._run_ssh(\n+            args, attempts=self.configuration.eqlx_cli_max_retries)\nfile: cinder/volume/drivers/solidfire.py\n-            super(SolidFireDriver, self).__init__(*args, **kwargs)\n-            self.configuration.append_config_values(sf_opts)\n-            try:\n-                self._update_cluster_status()\n-            except exception.SolidFireAPIException:\n-                pass\n+        super(SolidFireDriver, self).__init__(*args, **kwargs)\n+        self.configuration.append_config_values(sf_opts)\n+        try:\n+            self._update_cluster_status()\n+        except exception.SolidFireAPIException:\n+            pass",
+          "scores": {
+            "B0_Frozen": 0.0002,
+            "B1b_4W_Oracle": 0.0002,
+            "B2_4W": 0.0002,
+            "Wait_90": 0.0002,
+            "Teacher_Only_Matched": 0.0002,
+            "BORB_Native": 0.0833,
+            "ORB_OHT_Native": 0.4612,
+            "Survival_PU": 0.0002
+          }
+        },
+        {
+          "case_type": "false_negative_miss",
+          "eval_offset": 278,
+          "repo": "neutron",
+          "inducing_sha": "a67bce77e12b5af7fd5fae7946c96d483ecede92",
+          "commit_date_utc": "2013-10-01",
+          "fix_sha": "e13d19cab384a9f5f8a00436ad39118f342af32c",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2014-03-16",
+          "latency_days": 165.7,
+          "y_true": 1,
+          "effort_loc": 2.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "switch agent report_interval option to float being able to set report_interval > 0 and < 1 makes it easier to consistently reproduce rpc rac",
+          "diff_excerpt": "file: neutron/agent/common/config.py\n-    cfg.IntOpt('report_interval', default=4,\n-               help=_('Seconds between nodes reporting state to server')),\n+    cfg.FloatOpt('report_interval', default=4,\n+                 help=_('Seconds between nodes reporting state to server')),",
+          "scores": {
+            "B0_Frozen": 0.0005,
+            "B1b_4W_Oracle": 0.0005,
+            "B2_4W": 0.0005,
+            "Wait_90": 0.0005,
+            "Teacher_Only_Matched": 0.0005,
+            "BORB_Native": 0.1057,
+            "ORB_OHT_Native": 0.4511,
+            "Survival_PU": 0.0005
+          }
+        },
+        {
+          "case_type": "false_negative_miss",
+          "eval_offset": 3406,
+          "repo": "cinder",
+          "inducing_sha": "67611ea28c1095a220891bf9241a5e432e213121",
+          "commit_date_utc": "2014-04-21",
+          "fix_sha": "f7f9e6228d8b73be6c1a4ad3fd998d02104a7a3b",
+          "fix_tier": "Tier1_McIntosh_CSV",
+          "fix_date_utc": "2014-05-02",
+          "latency_days": 11.0,
+          "y_true": 1,
+          "effort_loc": 11.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "remove unused 3par driver method remove the `` parse_create_host_error '' method as it is no longer used in the 3par drivers . it can safely",
+          "diff_excerpt": "file: cinder/volume/drivers/san/hp/hp_3par_common.py\n-        2.0.8 - Fix detach issue for multiple hosts Bug #1288927\n+        2.0.8 - Fix detach issue for multiple hosts bug #1288927\n+        2.0.9 - Remove unused 3PAR driver method bug #1310807\n-    VERSION = \"2.0.8\"\n+    VERSION = \"2.0.9\"\n-    def parse_create_host_error(self, hostname, out):\n-        search_str = \"already used by host \"\n-        if search_str in out[1]:\n-            # host exists, return name used by 3par\n-            hostname_3par = self.get_next_word(out[1], search_str)\n-            self.hosts_naming_dict[hostname] = hostname_3par\n-            return hostname_3par\n-",
+          "scores": {
+            "B0_Frozen": 0.0006,
+            "B1b_4W_Oracle": 0.0006,
+            "B2_4W": 0.0006,
+            "Wait_90": 0.0006,
+            "Teacher_Only_Matched": 0.0006,
+            "BORB_Native": 0.1557,
+            "ORB_OHT_Native": 0.4553,
+            "Survival_PU": 0.0006
+          }
+        }
+      ],
+      "false_positive_alarms": [
+        {
+          "case_type": "false_positive_alarm",
+          "eval_offset": 2115,
+          "repo": "nova",
+          "inducing_sha": "50b4ba4ee583d25eef10a6608172c002f9bec6f2",
+          "commit_date_utc": "2014-01-29",
+          "fix_sha": "",
+          "fix_tier": "clean",
+          "fix_date_utc": "unrevealed_in_history",
+          "latency_days": null,
+          "y_true": 0,
+          "effort_loc": 582.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "add extensible resources to resource tracker a resource plugin extension point is added to the resource tracker to allow the types of resour",
+          "diff_excerpt": "file: nova/compute/claims.py\n-    @property\n-    def vcpus(self):\n-        return 0\n-\n-        return \"[Claim: %d MB memory, %d GB disk, %d VCPUS]\" % (self.memory_mb,\n-                self.disk_gb, self.vcpus)\n+        return \"[Claim: %d MB memory, %d GB disk]\" % (self.memory_mb,\n+                self.disk_gb)\n-    @property\n-    def vcpus(self):\n-        return self.instance['vcpus']\n-\n-        vcpu_limit = limits.get('vcpu')\n-                \"GB, VCPUs %(vcpus)d\")\n-        params = {'memory_mb': self.memory_mb, 'disk_gb': self.disk_gb,\n-                  'vcpus': self.vcpus}\n+                \"GB\")",
+          "scores": {
+            "B0_Frozen": 0.9913,
+            "B1b_4W_Oracle": 0.9913,
+            "B2_4W": 0.9913,
+            "Wait_90": 0.9913,
+            "Teacher_Only_Matched": 0.9913,
+            "BORB_Native": 0.9311,
+            "ORB_OHT_Native": 0.5951,
+            "Survival_PU": 0.9913
+          }
+        },
+        {
+          "case_type": "false_positive_alarm",
+          "eval_offset": 1603,
+          "repo": "nova",
+          "inducing_sha": "d5b8d5b18d3077060345a4728a26dde51d834af3",
+          "commit_date_utc": "2013-12-23",
+          "fix_sha": "",
+          "fix_tier": "clean",
+          "fix_date_utc": "unrevealed_in_history",
+          "latency_days": null,
+          "y_true": 0,
+          "effort_loc": 98.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "xenapi : add the support for updating the status of the host . we added a function into the xenhost plugin to get information about pci devi",
+          "diff_excerpt": "file: nova/tests/virt/xenapi/test_driver.py\n-                'vcpus_used': 10}\n+                'vcpus_used': 10,\n+                'pci_passthrough_devices': ''}\nfile: nova/tests/virt/xenapi/test_xenapi.py\n+    def test_pci_passthrough_devices_whitelist(self):\n+        # NOTE(guillaume-thouvenin): This pci whitelist will be used to\n+        # match with _plugin_xenhost_get_pci_device_details method in fake.py.\n+        self.flags(pci_passthrough_whitelist=\n+                   ['[{\"vendor_id\":\"10de\", \"product_id\":\"11bf\"}]'])\n+        stats = self.conn.get_host_stats()\n+        self.assertEqual(len(stats['pci_passthrough_devices']), 1)\n+\n+    def test_pci_passthrough_devices_no_whitelist(self):\n+        stats = self.conn.get_host_stats()\n+        self.assertEqual(len(stats['pci_passthrough_devices']), 0)\n+\nfile: nova/virt/xenapi/client/session.py",
+          "scores": {
+            "B0_Frozen": 0.9655,
+            "B1b_4W_Oracle": 0.9655,
+            "B2_4W": 0.9655,
+            "Wait_90": 0.9655,
+            "Teacher_Only_Matched": 0.9655,
+            "BORB_Native": 0.7828,
+            "ORB_OHT_Native": 0.5823,
+            "Survival_PU": 0.9655
+          }
+        },
+        {
+          "case_type": "false_positive_alarm",
+          "eval_offset": 3532,
+          "repo": "nova",
+          "inducing_sha": "cfd0846498c21f250321482316b32d4519ed622c",
+          "commit_date_utc": "2014-04-30",
+          "fix_sha": "",
+          "fix_tier": "clean",
+          "fix_date_utc": "unrevealed_in_history",
+          "latency_days": null,
+          "y_true": 0,
+          "effort_loc": 1190.0,
+          "alarm_and_censoring_exposure_trace": {
+            "active_model_generation_id": 0,
+            "n_prior_alarms_before_prediction": 0,
+            "last_alarm_end_commit_idx": null,
+            "last_alarm_date_utc": null,
+            "last_alarm_4W_true_bugs": null,
+            "last_alarm_4W_revealed_bugs": null,
+            "last_alarm_4W_censored_false_negatives": null,
+            "last_alarm_4W_censoring_rate": null
+          },
+          "subject": "do n't translate debug level logs in nova.virt our translation policy ( https : //wiki.openstack.org/wiki/loggingstandards # log_translation",
+          "diff_excerpt": "file: nova/hacking/checks.py\n+            \"nova/virt\",\nfile: nova/virt/baremetal/iboot_pdu.py\n-        LOG.debug(_(\"Checking if %s is running\"), self.node_name)\n+        LOG.debug(\"Checking if %s is running\", self.node_name)\nfile: nova/virt/baremetal/ipmi.py\n-            LOG.debug(_(\"ipmitool stdout: '%(out)s', stderr: '%(err)s'\"),\n+            LOG.debug(\"ipmitool stdout: '%(out)s', stderr: '%(err)s'\",\nfile: nova/virt/baremetal/pxe.py\n-    LOG.debug(_(\"Building PXE config for deployment %s.\") % deployment_id)\n+    LOG.debug(\"Building PXE config for deployment %s.\", deployment_id)\n-        LOG.debug(_(\"Fetching kernel and ramdisk for instance %s\") %\n-                        instance['name'])\n+        LOG.debug(\"Fetching kernel and ramdisk for instance %s\",\n+                  instance['name'])\n-        LOG.debug(_(\"Fetching image %(ami)s for instance %(name)s\") %\n-                        {'ami': image_meta['id'], 'name': instance['name']})\n+        LOG.debug(\"Fetching image %(ami)s for instance %(name)s\",",
+          "scores": {
+            "B0_Frozen": 0.9419,
+            "B1b_4W_Oracle": 0.9419,
+            "B2_4W": 0.9419,
+            "Wait_90": 0.9419,
+            "Teacher_Only_Matched": 0.9419,
+            "BORB_Native": 0.9884,
+            "ORB_OHT_Native": 0.6201,
+            "Survival_PU": 0.9419
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "generated_at_utc": "2026-11-17T08:16:26.382054+00:00",
+  "encoder_model_id": "microsoft/codebert-base",
+  "encoder_config_sha256": "9542964951ffcf5549fa795b13a70a52755543480eeee04d327fac828dfa879f",
+  "pooling_rule": "0.5 * CLS + 0.5 * masked_token_mean (msg_max_len=96, code_max_len=192, fp16)",
+  "missing_modality_policy": "preserve_empty_string_no_message_fallback",
+  "torch_version": "2.14.1+cu126",
+  "transformers_version": "5.23.0",
+  "datasets": {
+    "openstack": {
+      "npz_file": "codebert_openstack_v3.npz",
+      "npz_sha256": "7fd38e2b8724fab653596a6a973c73ee6288dcaa667c81472294de653cd68331",
+      "n_commits": 13304,
+      "n_missing_diffs": 10,
+      "unique_empty_diff_code_vectors": 1,
+      "empty_diff_code_vs_msg_median_cosine": 0.848285,
+      "commit_ids_sha256": "2ec1e71088f0222b94c9f69363f21ec8ddfd0817ef457fa3b4609154963a2424",
+      "msgs_text_sha256": "02242a3e6a82751f63153f7d25d0a92e2fc6adba3008b2e3589fc99a88d945d1",
+      "codes_text_sha256": "e9e76a1e5e8142b777063184835b7bdfef108fc9a6c87eda4381de8324ba084c",
+      "elapsed_sec": 19.32
+    },
+    "qt": {
+      "npz_file": "codebert_qt_v3.npz",
+      "npz_sha256": "7e27b64c4b7cf209d3654ab58d0df150586c9a61dc1f3883119d670330349671",
+      "n_commits": 25704,
+      "n_missing_diffs": 262,
+      "unique_empty_diff_code_vectors": 1,
+      "empty_diff_code_vs_msg_median_cosine": 0.842576,
+      "commit_ids_sha256": "a21081ecb0dc285dbf7956f79551323244fb19bb6c6eb10a106c82e6b7b3138e",
+      "msgs_text_sha256": "733423537f388572f0e7180d55c5683c31ae11e3b481fa4a5ca3649c27b592a8",
+      "codes_text_sha256": "b40a9544c41c03811d2e84ed20e7a22b31904a7e0b20ed1d37952497cd1f30d3",
+      "elapsed_sec": 37.32
+    }
+  }
+}
