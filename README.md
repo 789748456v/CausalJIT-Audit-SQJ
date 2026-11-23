@@ -141,7 +141,7 @@ python scripts_v3/analyze_and_plot_v3.py
 python scripts_v3/build_manuscript_v3.py
 ```
 
-Compiling `manuscript/main.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready 51-page Springer SQJ PDF with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
+Compiling `manuscript/main.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready 52-page Springer SQJ PDF with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
 
 ### Tier 2 — Tabular Benchmark & Companion Audit Re-Execution
 
