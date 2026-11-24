@@ -1216,7 +1216,7 @@ def build_prose_claims_registry() -> List[ProsePairClaim]:
             jp_b=("regimes", "Pop_N60_Indep_PermFN", "cells_mean_ap", "TrainPert__EvalRef", "BORB_Native"),
             fmt_b=".4f",
             claim_mode="direction",
-            prose_regex=r"BORB drops more than ten AP points and ORB falls even further",
+            prose_regex=r"relative to its clean-label training baseline,\s*BORB drops more than ten AP points to finish six points behind the batch learners,\s*and ORB trails them by ten points",
             scope_prose_regex=r"Semi-Synthetic PR-SZZ Noise",
         ),
         ProsePairClaim(

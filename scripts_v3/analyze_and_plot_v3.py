@@ -439,8 +439,8 @@ def build_derived_aggregates(
 
 def _save_fig(fig, fig_dir: str, stem: str) -> None:
     os.makedirs(fig_dir, exist_ok=True)
-    fig.savefig(os.path.join(fig_dir, f"{stem}.pdf"), bbox_inches="tight", pad_inches=0.06)
-    fig.savefig(os.path.join(fig_dir, f"{stem}.png"), dpi=300, bbox_inches="tight", pad_inches=0.06)
+    fig.savefig(os.path.join(fig_dir, f"{stem}.pdf"), bbox_inches="tight", pad_inches=0.12)
+    fig.savefig(os.path.join(fig_dir, f"{stem}.png"), dpi=300, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -760,7 +760,7 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     ax1.set_xlim(0, max(vals) * 1.24)
     ax1.tick_params(axis="x", labelsize=9.6)
     ax1.set_xlabel("10-Stream Mean Average Precision (AP)", fontsize=10.6)
-    ax1.set_title("(a) Maturity-Estimator Sensitivity & Internal Ablations", fontweight="bold", fontsize=11.0, pad=8)
+    ax1.set_title("(a) Maturity-Estimator Sensitivity & Internal Ablations", fontweight="bold", fontsize=11.0, pad=11)
     ax1.grid(axis="x", linestyle=":", alpha=0.5)
 
     # Panel (b): Dual-metric comparison (AP AND Recall@20%Effort) on Compute-Matched Teacher & Gate Controls
@@ -786,7 +786,7 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     ax2.tick_params(axis="y", labelsize=9.6)
     ax2.set_ylim(0, max(max(v_ap), max(v_r20)) * 1.28)
     ax2.set_ylabel("Score (Higher is Better)", fontsize=10.6)
-    ax2.set_title("(b) Distillation, Compute-Matched & Gate Controls", fontweight="bold", fontsize=11.0, pad=8)
+    ax2.set_title("(b) Distillation, Compute-Matched & Gate Controls", fontweight="bold", fontsize=11.0, pad=11)
     ax2.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.94, fontsize=9.4)
     ax2.grid(axis="y", linestyle=":", alpha=0.5)
 
@@ -1162,11 +1162,13 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Verification latency and right-censoring audit across cohorts at $W=400$. Columns 5--6 report scheduled boundary censoring, Column 7 reports fired-alarm censoring, and asterisks mark Hadoop monorepo slices (Table~S-7).}\n"
+        "\\caption{Verification latency and right-censoring audit across cohorts at $W=400$. Asterisks mark Hadoop monorepo slices (Table~S-7).}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lrrrrrr@{{}}}}\n\\toprule\n"
         "\\textbf{Stream / Cohort} & \\textbf{$N$} & \\textbf{Prev.} & \\textbf{Lag} & \\textbf{1W Sch.} & \\textbf{4W Sch.} & \\textbf{1W Alm.} \\\\\n\\midrule\n"
         + "\n".join(rows_t1)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: Prev.\\ = defect prevalence; Lag = median SZZ fix delay (days); 1W/4W Sch.\\ = unrevealed defect share at scheduled 1-window ($400$c) / 4-window ($1{,}600$c) boundaries; 1W Alm.\\ = unrevealed share at fired DriftLens alarms.\\par}\n"
+        "\\end{table}\n"
     )
 
     # 2. Table `tab:bench_a_main` (Main 7.5pt 8-col summary) + `tab:or_bench_a_full` (Online Resource 1 full 10-col per-host breakdown)
@@ -1254,7 +1256,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.8pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method} & \\textbf{DJIT} & \\textbf{LGBM} & \\textbf{AP} & \\textbf{$F_1$} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{R@20} & \\textbf{Br.$\\downarrow$} \\\\\n\\midrule\n"
         + "\n".join(rows_ba)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: DJIT = DeepJIT-CNN AP; LGBM = LightGBM AP; AP = 4-host (Track~1) or model (Track~2) mean AP; $F_{1\\mathrm{t}}$ = causally tuned $F_{1,\\mathrm{th}}$; R@20 = Recall@20\\%Effort; Br.$\\downarrow$ = post-Platt Brier loss.\\par}\n"
+        "\\end{table}\n"
     )
     supp_tables.append(
         "\\begin{table}[!htbp]\n\\centering\n"
@@ -1373,7 +1377,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lcccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method} & \\textbf{$K{=}25$} & \\textbf{$K{=}24$} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{Br.$\\downarrow$} & \\textbf{LGB} & \\textbf{Shift} \\\\\n\\midrule\n"
         + "\n".join(rows_bb)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: $K{=}25$/$K{=}24$ = MLP AP across all 25 / 24 Benchmark-A-disjoint clusters; $F_{1\\mathrm{t}}$ = tuned $F_{1,\\mathrm{th}}$; Br.$\\downarrow$ = post-Platt Brier; LGB = LightGBM $K{=}25$ AP; Shift = 4-stream post-onset AP.\\par}\n"
+        "\\end{table}\n"
     )
     supp_tables.append(
         "\\begin{table}[!htbp]\n\\centering\n"
@@ -1491,7 +1497,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.5pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Method} & \\textbf{HDFS*} & \\textbf{MR*} & \\textbf{Spark} & \\textbf{Zepp.} & \\textbf{ZooK.} & \\textbf{U4 MLP} & \\textbf{U4 LGB} \\\\\n\\midrule\n"
         + "\n".join(rows_cf)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: MR* = MapReduce*; Zepp.\\ = Zeppelin; ZooK.\\ = ZooKeeper; U4 MLP / U4 LGB = four-umbrella mean AP merging HDFS* and MR* under Hadoop on MLP / LightGBM.\\par}\n"
+        "\\end{table}\n"
     )
 
     # 7. Table `tab:rq3_ablations` (Main 7.5pt 6-col) + `tab:or_rq3_full` (Online Resource 7-col with ROC-AUC)
@@ -1545,7 +1553,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{2.0pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Variant / Control} & \\textbf{AP} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{R@20} & \\textbf{Br.$\\downarrow$} & \\textbf{Steps} \\\\\n\\midrule\n"
         + "\n".join(rows_r3)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: $F_{1\\mathrm{t}}$ = causally tuned $F_{1,\\mathrm{th}}$; R@20 = Recall@20\\%Effort; Br.$\\downarrow$ = post-Platt Brier loss; Steps = mean optimizer gradient steps per stream.\\par}\n"
+        "\\end{table}\n"
     )
     supp_tables.append(
         "\\begin{table}[!htbp]\n\\centering\n"
@@ -1597,7 +1607,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.5pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lcccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Monitor Configuration} & \\textbf{Alm.} & \\textbf{Null} & \\textbf{Miss} & \\textbf{Dly} & \\textbf{C4W} & \\textbf{SPU} \\\\\n\\midrule\n"
         + "\n".join(rows_m4)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: Alm.\\ = mean triggered-window alarm rate; Null = validation-pool false-alarm rate; Miss = undetected shift rate (20 shift runs); Dly = mean conditional detection delay (commits); C4W / SPU = 10-stream mean AP for Causal-4W / Survival-PU.\\par}\n"
+        "\\end{table}\n"
     )
 
     # 9. Table `tab:rq4f_llm` -> Online Resource 1 (Table S16)
@@ -1733,7 +1745,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.2pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Latency Regime} & \\textbf{Ora.} & \\textbf{C4W AP} & \\textbf{SPU AP} & \\textbf{C4W $F_1$} & \\textbf{SPU $F_1$} & \\textbf{C4W $F_{1\\mathrm{t}}$} & \\textbf{SPU $F_{1\\mathrm{t}}$} \\\\\n\\midrule\n"
         + "\n".join(rows_ka)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: Ora.\\ = Window Oracle AP; C4W = Causal-4W; SPU = Survival-PU; $F_{1\\mathrm{t}}$ = causally tuned $F_{1,\\mathrm{th}}$.\\par}\n"
+        "\\end{table}\n"
     )
     supp_tables.append(
         "\\begin{table}[!htbp]\n\\centering\n"
@@ -1904,7 +1918,9 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.2pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lccccccc@{{}}}}\n\\toprule\n"
         "\\textbf{Regime \\& Method} & \\textbf{AP} & \\textbf{WinAP} & \\textbf{$F_1$} & \\textbf{$F_{1\\mathrm{t}}$} & \\textbf{Br$_{\\mathrm{raw}}\\downarrow$} & \\textbf{Br$_{90}\\downarrow$} & \\textbf{ECE$_{90}\\downarrow$} \\\\\n\\midrule\n"
         + "\n".join(rows_ph)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: WinAP = unweighted 400-commit per-window AP; $F_{1\\mathrm{t}}$ = tuned $F_{1,\\mathrm{th}}$; Br$_{\\mathrm{raw}}$ = raw Brier loss; Br$_{90}$ / ECE$_{90}$ = 90-day Platt Brier / ECE.\\par}\n"
+        "\\end{table}\n"
     )
     supp_tables.append(
         "\\begin{table}[!htbp]\n\\centering\n"
@@ -1943,11 +1959,13 @@ def generate_digest_and_tables(base_dir: str, scratch_dir: str, skip_plots: bool
 
     tex_tables.append(
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{RQ5 paired defect trade-off of Survival-PU minus Causal-4W on a single representative seed under fixed-0.5 thresholding, equal-cap whole-stream and 400-commit per-window budgets, plus five-seed windowed 20\\%-LOC recall delta ($\\Delta\\mathrm{WinR}_{20}$).}\n"
+        "\\caption{RQ5 paired defect trade-off of Survival-PU minus Causal-4W on a single representative seed under fixed-0.5 thresholding and equal-cap budgets, plus five-seed windowed effort recall delta.}\n"
         f"\\label{{{t_lbl}}}\n\\fontsize{{7.5}}{{9.0}}\\selectfont\n\\setlength{{\\tabcolsep}}{{1.2pt}}\n\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep\\fill}}lrrrrrrr@{{}}}}\n\\toprule\n"
         "\\textbf{Host} & \\textbf{TP$_{0.5}$} & \\textbf{FP$_{0.5}$} & \\textbf{Wh.10} & \\textbf{Wn.10} & \\textbf{Wh.20L} & \\textbf{Wn.20L} & \\textbf{$\\Delta$WnR$_{20}$} \\\\\n\\midrule\n"
         + "\n".join(rows_pb)
-        + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n"
+        + "\n\\bottomrule\n\\end{tabular*}\n"
+        "\\vspace{2pt}\\par\\noindent{\\scriptsize\\raggedright Abbreviations: TP$_{0.5}$ / FP$_{0.5}$ = net true / false positives at fixed threshold 0.50; Wh.10 / Wn.10 = whole-stream / 400-commit per-window Top-10\\% commit-cap net TP; Wh.20L / Wn.20L = whole-stream / per-window 20\\%-LOC cap net TP; $\\Delta$WnR$_{20}$ = five-seed per-window 20\\%-LOC recall delta; OS: CodeB.\\ (0) = OpenStack CodeBERT (zero drift alarms fired on the representative seed).\\par}\n"
+        "\\end{table}\n"
     )
 
     # 16. Table `tab:confirmatory_funnel` -> Online Resource 1 (Table S7)

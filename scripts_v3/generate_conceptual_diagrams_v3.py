@@ -189,21 +189,21 @@ def build_fig0a_causal_timeline(fig_dir: str) -> None:
 
     os.makedirs(fig_dir, exist_ok=True)
     fig.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
-    fig.savefig(os.path.join(fig_dir, "fig0a_causal_timeline_v3.pdf"))
-    fig.savefig(os.path.join(fig_dir, "fig0a_causal_timeline_v3.png"), dpi=300)
+    fig.savefig(os.path.join(fig_dir, "fig0a_causal_timeline_v3.pdf"), bbox_inches="tight", pad_inches=0.10)
+    fig.savefig(os.path.join(fig_dir, "fig0a_causal_timeline_v3.png"), dpi=300, bbox_inches="tight", pad_inches=0.10)
     plt.close(fig)
 
 
 def build_fig0b_architecture(fig_dir: str) -> None:
-    fig, ax = plt.subplots(figsize=(10.6, 4.35))
+    fig, ax = plt.subplots(figsize=(10.6, 4.42))
     ax.set_xlim(0.0, 1.0)
-    ax.set_ylim(0.0, 1.0)
+    ax.set_ylim(0.0, 1.025)
     ax.axis("off")
 
     ax.text(
-        0.50, 0.955,
+        0.50, 0.968,
         "Survival-PU: Three-Stage Input–Output Pipeline Triggered at Drift Alarm $t_{\\mathrm{alarm}}$",
-        ha="center", va="center", fontsize=12.6, fontweight="bold", color="#0F172A"
+        ha="center", va="center", fontsize=12.4, fontweight="bold", color="#0F172A"
     )
 
     # Column 1: Stream Input & Block DriftLens
@@ -281,8 +281,8 @@ def build_fig0b_architecture(fig_dir: str) -> None:
 
     os.makedirs(fig_dir, exist_ok=True)
     fig.subplots_adjust(left=0.006, right=0.994, top=0.992, bottom=0.008)
-    fig.savefig(os.path.join(fig_dir, "fig0b_survival_pu_architecture_v3.pdf"))
-    fig.savefig(os.path.join(fig_dir, "fig0b_survival_pu_architecture_v3.png"), dpi=300)
+    fig.savefig(os.path.join(fig_dir, "fig0b_survival_pu_architecture_v3.pdf"), bbox_inches="tight", pad_inches=0.10)
+    fig.savefig(os.path.join(fig_dir, "fig0b_survival_pu_architecture_v3.png"), dpi=300, bbox_inches="tight", pad_inches=0.10)
     plt.close(fig)
 
 

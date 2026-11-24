@@ -44,6 +44,7 @@ def build_main_tex(tmap: Dict[str, str]) -> str:
     tex = r"""% Springer Nature LaTeX Template for Software Quality Journal (SQJ)
 % Compilation: pdflatex main && bibtex main && pdflatex main && pdflatex main
 \RequirePackage{fix-cm}
+\PassOptionsToPackage{hyphens}{url}
 \documentclass[pdflatex,sn-basic]{sn-jnl}
 
 % ============================================================================
@@ -62,8 +63,10 @@ def build_main_tex(tmap: Dict[str, str]) -> str:
 \usepackage{tabularx}%
 \usepackage{array}%
 \usepackage{enumitem}%
-\usepackage{xurl}%
 \usepackage{microtype}%
+\def\UrlBigBreaks{\do\/}%
+\def\UrlBreaks{\do\/\do-\do.}%
+\def\UrlNoBreaks{\do\:}%
 
 \graphicspath{{figures/}{../figures/}}
 
@@ -123,7 +126,7 @@ def build_main_tex(tmap: Dict[str, str]) -> str:
 % ============================================================================
 % Unstructured Single-Paragraph Abstract (~215 Words — Springer SQJ Standard)
 % ============================================================================
-\abstract{Unsupervised drift monitors such as DriftLens flag representation shifts in Just-in-Time Defect Prediction without defect labels, motivating immediate window retraining. Label-free monitoring decides only when to retrain, however, not how to supervise weight updates. Under multi-month SZZ verification latency, most recently introduced defects remain unfixed at alarm time and appear clean. We audit this causal supervision gap across 34 natural repository streams totaling 347,122 commits, spanning 29 multi-year streams and five shorter confirmatory projects, alongside eight controlled shifts and a Code-LLM case study. Across linear, streaming, and Positive-Unlabeled learners, we evaluate circular block-bootstrap DriftLens alongside Survival-PU, a maturity-aware three-stage pipeline trained on soft targets. In multi-year ecosystems, 68.8\% to 94.6\% of defects inside scheduled windows remain right-censored at alarm time. Leaking future fixes into matched window-oracle updates significantly inflates Average Precision over causal retraining across multi-year neural and tree models, and block-bootstrap calibration cuts DriftLens false alarms nearly fivefold. On the shorter confirmatory projects, however, that neural hindsight optimism fails to replicate. Once strict causal visibility holds, no single paradigm dominates every regime. Frozen linear models lead deployable multimodal streams, simpler causal baselines and a fixed maturity curve outperform Survival-PU on gradual whole-stream ranking, and streaming Hoeffding trees led by ODaSC excel on the confirmatory projects. By contrast, Survival-PU leads post-shift ranking, avoids hardcoded-lag errors when fixes arrive immediately, and protects thresholded classification under severe latency where standard post-hoc calibration degrades.}
+\abstract{Unsupervised drift monitors such as DriftLens flag representation shifts in Just-in-Time Defect Prediction without defect labels, motivating immediate window retraining. Label-free monitoring decides only when to retrain, however, not how to supervise weight updates. Under multi-month SZZ verification latency, most recently introduced defects remain unfixed at alarm time and appear clean. We audit this causal supervision gap across 34 natural repository streams totaling 347,122 commits, spanning 29 multi-year streams and five shorter confirmatory projects, alongside eight controlled shifts and a Code-LLM case study. Across linear, streaming, and Positive-Unlabeled learners, we evaluate circular block-bootstrap DriftLens alongside Survival-PU, a maturity-aware three-stage pipeline trained on soft targets. In multi-year ecosystems, 68.8\% to 94.6\% of defects inside recent retraining windows remain right-censored at alarm time. Leaking future fixes into matched window-oracle updates significantly inflates Average Precision over causal retraining across multi-year neural and tree models, and block-bootstrap calibration cuts DriftLens false alarms nearly fivefold. On the shorter confirmatory projects, however, that neural hindsight optimism fails to replicate. Once strict causal visibility holds, no single paradigm dominates every regime. Frozen linear models lead deployable multimodal streams, simpler causal baselines and a fixed maturity curve outperform Survival-PU on gradual whole-stream ranking, and streaming Hoeffding trees led by ODaSC excel on the confirmatory projects. By contrast, Survival-PU leads post-shift ranking, avoids hardcoded-lag errors when fixes arrive immediately, and protects thresholded classification under severe latency where standard post-hoc calibration degrades.}
 
 \keywords{Just-in-Time Defect Prediction, Distribution Shift, Verification Latency, Right-Censoring, Positive-Unlabeled Learning, Survival Analysis}
 
@@ -220,7 +223,7 @@ Two censoring horizons govern label observability at an alarm $t_{\text{alarm}}$
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.74\textwidth]{fig0a_causal_timeline_v3.pdf}
+  \includegraphics[width=0.68\textwidth]{fig0a_causal_timeline_v3.pdf}
   \caption{Causal supervision at drift alarm $t_{\text{alarm}}$. Panel~(a) shows Window Oracle leaking future SZZ fixes into $W_{\text{drift}}$; Panel~(b) contrasts delayed and naive causal retraining against maturity-weighted PU soft targets.}
   \label{fig:causal_timeline}
 \end{figure}
@@ -296,39 +299,36 @@ At the adaptation layer, Survival-PU pursues three sequential goals using only c
 \subsection{Stage 1: Risk-Eligible Cohort Incidence and Survival Controls}
 \label{sec:stage1}
 
-A naive empirical CDF over observed fixes underestimates true fix latency because slow-surfacing defects are missing from recent commits. Stage~1 avoids this right-truncation bias on the trailing $N_{\text{hist}}$ causal commits $\mathcal{H}_{\text{rec}} \subset \{i : t_i \le t_{\text{alarm}}\}$, recording each commit's age $a_i \ge 0$ in days at $t_{\text{alarm}}$ and fix delay $d_i \ge 0$ when $y_{i,\text{obs}}(t_{\text{alarm}}) = 1$ (setting $d_i = +\infty$ otherwise).
+To estimate how quickly defects surface without undercounting slow fixes, Stage~1 constructs a survival-style maturity curve over recent commits. Rather than taking a naive empirical CDF over already fixed bugs, it asks what share of commits old enough to reach each age milestone have surfaced a defect by that age.
 
-Along age knots $g_0 = 0 < g_1 < \dots < g_M = a_{\max}$, Stage~1 computes cumulative incidence over age-eligible commits $\mathcal{E}(g_m) = \{i \in \mathcal{H}_{\text{rec}} : a_i \ge g_m\}$, carrying forward $\hat{G}(g_{m-1})$ below the support floor (Table~\ref{tab:hyperparams}) and enforcing monotonicity:
+Using only the trailing $N_{\text{hist}}$ causal commits $\mathcal{H}_{\text{rec}} \subset \{i : t_i \le t_{\text{alarm}}\}$, Stage~1 records commit age $a_i \ge 0$ in days at $t_{\text{alarm}}$ and fix delay $d_i \ge 0$ for revealed defects (setting $d_i = +\infty$ otherwise). Along age knots $g_0 = 0 < g_1 < \dots < g_M = a_{\max}$, it computes cumulative incidence over age-eligible commits $\mathcal{E}(g_m) = \{i \in \mathcal{H}_{\text{rec}} : a_i \ge g_m\}$, carrying forward $\hat{G}(g_{m-1})$ below the support floor (Table~\ref{tab:hyperparams}) and enforcing monotonicity:
 \begin{equation}
   \hat{G}(g_m) = \frac{1}{|\mathcal{E}(g_m)|}\sum_{i \in \mathcal{E}(g_m)} \mathbb{I}\!\left(y_{i,\text{obs}} = 1 \;\wedge\; d_i \le g_m\right), \qquad \tilde{G}(g_m) = \max_{0 \le k \le m}\hat{G}(g_k),
   \label{eq:cohort_inc}
 \end{equation}
-so $\tilde{G}(g_m) \approx \pi\, c(g_m)$. To account for late defects after $a_{\max}$, Stage~1 forms second-half incidence growth $r_g = \tilde{G}(a_{\max}) / \tilde{G}_{\text{half}}$ and a bounded tail-completeness factor:
+so $\tilde{G}(g_m) \approx \pi\, c(g_m)$. Because defects fixing after $a_{\max}$ remain unobserved, Stage~1 damps tail completeness using second-half growth $r_g = \tilde{G}(a_{\max}) / \tilde{G}_{\text{half}}$ and horizon factor $\phi_a$:
 \begin{equation}
   \begin{aligned}
-    \phi_a &= \mathrm{clip}\!\Big(\frac{a_{\max}}{a_{\max} + 45},\; 0.65,\; 1\Big), \\
-    \gamma_{\text{tail}} &= \mathrm{clip}\!\Big(\big[\gamma_{\max} - 0.28\,\mathrm{clip}(r_g - 1, 0, 1)\big]\phi_a,\; \gamma_{\min},\; \gamma_{\max}\Big).
+    \phi_a &= \mathrm{clip}\!\Big(\frac{a_{\max}}{a_{\max} + a_0},\; \phi_{\min},\; 1\Big), \\
+    \gamma_{\text{tail}} &= \mathrm{clip}\!\Big(\big[\gamma_{\max} - \lambda_g\,\mathrm{clip}(r_g - 1, 0, 1)\big]\phi_a,\; \gamma_{\min},\; \gamma_{\max}\Big),
   \end{aligned}
   \label{eq:tail_cap}
 \end{equation}
-Normalizing $\tilde{G}(g_m)$ by $\tilde{G}(a_{\max}) / \gamma_{\text{tail}}$ cancels $\pi$ and yields clipped knot maturities for piecewise-linear interpolation:
+where $(a_0, \phi_{\min}, \lambda_g)$ are pre-locked damping constants documented in Appendix~\ref{app:repro}. Normalizing $\tilde{G}(g_m)$ by $\tilde{G}(a_{\max}) / \gamma_{\text{tail}}$ cancels $\pi$ and yields clipped knot maturities:
 \begin{equation}
-  \begin{aligned}
-    c_{\text{knot}}(g_m) &= \mathrm{clip}\!\Big(\gamma_{\text{tail}}\,\frac{\tilde{G}(g_m)}{\tilde{G}(a_{\max})},\; c_{\min},\; c_{\max}\Big), \\
-    c_i &= \mathrm{clip}\!\big(\mathrm{interp}(a_i;\, \{g_m\}, \{c_{\text{knot}}\}),\; c_{\min},\; c_{\max}\big).
-  \end{aligned}
+  c_{\text{knot}}(g_m) = \mathrm{clip}\!\Big(\gamma_{\text{tail}}\,\frac{\tilde{G}(g_m)}{\tilde{G}(a_{\max})},\; c_{\min},\; c_{\max}\Big),
   \label{eq:ci_interp}
 \end{equation}
-Under sparse trailing support, Stage~1 reverts deterministically to the smooth 90-day half-life fallback curve in Table~\ref{tab:hyperparams}.
+from which each commit's maturity $c_i$ is interpolated piecewise-linearly and clipped to $[c_{\min}, c_{\max}]$. Under sparse trailing support, Stage~1 reverts deterministically to the smooth 90-day half-life fallback curve in Table~\ref{tab:hyperparams}.
 
-This normalization assumes locally stationary prevalence and fix latency across $\mathcal{H}_{\text{rec}}$; abrupt shifts can temporarily confound prevalence with reveal speed, as audited in Section~\ref{sec:rq3}. We also evaluate three drop-in Stage~1 controls under the same interface: quantized Kaplan--Meier Cure, unstratified Weibull Mixture-Cure MLE \citep{boag1949cure,farewell1982cure}, and parameter-free FixedCurve-PU using a fixed 90-day half-life curve clipped to $[c_{\min}, c_{\max}]$.
+This normalization assumes locally stationary prevalence and fix latency across $\mathcal{H}_{\text{rec}}$; abrupt shifts can temporarily confound prevalence with reveal speed, as audited in Section~\ref{sec:rq3}. To isolate whether learned curves outperform simpler priors, we test three drop-in Stage~1 controls: quantized Kaplan--Meier Cure, unstratified Weibull Mixture-Cure MLE \citep{boag1949cure,farewell1982cure}, and parameter-free FixedCurve-PU using a fixed 90-day half-life curve clipped to $[c_{\min}, c_{\max}]$.
 
 \subsection{Stage 2: Clipped Inverse-Maturity Prevalence and Reliable Teacher}
 \label{sec:stage2}
 
-Stage~2 bridges covariate shift between historical anchors and the drift window while downweighting immature labels. On $\mathcal{B} = \mathcal{A}_{\text{anc}} \cup W_{\text{drift}}$, an $L_2$-logistic domain classifier separates $\mathcal{A}_{\text{anc}}$ from $W_{\text{drift}}$ to estimate bounded density-ratio weights $w_{\text{imp}}(x_i) \in [w_{\min}, w_{\max}]$ \citep{sugiyama2008direct}. Combining $w_{\text{imp}}(x_i)$ with anchor recency and drift weight $\gamma_{\text{drift}}$ gives base weights $w_i$, and label-independent sample weights $u_i = w_i[u_0 + (1 - u_0)c_i]$ downweight young commits without distorting class balance.
+Before distilling soft targets, Stage~2 answers two linked questions: what latent defect rate the drifted window is hiding, and which past commits are trustworthy enough to train a teacher. Intuitively, it reweights historical anchors toward the incoming window, inflates observed fixes by commit maturity without letting tiny maturities explode variance, and trains a teacher solely on confirmed defects plus sufficiently aged clean commits.
 
-To prevent variance spikes from tiny maturities, Stage~2 estimates prevalence on a trailing calibration slice $\mathcal{B}_{\text{cal}} \subset \mathcal{B}$ using floored maturities $\tilde{c}_i = \max(c_i, c_{\text{ht}})$ with $c_{\text{ht}} = 0.10$, shrinking the inverse-maturity estimate toward a mature anchor prior $\pi_{\text{anc}}$ (Table~\ref{tab:hyperparams}):
+Formally, on the combined anchor and drift pool $\mathcal{B} = \mathcal{A}_{\text{anc}} \cup W_{\text{drift}}$, an $L_2$-logistic domain classifier estimates bounded density-ratio weights $w_{\text{imp}}(x_i) \in [w_{\min}, w_{\max}]$ \citep{sugiyama2008direct}. Combining $w_{\text{imp}}(x_i)$ with anchor recency and drift emphasis $\gamma_{\text{drift}}$ yields base weights $w_i$, and label-independent weights $u_i = w_i[u_0 + (1 - u_0)c_i]$ downweight young commits without skewing class balance. On a trailing calibration slice $\mathcal{B}_{\text{cal}} \subset \mathcal{B}$, Stage~2 floors maturities at $\tilde{c}_i = \max(c_i, c_{\text{ht}})$ with $c_{\text{ht}} = 0.10$ and shrinks the inverse-maturity prevalence toward a mature anchor prior $\pi_{\text{anc}}$ (Table~\ref{tab:hyperparams}):
 \begin{equation}
   \begin{aligned}
     \hat{\pi}_{\text{IP}} &= \frac{\sum_{i \in \mathcal{B}_{\text{cal}}} u_i\,(y_{i,\text{obs}} / \tilde{c}_i)}{\sum_{i \in \mathcal{B}_{\text{cal}}} u_i}, \qquad n_{\text{eff,heur}} = \frac{\big(\sum_{i \in \mathcal{B}_{\text{cal}}} u_i\big)^2}{\sum_{i \in \mathcal{B}_{\text{cal}}} (u_i / \tilde{c}_i)^2}, \\
@@ -337,22 +337,22 @@ To prevent variance spikes from tiny maturities, Stage~2 estimates prevalence on
   \label{eq:ht_prev}
 \end{equation}
 
-Stage~2 then fits teacher $T_\phi$ on the reliable cohort $\mathcal{R} = \{i : y_{i,\text{obs}} = 1 \vee c_i \ge \tau_{\text{rel}}\}$ with sample weights $w_{\text{rel},i} = w_{\text{imp}}(x_i) \cdot r_{\text{conf},i} \cdot \text{recency}_i$, where $r_{\text{conf},i} = 0.55 + 0.45\,c_i$ for $c_i < \tau_{\text{rel}}$ and $1$ otherwise, and blended positive weight:
+Stage~2 then fits teacher $T_\phi$ on the reliable cohort $\mathcal{R} = \{i : y_{i,\text{obs}} = 1 \vee c_i \ge \tau_{\text{rel}}\}$ with sample weights $w_{\text{rel},i} = w_{\text{imp}}(x_i) \cdot r_{\text{conf},i} \cdot \text{recency}_i$, where $r_{\text{conf},i} = \rho_0 + (1 - \rho_0)c_i$ for $c_i < \tau_{\text{rel}}$ and $1$ otherwise, and blended positive class weight:
 \begin{equation}
-  \omega_{+,\text{teach}} = \tfrac{1}{2}\omega_+ + \tfrac{1}{2}\operatorname{clip}\!\left(\frac{1 - \hat{\pi}_{\text{target}}}{\max(\hat{\pi}_{\text{target}}, 0.03)},\; 1.5,\; \max(4.5, \omega_+)\right).
+  \omega_{+,\text{teach}} = \tfrac{1}{2}\omega_+ + \tfrac{1}{2}\operatorname{clip}\!\left(\frac{1 - \hat{\pi}_{\text{target}}}{\max(\hat{\pi}_{\text{target}}, \epsilon_\pi)},\; \omega_{\min},\; \max(\omega_{\max}, \omega_+)\right),
   \label{eq:teacher_weights}
 \end{equation}
-Neural teachers warm-start from a blend of the current checkpoint and the pre-stream anchor for $E_{\text{teach}}$ epochs; LightGBM fits a fresh $R_{\text{alm}}$-tree booster. Both emit temperature-scaled, class-weight-corrected log-odds $\eta_i^{(0)} = \tau_{\text{sharp}}(z_{\text{teach}}(x_i) - \log \omega_{+,\text{teach}})$ for Stage~3 distillation.
+with pre-locked scaling bounds $(\rho_0, \epsilon_\pi, \omega_{\min}, \omega_{\max})$ listed in Appendix~\ref{app:repro}. Neural teachers warm-start from a blend of the current checkpoint and pre-stream anchor for $E_{\text{teach}}$ epochs; LightGBM fits a fresh $R_{\text{alm}}$-tree booster. Both emit temperature-scaled, class-weight-corrected log-odds $\eta_i^{(0)} = \tau_{\text{sharp}}(z_{\text{teach}}(x_i) - \log \omega_{+,\text{teach}})$.
 
-\subsection{Stage 3: Soft-Target Distillation and Host-Fair Model Integration}
+\subsection{Stage 3: Soft-Target Distillation and Host-Fair Integration}
 \label{sec:stage3}
 
-Stage~3 turns teacher risk and Stage~1 maturity into soft labels across $\mathcal{B}$. Revealed defects keep $q_i(\delta) = 1$, while unrevealed commits ($y_{i,\text{obs}} = 0$) receive a soft target with global logit shift $\delta$:
+Stage~3 converts the teacher's risk ranking and Stage~1's maturity estimates into soft labels across $\mathcal{B}$, letting the student adapt on drifted commits without mistaking young unfixed changes for clean examples. Already revealed defects stay pinned at $q_i(\delta) = 1$, while each unrevealed commit ($y_{i,\text{obs}} = 0$) receives a maturity-adjusted soft target shifted by one global logit offset $\delta$:
 \begin{equation}
   q_i(\delta) = \frac{\tilde{p}_i(\delta)\,(1 - c_i)}{1 - \tilde{p}_i(\delta)\,c_i}, \qquad \tilde{p}_i(\delta) = \operatorname{clip}\!\big(\sigma(\eta_i^{(0)} + \delta),\; p_{\min},\; p_{\max}\big).
   \label{eq:bayes_pu}
 \end{equation}
-This update pushes $q_i$ toward zero on aged unfixed commits and preserves teacher risk on young commits. To align mean target prevalence on $\mathcal{B}_{\text{cal}}$ with $\hat{\pi}_{\text{target}}$, Stage~3 runs $K_{\text{bis}}$-step monotone bisection over $\delta \in [-8, 8]$, clamping cleanly when observed prevalence exceeds $\pi_{\max}$.
+Intuitively, this Bayes-inspired update pushes $q_i$ toward zero on aged unfixed commits and preserves teacher risk on young commits. To align mean target prevalence on $\mathcal{B}_{\text{cal}}$ with $\hat{\pi}_{\text{target}}$, Stage~3 runs $K_{\text{bis}}$-step monotone bisection over $\delta \in [-8, 8]$, clamping cleanly when observed prevalence exceeds $\pi_{\max}$.
 
 The student minimizes weighted soft-target cross-entropy $\mathcal{L}_{\text{SPU}}(z) = \sum_{i \in \mathcal{B}} u_i [\omega_{+,\text{teach}}\, q_i(\delta^*) \log(1 + e^{-z_i}) + (1 - q_i(\delta^*))\log(1 + e^{z_i})]$. Neural students fine-tune from $T_\phi$ for $E_{\text{stud}}$ epochs; LightGBM fits a fresh $R_{\text{alm}}$-tree booster so teacher and student together match the $2R_{\text{alm}}$ tree budget of single-stage tree baselines.
 
@@ -364,57 +364,75 @@ Two host mechanisms ensure fair execution across model families. To prevent mult
 \section{Experimental Design and Evaluation Protocol}
 \label{sec:setup}
 
-We organize our evaluation in three stages: audited commit cohorts, controlled learner tracks, and causal endpoints with formal inference. All Benchmark~A and~B hypotheses and comparison families were locked before downloading the held-out confirmatory ApacheJIT cohort, with only one small-sample split rule added for the smallest confirmatory repositories.
+We organize our evaluation into three parts: audited commit cohorts, controlled learner tracks, and causal endpoints with formal inference. All Benchmark~A and~B hypotheses and comparison families were locked before downloading the confirmatory ApacheJIT cohort, with one small-sample split rule added for its smallest repositories.
 
 \subsection{Audited Stream Cohorts, Data Funnels, and Archive Follow-Up}
 \label{sec:benchmarks}
 
-Our benchmark totals 347,122 commits across 34 natural repository streams: two multimodal streams in Benchmark~A, 27 multi-ecosystem tabular streams in Benchmark~B, and five held-out confirmatory repositories in Phase~C. Eight controlled shift streams (four multimodal and four tabular splices) plus a 6,400-call Code-LLM case study complement the natural cohorts.
+Our benchmark totals 347,122 commits across 34 natural repository streams: two multimodal Benchmark~A streams, 27 multi-ecosystem Benchmark~B streams, and five held-out Phase~C repositories, plus eight controlled shifts and a 6,400-call Code-LLM case study.
 
 \paragraph{Benchmark A: Multimodal Qt and OpenStack.}
 Benchmark~A evaluates Attention-CNN \citep{pote2026adaptive}, CodeBERT \citep{feng2020codebert}, DeepJIT-CNN \citep{hoang2019deepjit}, and LightGBM \citep{ke2017lightgbm} on 25,704 Qt and 13,304 OpenStack commits cross-linked from DeepJIT, \citet{mcintosh2018are}, and Git histories, alongside four controlled cross-subsystem shifts. High-confidence SZZ links cover 96.5\% of Qt and 99.3\% of OpenStack defects; heuristic and unlinked defects receive infinite discovery times. Primary streams model merged-commit replay on the 13 commit-time authoring metrics because exports expose only authoring timestamps, with 28-metric pre-merge triage evaluated in Table~S-4.
 
 \paragraph{Benchmark B: Natural Donor Clusters and Controlled Shifts.}
-Benchmark~B evaluates a tabular multilayer perceptron (MLP) and LightGBM across 300,637 commits drawn from 14 CommitGuru \citep{cabral2019class}, eight ApacheJIT \citep{keshavarz2022apachejit}, and five PR-SZZ streams \citep{bludau2026quantifying}. Merging shared Camel and OpenStack repositories yields 25 independent project donor clusters alongside a 24-cluster Benchmark-A-disjoint subset. To stress-test abrupt shifts outside cluster inference, Benchmark~B adds four concatenated pairs (Nova-to-Zulip, Ignite-to-Cassandra, Airflow-to-Pulsar, and OpenStack Nova-to-Neutron), whose one-hour splices push 23.7\% to 60.0\% of pre-onset fixes past onset (Table~S-6). For deep ablations and stress tests in RQ3, RQ4a--b, and RQ4d, we draw a fixed ten-stream representative subset pairing seven diverse natural streams with the first three shifts over five seeds.
+Benchmark~B evaluates a tabular multilayer perceptron (MLP) and LightGBM across 300,637 commits from 14 CommitGuru \citep{cabral2019class}, eight ApacheJIT \citep{keshavarz2022apachejit}, and five PR-SZZ streams \citep{bludau2026quantifying}. Merging shared Camel and OpenStack repositories yields 25 independent donor clusters alongside a 24-cluster Benchmark-A-disjoint subset. To stress-test abrupt shifts outside cluster inference, Benchmark~B adds four concatenated pairs (Nova-to-Zulip, Ignite-to-Cassandra, Airflow-to-Pulsar, and OpenStack Nova-to-Neutron), whose one-hour splices push 23.7\% to 60.0\% of pre-onset fixes past onset (Table~S-6). Deep ablations and stress tests in RQ3, RQ4a--b, and RQ4d use a fixed ten-stream subset pairing seven natural streams with the first three shifts over five seeds.
 
 \paragraph{Phase C: Confirmatory ApacheJIT Cohort and Monorepo Disclosure.}
-All code remained frozen before downloading the upstream ApacheJIT archive \citep{keshavarz2022apachejit}. Applying Benchmark~B's chronological cutoff produced 7,477 commits across five held-out repositories with at least one year of follow-up, evaluated on MLP and LightGBM. Upstream auditing revealed that 11,964 clean Hadoop commits reside under the umbrella Hadoop key rather than subproject keys, inflating prevalence in HDFS* and MapReduce* to 89.2\% and 78.8\% in Table~S-7. Spark, Zeppelin, and ZooKeeper suffer no split and retain 44.6\% to 48.5\% prevalence, so we foreground these three standalone repositories alongside the four-project umbrella record merging HDFS* and MapReduce* under Hadoop. For confirmatory repositories under 4,000 commits, we added one small-sample split rule without altering Benchmark~A or~B:
-{\small\begin{equation*}
-  n_{\text{init}} = \operatorname{clip}\!\big(\operatorname{round}(0.25N/25)\cdot 25, 150, 1500\big), \quad
-  n_{\text{val}} = \operatorname{clip}\!\big(\operatorname{round}(0.08N/25)\cdot 25, 50, 500\big).
-\end{equation*}}
+All code stayed frozen before downloading the upstream ApacheJIT archive \citep{keshavarz2022apachejit}. Applying Benchmark~B's chronological cutoff produced 7,477 commits across five held-out repositories with at least one year of follow-up on MLP and LightGBM. Upstream auditing revealed that 11,964 clean Hadoop commits reside under the umbrella Hadoop key rather than subproject keys, inflating prevalence in HDFS* and MapReduce* to 89.2\% and 78.8\% in Table~S-7. Spark, Zeppelin, and ZooKeeper suffer no split and retain 44.6\% to 48.5\% prevalence, so we foreground those three standalone repositories alongside the four-project umbrella record merging HDFS* and MapReduce* under Hadoop. For confirmatory repositories under 4,000 commits, one small-sample rule scales initialization and validation slices to 25\% and 8\% of stream length rounded to multiples of 25, bounded at 150--1,500 and 50--500 commits.
 
 \paragraph{Observable Archive-Horizon Follow-Up Audit.}
-Nearly every Benchmark~B and Phase~C commit retains ten to twelve months of follow-up, whereas Benchmark~A runs up to $T_{\text{end}}$ in Table~S-8. Every CommitGuru and Phase~C commit, over 99.3\% of Benchmark~B ApacheJIT commits, and four of five PR-SZZ streams retain nearly a full year. Natural Qt leaves 15.5\% of commits under half a year and 41.0\% under one year, and OpenStack leaves 30.4\% under one year; Table~S-9 confirms end-of-archive stability at six-month and one-year horizons.
+Nearly every Benchmark~B and Phase~C commit retains ten to twelve months of follow-up, whereas Benchmark~A runs to $T_{\text{end}}$ (Table~S-8). All CommitGuru and Phase~C commits, over 99.3\% of Benchmark~B ApacheJIT commits, and four of five PR-SZZ streams retain nearly one year; natural Qt leaves 15.5\% under half a year and 41.0\% under one year, OpenStack leaves 30.4\% under one year, and Table~S-9 confirms stability at both horizons.
 
 \subsection{Two-Track Learners and Baseline Controls}
 \label{sec:baselines}
 
-We evaluate 29 methods across 41 method-schedule configurations, covering 26 deployable learners and three hindsight references, in two budget-matched tracks detailed in Table~S-2:
-\begin{itemize}[leftmargin=1.6em,itemsep=0.02em,topsep=0.12em]
-  \item \textbf{Track 1 Within-Host Counterfactuals.} Holding host architecture and DriftLens triggers fixed, Track~1 contrasts reference bounds (Frozen Host, Window Oracle, Full Hindsight) against Causal-1W, Causal-4W, and Wait-30/60/90. It adds Pure-nnPU \citep{kiryo2017positive}, ODaSC-Host porting ODaSC's provisional-negative weighting onto the host, zero-fit FixedCurve-PU, single-stage Teacher-Exact and $2\times$-budget Teacher-Matched, and Survival-PU with and without gating, plus alarm-synchronized PostHoc Logit and PostHoc Ratio controls in RQ4a.
-  \item \textbf{Track 2 Linear and Adapted Stream Baselines.} Track~2 pairs LOC-Only with frozen and adaptive LApredict \citep{zeng2021deep}, Churn-LR, and Full-LR. It adds ElasticNet BORB \citep{cabral2023borb} on its native 200-commit schedule (BORB-Native) and DriftLens alarms (BORB-Alarm), alongside River online Hoeffding-tree ensembles for ORB \citep{cabral2019class} and ODaSC \citep{song2022odasc} consuming strictly causal events $t_{\text{event}} < t_{\text{commit}}$.
-\end{itemize}
-At the monitor layer, RQ4b crosses IID versus Circular Block resampling against Static versus Rolling refresh at fixed PCA dimension, 95th-percentile threshold, and unit cooldown, benchmarked against Pote et al.'s static 98th-percentile reference, a closed-loop DriftLens refresh check, and non-Gaussian RBF-MMD and PCA-KS block monitors.
+We evaluate 29 methods across 41 prefix-invariant configurations in two tracks (constructors in Table~S-2). \textbf{Track~1} holds host architecture and DriftLens triggers fixed to isolate alarm-time supervision across hindsight references, causal replay, waits, PU learners, teachers, and post-hoc shifts. \textbf{Track~2} benchmarks external paradigms: unsupervised size ranking, linear models \citep{zeng2021deep}, ElasticNet BORB \citep{cabral2023borb}, and online River Hoeffding ensembles for ORB \citep{cabral2019class} and ODaSC \citep{song2022odasc} consuming strict causal events $t_{\text{event}} < t_{\text{commit}}$. The matrix below indexes core methods in Section~\ref{sec:results}.
+
+\par\smallskip\noindent
+\begin{minipage}{\textwidth}
+\fontsize{7.5}{8.7}\selectfont
+\setlength{\tabcolsep}{1.4pt}
+\renewcommand{\arraystretch}{0.99}
+\begin{tabularx}{\textwidth}{L{2.88cm}C{0.42cm}L{1.28cm}Y}
+\toprule
+\textbf{Method / Family} & \textbf{Tr.} & \textbf{Trigger} & \textbf{Alarm-Time Supervision \& Core Role} \\
+\midrule
+Frozen Host & T1 & None & Pre-stream prefix only; tests whether updating helps. \\
+Window / Full Oracle & T1 & DriftLens & Hindsight $y^*$ ($4W$/full prefix); measures oracle bias. \\
+Causal-1W / 4W & T1 & DriftLens & Observable $y_{\text{obs}}(t_{\text{alarm}})$ on $1W$ or escalated $4W$. \\
+Wait-30 / 60 / 90 & T1 & DriftLens & Drops unfixed commits younger than 30/60/90 days. \\
+nnPU / ODaSC-Host & T1 & DriftLens & Age-blind nnPU; host-ported 15d provisional-0 weights. \\
+FixedCurve-PU & T1 & DriftLens & Survival-PU with Stage~1 fixed to a 90d half-life curve. \\
+Teacher-Ex. / Match & T1 & DriftLens & Stage~2 reliable teacher alone ($1\times$ or $2\times$ budget). \\
+Survival-PU (+Gate) & T1 & DriftLens & Full 3-stage maturity PU distillation (optional gate). \\
+PostHoc Logit/Ratio & T1 & DriftLens & Frozen Causal-4W with logit shift or ratio rescaling. \\
+LOC / LApred. / LR & T2 & None/DL & Unsupervised LOC; frozen or $4W$ linear baselines. \\
+BORB-Nat. / Alarm & T2 & 200c/DL & ElasticNet SGD on fixes + $\ge 90$d clean commits. \\
+ORB / ODaSC & T2 & Per-event & Hoeffding ensembles (90d wait or 15d DenStream). \\
+\bottomrule
+\addlinespace[2pt]
+\multicolumn{4}{@{}p{\textwidth}@{}}{\scriptsize Key: T1/T2 denote Track~1/2, DL denotes DriftLens, and LR denotes logistic regression.} \\
+\end{tabularx}
+\end{minipage}
+\par\smallskip
+
+At the monitor layer, RQ4b crosses IID vs.\ Circular Block resampling against Static vs.\ Rolling refresh at fixed PCA dimension, 95th-percentile threshold, and unit cooldown, compared with Pote et al.'s static 98th-percentile baseline, closed-loop refresh, and RBF-MMD and PCA-KS.
 
 \subsection{Endpoints, Causal Calibration, and Statistical Protocol}
 \label{sec:metrics_protocol}
 
 \paragraph{Endpoints and Three-Branch Causal Calibration.}
-Whole-stream Average Precision (AP) serves as our primary ranking endpoint, contrasted with per-window AP in Section~\ref{sec:rq2}. Secondary endpoints include ROC-AUC, fixed-threshold $F_1$, causally tuned $F_{1,\text{th}}$, Recall@20\%Effort, raw and post-Platt Brier score, expected calibration error (ECE), and calibration slope.
+Whole-stream Average Precision (AP) serves as our primary ranking endpoint, contrasted with per-window AP in Section~\ref{sec:rq2}, alongside ROC-AUC, fixed $F_1$, tuned $F_{1,\text{th}}$, Recall@20\%Effort, raw and post-Platt Brier score, expected calibration error (ECE), and slope. Every branch passed deterministic prefix-invariance checks with zero perturbation error.
 
-At each evaluation window $w = [s_w, e_w)$ with causal cutoff $t_w = t_{s_w - 1}$, our calibrator uses up to 1,200 prior commits aged at least 90 days whenever 80 qualify, the initialization slice otherwise, or a prior-odds shift at threshold 0.50. On qualifying pools $\mathcal{M}_w$, it fits one-dimensional $L_2$-Platt scaling \citep{platt1999probabilistic} and selects the $F_1$-optimal threshold over a sixty-point grid on raw scores $\hat{p}_j = \sigma(z_j)$:
+At each evaluation window $w = [s_w, e_w)$ with cutoff $t_w = t_{s_w - 1}$, our calibrator selects its pool $\mathcal{M}_w$ via three deterministic branches. First, it draws up to 1,200 prior commits aged $\ge 90$ days whenever $\ge 80$ qualify with both observed classes. Otherwise, it falls back to the causal initialization slice when that slice contains both classes. Finally, if neither holds, it applies a deterministic prior-odds shift at threshold 0.50 without Platt fitting. Under branches one or two, it fits 1D $L_2$-Platt scaling \citep{platt1999probabilistic}, selects $\tau_{\text{th}}(w)$ over a sixty-point grid on $\hat{p}_j = \sigma(z_j)$, and evaluates post-Platt Brier and ECE against archive labels $y_i^*$:
 {\small\begin{equation}
   \hat{p}_{i,\text{cal}} = \sigma(a_w z_i + b_w), \quad
-  \tau_{\text{th}}(w) = \operatorname*{arg\,max}_{\tau \in \mathcal{G}_w} F_1\!\Big(\big\{\mathbb{I}(\hat{p}_j \ge \tau),\, y_{j,\text{obs}}(t_w)\big\}_{j \in \mathcal{M}_w}\Big),
+  \tau_{\text{th}}(w) = \textstyle\arg\max_{\tau \in \mathcal{G}_w} F_1\!\big(\{\mathbb{I}(\hat{p}_j \ge \tau),\, y_{j,\text{obs}}(t_w)\}_{j \in \mathcal{M}_w}\big).
   \label{eq:causal_cal}
 \end{equation}}
-with post-Platt Brier evaluated against archive labels $y_i^*$ and zero prefix-invariance error verified across all configurations.
 
 \paragraph{Cluster Aggregation and Multiplicity Control.}
-Stream metrics average across ten random seeds for the Benchmark~B and~C MLP host and five seeds for LightGBM and multimodal hosts, weighting each project cluster equally. Formal $\alpha = 0.05$ inference on all 25 clusters and the 24-cluster Benchmark-A-disjoint subset uses exact two-sided paired Wilcoxon signed-rank tests under the Pratt tie convention with Holm--Bonferroni adjustment \citep{holm1979simple}, reported alongside cluster-bootstrap 95\% confidence intervals and Cohen's $d_z$.
-
-Primary comparisons span three hypothesis families: Family~1 benchmarks Causal-4W against Window Oracle, Frozen Host, and Survival-PU; Family~2 tests Survival-PU against cross-track deployable baselines (Frozen Host, Wait-90, Pure-nnPU, Full-LR, BORB, ORB, and ODaSC); and Family~3 ablates Survival-PU against FixedCurve-PU, Teacher-Matched, Teacher-Exact, and confidence gating. Non-significant contrasts are treated as inconclusive rather than equivalent, exploratory checks outside Table~\ref{tab:bench_b_holm} use unadjusted Wilcoxon tests, and all differences are computed from unrounded means. Across empirical tables, bold marks the best deployable value per row or column excluding hindsight oracles, and bold in Table~\ref{tab:bench_b_holm} marks $p_{\text{Holm}} < 0.05$.
+Metrics average across ten seeds on Benchmark~B/C MLP and five on LightGBM and multimodal hosts, weighting every project cluster equally. Formal $\alpha = 0.05$ inference on all 25 clusters and the 24-cluster Benchmark-A-disjoint subset uses exact two-sided paired Wilcoxon tests under Pratt ties with Holm--Bonferroni adjustment \citep{holm1979simple}, bootstrap 95\% intervals, and Cohen's $d_z$. Family~1 contrasts Causal-4W against Window Oracle, Frozen Host, and Survival-PU; Family~2 tests Survival-PU against cross-track baselines; Family~3 ablates Survival-PU against FixedCurve-PU, Teacher-Matched, Teacher-Exact, and gating. Non-significant contrasts stay inconclusive, checks outside Table~\ref{tab:bench_b_holm} are unadjusted, differences use unrounded means, and bold marks the best non-oracle deployable value (or $p_{\text{Holm}} < 0.05$ in Table~\ref{tab:bench_b_holm}).
 
 % ============================================================================
 % 6. Empirical Results
@@ -516,7 +534,7 @@ On the shorter held-out ApacheJIT cohort, neural hindsight optimism fails to rep
 [[TAB_CONFIRMATORY]]
 
 \paragraph{Four-Umbrella Aggregation and Horizon Covariation.}
-Aggregating Hadoop subprojects into the four-umbrella view confirms the identical ordering across all four project ecosystems (Table~\ref{tab:confirmatory}, Figure~\ref{fig:rq2_confirmatory}a). Window Oracle trails Causal-4W by half a point and lags Frozen Host by more than four points, and ODaSC again leads the cohort ahead of BORB and ORB. On LightGBM four-umbrella AP, Window Oracle edges past Causal-4W without reaching statistical significance, and Frozen Host leads both across the standalone repositories. Separately, inflated prevalence on split HDFS* exposes Stage~2's upper prior cap ($\pi_{\max} = 0.70$), triggering boundary-clamped bisection on roughly 30\% of HDFS* alarms versus under 1\% across Benchmark~B natural streams.
+Aggregating Hadoop subprojects into the four-umbrella view confirms the identical ordering across all four project ecosystems (Table~\ref{tab:confirmatory}, Figure~\ref{fig:rq2_confirmatory}a). Window Oracle trails Causal-4W by half a point and lags Frozen Host by more than four points, and ODaSC again leads the cohort ahead of BORB and ORB. On LightGBM four-umbrella AP, Window Oracle edges past Causal-4W without reaching statistical significance, and Frozen Host leads both across the standalone repositories.
 
 Evaluation horizon cleanly separates the two cohorts (Figure~\ref{fig:rq2_confirmatory}b): every shorter confirmatory repository falls at or below zero hindsight inflation, in stark contrast to 22 of 27 multi-year Benchmark~B streams showing positive oracle inflation. Because shorter horizons, higher baseline prevalence, lighter censoring, and project identity shift together on Phase~C, isolating which single driver explains both the vanishing oracle inflation and ODaSC's dominance remains an open prospective question.
 
@@ -543,11 +561,31 @@ Substituting alternative Stage~1 maturity estimators shifts aggregate accuracy o
 [[TAB_RQ3_ABLATIONS]]
 
 \paragraph{Unrevealed-Commit Mechanism Audit Against FixedCurve-PU and Writeback.}
-All-pool soft-target accuracy conflates trivial positive writeback ($q_i = 1$ for already revealed defects) with genuine estimation on unrevealed commits. Auditing all 62 DriftLens alarms across the ten representative streams, covering 59,600 unique commits, separates these two effects by benchmarking Survival-PU against FixedCurve-PU relative to empirical archive maturity $c^*(a)$ in Table~S-11. Two structural patterns stand out:
+All-pool soft-target accuracy conflates trivial positive writeback ($q_i = 1$ for already revealed defects) with genuine estimation on unrevealed commits. Auditing all 62 DriftLens alarms across the ten representative streams, covering 59,600 unique commits, separates these two effects relative to empirical archive maturity $c^*(a)$ (age-stratified breakdown in Table~S-11):
 \begin{itemize}[leftmargin=1.6em,itemsep=0.05em]
   \item \textit{Non-Monotonic Error Propagation Across Stages.} Adaptive cohort incidence estimates empirical maturity substantially better than the fixed 90-day curve, cutting Stage~1 maturity MAE by 22\% at the alarm level and 33\% at the stream level. Better Stage~1 fit does not propagate monotonically downstream, however: FixedCurve-PU edges ahead on Stage~2 prevalence MAE, and both improve over unshrunk inverse-maturity estimates.
   \item \textit{Positive Writeback Versus Unrevealed Soft Targets.} Across the full adaptation pool, writing revealed defects back to label~1 drives most of the Brier improvement over de-weighted teacher scores. Even on strictly unrevealed commits with zero writeback, soft targets still beat de-weighted teacher scores across every age stratum. FixedCurve-PU achieves slightly lower overall unrevealed-commit Brier error by leading on young and mid-age commits, and Survival-PU leads on aged commits.
 \end{itemize}
+
+\par\smallskip\noindent
+\begin{minipage}{\textwidth}
+\fontsize{7.5}{8.9}\selectfont
+\setlength{\tabcolsep}{2.2pt}
+\renewcommand{\arraystretch}{1.04}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccc@{}}
+\toprule
+\textbf{Stage 1--3 Audit (62 Alarms)} & \textbf{Control} & \textbf{FixedCurve} & \textbf{Survival-PU} \\
+\midrule
+Stage~1 Maturity MAE (Alarm / Stream) & -- & 0.1204 / 0.1310 & \textbf{0.0938 / 0.0873} \\
+Stage~2 Target Prior MAE (vs.\ HT) & 0.0712 & \textbf{0.0565} & 0.0620 \\
+Stage~3 Unrevealed Brier ($y_{\text{obs}}=0$) & 0.1303 (DeWt) & \textbf{0.1200} & 0.1236 \\
+Stage~3 Full-Pool Brier (+Writeback) & 0.1134 (+WB) & \textbf{0.1044} & 0.1076 \\
+\bottomrule
+\addlinespace[2pt]
+\multicolumn{4}{@{}p{\textwidth}@{}}{\scriptsize Note: 62 DriftLens alarms (59,600 unique commits; $n=64{,}745$ unrevealed, $n=74{,}400$ full pool). HT = unshrunk Horvitz--Thompson, DeWt = de-weighted teacher, +WB = positive writeback.} \\
+\end{tabular*}
+\end{minipage}
+\par\smallskip
 
 \begin{figure}[t]
   \centering
@@ -557,7 +595,7 @@ All-pool soft-target accuracy conflates trivial positive writeback ($q_i = 1$ fo
 \end{figure}
 
 \paragraph{Component Ablations and Simplification Candidates.}
-Teacher adaptation, monotone bisection, and anchor shrinkage carry Survival-PU's gains, and Stage~2 density ratios emerge as a natural simplification candidate (Figure~\ref{fig:rq3_abl}, Table~\ref{tab:rq3_ablations}). Freezing the teacher to its pre-stream checkpoint cuts AP by over three points and triggers repeated bisection clamping. Removing monotone bisection or anchor shrinkage similarly degrades both AP and calibration. Conversely, omitting Stage~2 density ratios slightly lifts AP, $F_{1,\text{th}}$, and effort recall at lower compute cost; control runs likewise confirm that Survival-PU beats Teacher-Matched and is largely insensitive to confidence gating.
+Teacher adaptation, monotone bisection, and anchor shrinkage carry Survival-PU's gains, and Stage~2 density ratios emerge as a natural simplification candidate (Figure~\ref{fig:rq3_abl}, Table~\ref{tab:rq3_ablations}). Freezing the teacher to its pre-stream checkpoint cuts AP by over three points and triggers repeated bisection clamping. Removing monotone bisection or anchor shrinkage similarly degrades both AP and calibration, whereas sweeping prior shrinkage $m_0$ and tail cap $\gamma_{\text{tail}}$ confirms low sensitivity across neighboring settings. Conversely, omitting Stage~2 density ratios slightly lifts AP, $F_{1,\text{th}}$, and effort recall at lower compute cost; control runs likewise confirm that Survival-PU beats Teacher-Matched and is largely insensitive to confidence gating.
 
 \rqbox{Summary for RQ3}{All four Stage-1 estimators span just 1.1 AP points with zero fallbacks. Across 62 alarms, cohort incidence estimates Stage-1 maturity far more accurately than FixedCurve-PU, but FixedCurve-PU achieves slightly lower Stage-2 prevalence MAE and unrevealed-commit Brier error, revealing non-monotonic error propagation across stages. Teacher adaptation, monotone bisection, and prior shrinkage carry the primary weight, and density-ratio omission emerges as a simplification candidate.}
 
@@ -572,7 +610,7 @@ Having dissected internal mechanisms, we stress-test operating boundaries across
 \paragraph{RQ4a: Latency Scaling and Ranking-Versus-Classification Split.}
 Scaling finite post-$t_0$ fix delays from zero to triple empirical lag widens the split between ranking and thresholded classification in Table~\ref{tab:rq4a_kappa} and Figure~\ref{fig:rq4_lat_mon}a, with Wait-90 results in Table~S-12. On whole-stream AP, Causal-4W stays modestly ahead of Survival-PU at every lag level, and age-blind Pure-nnPU collapses in effort recall; sanity checks behave as expected, with Frozen Host invariant throughout and Causal-4W coinciding with Window Oracle at zero lag.
 
-Under heavy latency ($\kappa = 3.0\times$), however, classification diverges sharply. Causal-4W drops steeply on both fixed-threshold $F_1$ and causally tuned $F_{1,\text{th}}$. By contrast, Survival-PU leads Causal-4W by 14.3 points in fixed $F_1$ and 5.6 points in tuned $F_{1,\text{th}}$, and it also outperforms Wait-90 (Table~S-12).
+Under heavy latency ($\kappa = 3.0\times$), however, classification diverges sharply. Causal-4W drops steeply on both fixed-threshold $F_1$ and causally tuned $F_{1,\text{th}}$. By contrast, Survival-PU leads Causal-4W by 14.3 points in fixed $F_1$ and 5.6 points in tuned $F_{1,\text{th}}$, and it also outperforms Wait-90.
 
 [[TAB_RQ4A_KAPPA]]
 
@@ -591,7 +629,7 @@ At the opposite extreme of triple lag, the fixed 90-day curve overestimates matu
 \paragraph{Raw Versus 90-Day Platt Calibration and Post-Hoc Controls.}
 Fitting standard 90-day Platt scaling to a heavily censored calibration pool degrades probability quality rather than repairing it (Table~\ref{tab:rq4a_posthoc_b2}, full metrics in Table~S-14). Whenever median fix lag exceeds three months, the calibration pool $\mathcal{M}_w$ retains heavy residual censoring, reaching 55.3\% in Benchmark~A, 43.7\% in Benchmark~B, and 65.9\% under triple lag. At triple lag, raw probabilities therefore beat Platt scaling on ECE for all five methods and on Brier error for four of five, leaving only PostHoc Logit's Brier error nearly unchanged. Across all three latency regimes, Survival-PU incurs higher raw Brier and ECE than Causal-4W, and FixedCurve-PU achieves the lowest raw error at triple lag. This confirms Proposition~\ref{prop:bias}: Stage~3 applies positive class reweighting atop prevalence-calibrated targets, pushing raw probabilities upward. Causal-4W's censoring compression and FixedCurve-PU's negative target bias pull scores downward and partially offset that shift. Under the shared Platt calibrator, Survival-PU still retains the lowest post-Platt Brier and ECE.
 
-Alarm-synchronized post-hoc score adjustments likewise fall short of PU retraining on heavy-lag classification (Table~\ref{tab:rq4a_posthoc_b2}). Both controls freeze Causal-4W's weights and adjust scores only at fired alarms: PostHoc Logit shifts logits via monotone bisection to match target prevalence, and PostHoc Ratio removes training class weights, divides by trailing mean maturity, and clips extreme probabilities. Because PostHoc Ratio removes class weights and Survival-PU retains weighted logits, fixed-0.5 $F_1$ compares asymmetric scales; on scale-fair tuned $F_{1,\text{th}}$, Survival-PU still leads PostHoc Ratio by 4.8 points and Causal-4W by 5.6 points across raw and calibrated scores. At zero lag, PostHoc Logit loses whole-stream AP because alarm-specific logit shifts distort cross-window score alignment without hurting per-window AP; PostHoc Ratio achieves the lowest raw Brier error and incurs a mild per-window AP dip solely from upper-bound clipping on 7.9\% of commits (Table~S-14).
+Alarm-synchronized post-hoc score adjustments likewise fall short of PU retraining on heavy-lag classification (Table~\ref{tab:rq4a_posthoc_b2}). Both controls freeze Causal-4W's weights and adjust scores only at fired alarms: PostHoc Logit shifts logits via monotone bisection to match target prevalence, and PostHoc Ratio removes training class weights, divides by trailing mean maturity, and clips extreme probabilities. Because PostHoc Ratio removes class weights and Survival-PU retains weighted logits, fixed-0.5 $F_1$ compares asymmetric scales; on scale-fair tuned $F_{1,\text{th}}$, Survival-PU still leads PostHoc Ratio by 4.8 points and Causal-4W by 5.6 points across raw and calibrated scores. At zero lag, PostHoc Logit loses whole-stream AP because alarm-specific logit shifts distort cross-window score alignment without hurting per-window AP; PostHoc Ratio achieves the lowest raw Brier error and incurs a mild per-window AP dip solely from upper-bound clipping on 7.9\% of commits.
 
 [[TAB_RQ4A_POSTHOC_B2]]
 
@@ -605,9 +643,9 @@ Fewer alarms do not guarantee higher AP: default Block + Rolling fires on 32.1\%
 [[TAB_RQ4B_MONITORS]]
 
 \paragraph{RQ4c--d: Semi-Synthetic PR-SZZ Noise and Window-Size Sweeps.}
-Batch window and PU learners resist independent SZZ label noise far better than streaming Hoeffding and ElasticNet learners, BORB and ORB, in Figure~\ref{fig:rq4_szz_win}a and Table~S-15. Injecting project-averaged B-SZZ error rates ($\alpha_{\text{FP}} = 8.4\%$, $\beta_{\text{FN}} = 47.2\%$) \citep{bludau2026quantifying} into training across five PR-SZZ streams separates model families cleanly on unperturbed evaluation. Batch window and PU learners cluster within 0.4 AP points, with Survival-PU, Wait-90, and Causal-4W effectively tied at the top. By contrast, BORB drops more than ten AP points and ORB falls even further. Because independent flips omit feature-dependent label noise, confirming this family split on manually audited SZZ corpora remains important future work.
+Batch window and PU learners resist independent SZZ label noise far better than streaming Hoeffding and ElasticNet learners, BORB and ORB, in Figure~\ref{fig:rq4_szz_win}a and Table~S-15. Injecting project-averaged B-SZZ error rates ($\alpha_{\text{FP}} = 8.4\%$, $\beta_{\text{FN}} = 47.2\%$) \citep{bludau2026quantifying} into training across five PR-SZZ streams separates model families cleanly on unperturbed evaluation. Batch window and PU learners cluster within 0.4 AP points, with Survival-PU, Wait-90, and Causal-4W effectively tied at the top. By contrast, relative to its clean-label training baseline, BORB drops more than ten AP points to finish six points behind the batch learners, and ORB trails them by ten points. Because independent flips omit feature-dependent label noise, confirming this family split on manually audited SZZ corpora remains important future work.
 
-Survival-PU's abrupt-shift advantage concentrates in narrow and medium windows and fades once wide buffers absorb older matured history (Figure~\ref{fig:rq4_szz_win}b). Across fixed 1,200-commit post-onset horizons on the three controlled shifts inside our ten-stream representative subset, Survival-PU leads deployable methods at $W \in \{200, 400, 600\}$. At the widest 800-commit window, Wait-90 and Causal-4W edge slightly ahead. On full ten-stream AP, Causal-4W stays ahead at every window width. Separately, sweeping prior shrinkage $m_0$ and tail cap $\gamma_{\text{tail}}$ confirms low hyperparameter sensitivity.
+Survival-PU's abrupt-shift advantage concentrates in narrow and medium windows and fades once wide buffers absorb older matured history (Figure~\ref{fig:rq4_szz_win}b). Across fixed 1,200-commit post-onset horizons on the three controlled shifts inside our ten-stream representative subset, Survival-PU leads deployable methods at $W \in \{200, 400, 600\}$. At the widest 800-commit window, Wait-90 and Causal-4W edge slightly ahead. On full ten-stream AP, Causal-4W stays ahead at every window width.
 
 \begin{figure}[t]
   \centering
@@ -639,9 +677,9 @@ By contrast, OpenStack AP rises by one point under censored exemplars, echoing P
 Deployment viability depends jointly on execution overhead and net defect yield under fixed code-review capacity. We therefore audit standalone runtime alongside paired review-budget trade-offs across whole-stream and sprint-level horizons.
 
 \paragraph{Cached Execution Versus Feature-Encoding Runtime.}
-Survival-PU adds modest CPU overhead on pre-extracted tabular features, and feature encoding dominates multimodal runtime (Figure~\ref{fig:rq4f_rt}b, Table~S-17). When each alarm-triggered method is charged its full anchor and monitoring chain across 27 natural Benchmark~B streams, Survival-PU finishes in 14.4~s per stream, roughly 1.7~s per alarm, on par with Teacher-Matched. Online Hoeffding ORB, ElasticNet BORB, and Frozen Host finish under four seconds per stream; ODaSC requires nearly 70~s due to per-event tree updates and DenStream maintenance.
+Survival-PU adds modest CPU overhead on pre-extracted tabular features, whereas feature encoding dominates multimodal runtime (Figure~\ref{fig:rq4f_rt}b, Table~S-17). When each alarm-triggered method is charged its full anchor and monitoring chain across 27 natural Benchmark~B streams, Survival-PU finishes in 14.4~s per stream, roughly 1.7~s per alarm, on par with Teacher-Matched. Online Hoeffding ORB, ElasticNet BORB, and Frozen Host finish under four seconds per stream; ODaSC requires nearly 70~s due to per-event tree updates and DenStream maintenance.
 
-On multimodal Qt, cached Survival-PU finishes under twenty seconds on CPU LightGBM and under eight seconds on GPU CodeBERT (Table~S-17). Including offline GPU CodeBERT batch encoding brings full-history Qt replay to 44.6~s, reflecting batch throughput rather than single-commit webhook latency.
+On multimodal Qt, cached Survival-PU finishes under twenty seconds on CPU LightGBM and under eight seconds on GPU CodeBERT. Including offline GPU CodeBERT batch encoding brings full-history Qt replay to 44.6~s, reflecting batch throughput rather than single-commit webhook latency.
 
 [[TAB_RQ5_PAIRED_BUDGET]]
 
@@ -652,7 +690,7 @@ Review-budget granularity determines whether maturity correction yields net defe
   \item \textit{Whole-Stream Versus Per-Window Equal Caps.} Echoing Section~\ref{sec:rq2}'s score-scale finding, retrospective whole-stream budgeting penalizes Survival-PU on five of seven alarmed hosts, most steeply on Qt DeepJIT-CNN and OpenStack LightGBM. Switching to operational per-window budgets reverses or removes nearly every steep loss. Qt LightGBM stays strongly positive across commit and LOC caps, both DeepJIT-CNN hosts turn positive on five-seed $\Delta\text{WinR}_{20}$, and Qt Attention-CNN and OpenStack LightGBM break roughly even; only Qt CodeBERT stays negative across both granularities. High-confidence SZZ rescue illustrations and churn skew appear in Table~S-18.
 \end{itemize}
 
-\rqbox{Summary for RQ5}{On cached tabular features, ORB and BORB finish under four seconds per stream, Survival-PU takes 14.4~s (44.6~s on Qt with GPU CodeBERT batch encoding), and ODaSC takes nearly 70~s. Under matched caps, retrospective whole-stream budgeting penalizes Survival-PU on five of seven alarmed hosts. Operational per-window budgeting reverses most steep losses on LightGBM and DeepJIT-CNN, leaving only Qt CodeBERT negative.}
+\rqbox{Summary for RQ5}{On cached tabular features, ORB and BORB finish under four seconds per stream, Survival-PU takes 14.4~s (44.6~s on Qt with GPU CodeBERT batch encoding), and ODaSC takes nearly 70~s. Under matched caps, retrospective whole-stream budgeting penalizes Survival-PU on five of seven alarmed hosts. Operational per-window budgeting reverses most steep losses on LightGBM and DeepJIT-CNN, leaving only Qt CodeBERT with a net defect-yield deficit.}
 
 % ============================================================================
 % 7. Discussion and Observed Operating Boundaries
@@ -720,7 +758,7 @@ Stage~2 simplification & Dropping Stage~2 density-ratio weights slightly improve
 SZZ back-tracing is vulnerable to tangled commits, refactorings, and unlinked fixes \citep{dacosta2017framework,rosa2021evaluating,fan2021impact}, and finite repository snapshots incur end-of-archive censoring whenever fixes occur after the observable archive proxy $T_{\text{end}}$; Benchmark~A likewise replays merged commits by authoring timestamp rather than initial patch uploads. We mitigate these threats by excluding heuristic and retroactive links from observable positives, auditing follow-up across all 34 natural streams, and verifying Benchmark~A stability on 180- and 365-day follow-up slices (Tables~S-8--S-9). To guard against metric artifacts where score-scale drift or commit-size skew distorts practical review value, we pair whole-stream AP with per-window and scale-standardized AP, benchmark LOC-Only overlap, verify paired equal-cap yields (Table~\ref{tab:rq5_paired_budget}), and disclose the clean Hadoop partition (Table~S-7). Our probability calibration audit covers standard 90-day Platt scaling rather than maturity-aware post-hoc alternatives.
 
 \paragraph{Internal Validity.}
-The main internal threats are temporal leakage, method assumptions, and post-hoc tuning bias. Every execution branch passed deterministic prefix-invariance checks with zero perturbation error, certifying leak-free pipeline logic rather than upstream Git provenance. Inside Survival-PU, Stage~1 assumes trailing local stationarity, Stage~2 uses heuristic prior shrinkage, and the upper cap ($\pi_{\max} = 0.70$) clamps bisection whenever observed prevalence exceeds 70\%. We locked Benchmark~B analyses before acquiring ApacheJIT, documented the split rule for short confirmatory repositories, and treated Window Oracle strictly as a counterfactual isolating future-fix visibility. Automated scripts cross-check reported table values and protocol settings against archived result artifacts (Appendix~\ref{app:repro}).
+The main internal threats are temporal leakage, method assumptions, and post-hoc tuning bias. Every execution branch passed deterministic prefix-invariance checks with zero perturbation error, certifying leak-free pipeline logic rather than upstream Git provenance. Inside Survival-PU, Stage~1 assumes trailing local stationarity, Stage~2 uses heuristic prior shrinkage, and the upper prior cap ($\pi_{\max} = 0.70$) clamps bisection whenever observed prevalence exceeds 70\%, occurring on roughly 30\% of split HDFS* alarms versus under 1\% across natural Benchmark~B streams. We locked Benchmark~B analyses before acquiring ApacheJIT, documented the split rule for short confirmatory repositories, and treated Window Oracle strictly as a counterfactual isolating future-fix visibility. Automated scripts cross-check reported table values and protocol settings against archived result artifacts (Appendix~\ref{app:repro}).
 
 \paragraph{External and Conclusion Validity.}
 Our Track-2 stream implementations, ElasticNet BORB, Hoeffding ORB, and Hoeffding ODaSC, represent specific learner configurations rather than entire algorithmic families, and independent synthetic SZZ flips omit feature-dependent real SZZ errors. In addition, RQ4b estimates null alarm rates from resampled validation pools rather than separate stationary repositories, controlled shifts use one-hour splices across which pre-onset fixes continue landing, and RQ4e probes one lightweight model on 640 pre-cutoff public commits. Formal $\alpha = 0.05$ Holm--Bonferroni inference applies strictly to the 25-cluster and 24-cluster Benchmark~B cohorts, separate from exploratory checks in Table~\ref{tab:window_ap_scale}. Confirmatory non-replication of MLP hindsight inflation is reported directly without post-hoc retuning.
@@ -731,11 +769,9 @@ Our Track-2 stream implementations, ElasticNet BORB, Hoeffding ORB, and Hoeffdin
 \section{Conclusion}
 \label{sec:conclusion}
 
-Unsupervised drift monitors remove label dependence when deciding \textit{when} to retrain, but not when \textit{supervising} weight updates under multi-month SZZ verification latency. Across multi-year ecosystems, 68.8\% to 94.6\% of defects inside scheduled windows remain unrevealed at update time. Leaking future fixes significantly inflates whole-stream AP across 25 natural project clusters by 2.4 points on MLP and 4.8 points on LightGBM. At the monitor layer, circular block-bootstrap calibration cuts validation-pool false alarms $4.8\times$ and detects abrupt shifts $3\times$ faster than periodic retraining.
+Unsupervised drift monitors remove label dependence when deciding \textit{when} to retrain, but not when \textit{supervising} weight updates under multi-month SZZ verification latency. Auditing 34 natural repository streams, eight controlled shifts, and a paired Code-LLM case study reveals that leaking future SZZ fixes significantly inflates multi-year window-oracle ranking over strict causal retraining, even though that neural hindsight optimism does not replicate on shorter confirmatory projects. Once strict causal visibility holds, no single adaptive paradigm dominates every setting. Frozen linear models lead deployable multimodal streams, while simpler causal baselines and zero-fit FixedCurve-PU outperform Survival-PU on gradual multi-year whole-stream ranking (with within-window standardization reversing the mean Causal-4W gap). ElasticNet BORB excels on gradual tuned classification and immediate post-shift recovery, and online Hoeffding ODaSC leads the shorter confirmatory repositories. At the monitoring layer, circular block-bootstrap calibration with rolling reference refresh sharply curbs false-alarm storms while preserving rapid shift detection.
 
-Once strict causal visibility holds, no single adaptive paradigm dominates every operating regime. Frozen linear models lead on multimodal Benchmark~A. On gradual multi-year whole-stream AP, Causal-4W, Wait-90, and zero-fit FixedCurve-PU significantly outrank Survival-PU; within-window standardization reverses the mean Causal-4W gap by removing score-scale drift. ElasticNet BORB leads tuned $F_{1,\text{th}}$ on gradual clusters and adapts fastest immediately after abrupt shifts. Online Hoeffding ODaSC dominates the shorter confirmatory cohort where neural hindsight optimism fails to replicate.
-
-Within these boundaries, three-stage Survival-PU earns targeted, repeatable gains: it leads full post-shift ranking, lifts LightGBM soft-target distillation over a step-matched teacher, and avoids FixedCurve-PU's zero-latency misspecification. Under severe latency, it also outperforms Causal-4W, both post-hoc controls, and FixedCurve-PU on scale-fair $F_{1,\text{th}}$. Operationally, Survival-PU adds modest CPU overhead on cached tabular features as feature encoding dominates multimodal runtime, and matching review capacity per sprint reverses most retrospective whole-stream budget losses on LightGBM and DeepJIT-CNN, leaving Qt CodeBERT negative. Finally, our calibration audit shows that standard 90-day Platt scaling degrades probability quality whenever calibration pools remain heavily censored. Designing maturity-aware post-hoc calibrators and prospectively validating observable regime-selection criteria stand out as central next steps for adaptive JIT-SDP.
+Within these operating boundaries, three-stage Survival-PU earns a precise, targeted role: it leads full post-shift ranking, lifts gradient-boosted soft-target distillation over a step-matched teacher, avoids zero-lag misspecification from hardcoded waiting curves, and protects scale-fair thresholded classification under severe latency where Causal-4W and post-hoc score adjustments falter. Operationally, Survival-PU adds modest CPU overhead on cached tabular features, whereas feature encoding dominates multimodal runtime, and scoping review capacity per sprint rather than across whole streams reverses most steep budget losses on LightGBM and DeepJIT-CNN, leaving only Qt CodeBERT with a net defect-yield deficit. Finally, our calibration audit warns that standard 90-day Platt scaling degrades probability quality whenever calibration pools remain heavily censored. Developing maturity-aware post-hoc calibrators and prospectively validating observable regime-selection criteria stand out as central next steps for live adaptive JIT-SDP.
 
 \backmatter
 
@@ -781,7 +817,7 @@ Stg 1 & $[\gamma_{\min}, \gamma_{\max}]$ & $[0.60, 0.94]$ & \texttt{tail\_\allow
 Stg 2 & $\tau_{\text{r}}, N_{\text{r}}$ & $0.45, 2{,}200$ & \texttt{reliable\_\allowbreak maturity\_\allowbreak thresh}, \texttt{max\_\allowbreak reliable\_\allowbreak commits} & Reliable set \\
 Stg 2 & $[w_{\min}, w_{\max}]$ & $[0.50, 2.50]$ & \texttt{imp\_\allowbreak weight\_\allowbreak min}, \texttt{imp\_\allowbreak weight\_\allowbreak max} & Ratio cap \\
 Stg 2 & $c_{\text{ht}}, m_0, \pi$ & $0.10, 50, [0.02, 0.70]$ & \texttt{ht\_\allowbreak floor\_\allowbreak c}, \texttt{ht\_\allowbreak shrinkage\_\allowbreak m0}, \texttt{pi\_min}, \texttt{pi\_max} & Prior clamp \\
-Stg 2 & $\tau_{\text{s}}, \beta_{\text{L}}$ & $1.15, 0.25$ & \texttt{teacher\_\allowbreak sharpness}, \texttt{llm\_\allowbreak blend\_\allowbreak weight} & Scale, blend \\
+Stg 2 & $\tau_{\text{s}}, \beta_{\text{anc}}$ & $1.15, 0.25$ & \texttt{teacher\_\allowbreak sharpness}, \texttt{llm\_\allowbreak blend\_\allowbreak weight} & Scale, anc.\ blend$^\dagger$ \\
 Stg 3 & $N_{\text{a}}, \gamma, u_0$ & $2{,}000, 1.40, 0.45$ & \texttt{max\_\allowbreak anchor\_\allowbreak commits}, \texttt{drift\_\allowbreak emphasis\_\allowbreak gamma}, \texttt{maturity\_\allowbreak weight\_\allowbreak floor} & Pool, $u_i$ \\
 Stg 3 & $p_{\text{r}}, K_{\text{b}}$ & $[0.003, 0.997], 28$ & \texttt{posterior\_\allowbreak p\_\allowbreak min}, \texttt{posterior\_\allowbreak p\_\allowbreak max}, \texttt{bisection\_\allowbreak iters} & Bisection \\
 Budg. & $R_{\text{i}}, R_{\text{a}}$ & $90, 75$ & \texttt{lgb\_\allowbreak init\_\allowbreak rounds}, \texttt{lgb\_\allowbreak alarm\_\allowbreak rounds} & GBDT trees \\
@@ -789,6 +825,7 @@ Budg. & $E_{\text{t}}, E_{\text{s}}, \alpha_{\text{lr}}$ & $4, 4, 4.5\text{e-}4$
 Mon. & $W, d, p, \text{cd}$ & $400, 24, 95.0, 1$ & \texttt{window\_\allowbreak size\_\allowbreak default}, \texttt{drift\_\allowbreak pca\_\allowbreak dim}, \texttt{drift\_\allowbreak block\_\allowbreak pct}, \texttt{drift\_\allowbreak cooldown\_\allowbreak windows} & DriftLens \\
 \bottomrule
 \end{tabularx}
+\vspace{2pt}\par\noindent{\scriptsize\raggedright Note: $^\dagger$\texttt{llm\_blend\_weight} is a retained historical field name in the frozen configuration for the neural teacher's pre-stream anchor-blending weight $\beta_{\text{anc}} = 0.25$ (unrelated to LLM prompting). Pre-locked Stage~1--2 scaling constants in Eqs.~\eqref{eq:tail_cap} and~\eqref{eq:teacher_weights}: $a_0 = 45\text{d}$, $\phi_{\min} = 0.65$, $\lambda_g = 0.28$, $\rho_0 = 0.55$, $\epsilon_\pi = 0.03$, $\omega_{\min} = 1.5$, $\omega_{\max} = 4.5$.\par}
 \end{table}
 
 \paragraph{Proof of Proposition~\ref{prop:bias}.}
@@ -813,7 +850,9 @@ Core estimators (\texttt{Cohort\allowbreak Incidence\allowbreak Estimator}, \tex
 
 \end{appendices}
 
+\begingroup\raggedright
 \bibliography{references}
+\endgroup
 
 \end{document}
 """
@@ -849,8 +888,11 @@ def build_online_resource_tex(supp_tmap: Dict[str, str]) -> str:
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{enumitem}
-\usepackage{xurl}
+\usepackage[hyphens]{url}
 \usepackage{microtype}
+\def\UrlBigBreaks{\do\/}
+\def\UrlBreaks{\do\/\do-\do.}
+\def\UrlNoBreaks{\do\:}
 \usepackage[authoryear,round]{natbib}
 \usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
 
@@ -1027,7 +1069,9 @@ Table~\ref{tab:rq5_runtime} details standalone and incremental wall-clock runtim
 Applying our pre-declared high-confidence forensic filter (lag $\ge 14\text{d}$, Frozen $\ge 0.45$, Causal-4W $\le 0.35$, Survival-PU $\ge 0.50$) on natural Qt CodeBERT seed 42 yields 22 rescue illustrations (Table~\ref{tab:rq5_forensics}), where Alarm~\#1 at commit $9{,}900$ experienced $88.19\%$ $4W$ censoring; zero alarms fired on OpenStack CodeBERT seed 42. Across full evaluation sets, high-confidence SZZ false-negative candidates skew smaller than all defects: $436$ Qt FNs have median $32$ versus $69$ LOC across all $981$ defects, and $477$ OpenStack FNs have median $74$ versus $89$ LOC. Conversely, high-score false positives skew larger than clean commits, with medians of $65$ versus $9$ LOC on Qt ($1{,}620$ FPs) and $146$ versus $19$ LOC on OpenStack ($18$ FPs), spanning $2$-LOC faults (\texttt{qtmultimedia:4bb75559}) to $570{,}767$-LOC imports (\texttt{qtwebkit:d441d6f3}).
 
 \bibliographystyle{plainnat}
+\begingroup\raggedright
 \bibliography{references}
+\endgroup
 
 \end{document}
 """
@@ -1062,7 +1106,7 @@ def build_markdown_manuscript() -> str:
 
 ## Abstract
 
-Unsupervised drift monitors such as DriftLens flag representation shifts in Just-in-Time Defect Prediction without defect labels, motivating immediate window retraining. Label-free monitoring decides only when to retrain, however, not how to supervise weight updates. Under multi-month SZZ verification latency, most recently introduced defects remain unfixed at alarm time and appear clean. We audit this causal supervision gap across 34 natural repository streams totaling 347,122 commits, spanning 29 multi-year streams and five shorter confirmatory projects, alongside eight controlled shifts and a Code-LLM case study. Across linear, streaming, and Positive-Unlabeled learners, we evaluate circular block-bootstrap DriftLens alongside Survival-PU, a maturity-aware three-stage pipeline trained on soft targets. In multi-year ecosystems, 68.8% to 94.6% of defects inside scheduled windows remain right-censored at alarm time. Leaking future fixes into matched window-oracle updates significantly inflates Average Precision over causal retraining across multi-year neural and tree models, and block-bootstrap calibration cuts DriftLens false alarms nearly fivefold. On the shorter confirmatory projects, however, that neural hindsight optimism fails to replicate. Once strict causal visibility holds, no single paradigm dominates every regime. Frozen linear models lead deployable multimodal streams, simpler causal baselines and a fixed maturity curve outperform Survival-PU on gradual whole-stream ranking, and streaming Hoeffding trees led by ODaSC excel on the confirmatory projects. By contrast, Survival-PU leads post-shift ranking, avoids hardcoded-lag errors when fixes arrive immediately, and protects thresholded classification under severe latency where standard post-hoc calibration degrades.
+Unsupervised drift monitors such as DriftLens flag representation shifts in Just-in-Time Defect Prediction without defect labels, motivating immediate window retraining. Label-free monitoring decides only when to retrain, however, not how to supervise weight updates. Under multi-month SZZ verification latency, most recently introduced defects remain unfixed at alarm time and appear clean. We audit this causal supervision gap across 34 natural repository streams totaling 347,122 commits, spanning 29 multi-year streams and five shorter confirmatory projects, alongside eight controlled shifts and a Code-LLM case study. Across linear, streaming, and Positive-Unlabeled learners, we evaluate circular block-bootstrap DriftLens alongside Survival-PU, a maturity-aware three-stage pipeline trained on soft targets. In multi-year ecosystems, 68.8% to 94.6% of defects inside recent retraining windows remain right-censored at alarm time. Leaking future fixes into matched window-oracle updates significantly inflates Average Precision over causal retraining across multi-year neural and tree models, and block-bootstrap calibration cuts DriftLens false alarms nearly fivefold. On the shorter confirmatory projects, however, that neural hindsight optimism fails to replicate. Once strict causal visibility holds, no single paradigm dominates every regime. Frozen linear models lead deployable multimodal streams, simpler causal baselines and a fixed maturity curve outperform Survival-PU on gradual whole-stream ranking, and streaming Hoeffding trees led by ODaSC excel on the confirmatory projects. By contrast, Survival-PU leads post-shift ranking, avoids hardcoded-lag errors when fixes arrive immediately, and protects thresholded classification under severe latency where standard post-hoc calibration degrades.
 
 ---
 
@@ -1226,7 +1270,7 @@ python scripts_v3/analyze_and_plot_v3.py
 python scripts_v3/build_manuscript_v3.py
 ```
 
-Compiling `manuscript/main.tex` and `manuscript/online_resource.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready **38-page Springer SQJ Main PDF** (`Section 6 Empirical Results` starting at page 13) and **11-page companion Online Resource 1 PDF** (`Online_Resource_1.pdf`), both with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
+Compiling `manuscript/main.tex` and `manuscript/online_resource.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready **39-page Springer SQJ Main PDF** (`Section 6 Empirical Results` starting at page 14, i.e., 36% into the PDF) and **11-page companion Online Resource 1 PDF** (`Online_Resource_1.pdf`), both with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
 
 ### Tier 2 — Tabular Benchmark & Companion Audit Re-Execution
 

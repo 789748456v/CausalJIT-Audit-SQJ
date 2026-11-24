@@ -138,7 +138,7 @@ python scripts_v3/analyze_and_plot_v3.py
 python scripts_v3/build_manuscript_v3.py
 ```
 
-Compiling `manuscript/main.tex` and `manuscript/online_resource.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready **38-page Springer SQJ Main PDF** (`Section 6 Empirical Results` starting at page 13) and **11-page companion Online Resource 1 PDF** (`Online_Resource_1.pdf`), both with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
+Compiling `manuscript/main.tex` and `manuscript/online_resource.tex` via `pdflatex -> bibtex -> pdflatex -> pdflatex` reproduces the camera-ready **39-page Springer SQJ Main PDF** (`Section 6 Empirical Results` starting at page 14, i.e., 36% into the PDF) and **11-page companion Online Resource 1 PDF** (`Online_Resource_1.pdf`), both with `0` Errors, `0` Warnings, and `0` Overfull hboxes.
 
 ### Tier 2 — Tabular Benchmark & Companion Audit Re-Execution
 
