@@ -288,7 +288,7 @@ At the adaptation layer, Survival-PU pursues three sequential goals using only c
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.74\textwidth]{fig0b_survival_pu_architecture_v3.pdf}
+  \includegraphics[width=0.98\textwidth]{fig0b_survival_pu_architecture_v3.pdf}
   \caption{Three-stage Survival-PU pipeline at drift alarm $t_{\text{alarm}}$. Stage~1 estimates commit maturity on trailing history, Stage~2 fits a reliable teacher and target prevalence, and Stage~3 distills soft targets across $\mathcal{B} = \mathcal{A}_{\text{anc}} \cup W_{\text{drift}}$.}
   \label{fig:architecture}
 \end{figure}
@@ -551,7 +551,7 @@ All-pool soft-target accuracy conflates trivial positive writeback ($q_i = 1$ fo
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.90\textwidth]{fig5_ablations_and_controls_v3.pdf}
+  \includegraphics[width=0.98\textwidth]{fig5_ablations_and_controls_v3.pdf}
   \caption{Ten-stream RQ3 ablations and controls. Panel~(a) compares three maturity estimators, FixedCurve-PU, and single-factor ablations in AP; Panel~(b) contrasts AP and effort recall across teacher and gating controls.}
   \label{fig:rq3_abl}
 \end{figure}
@@ -748,7 +748,7 @@ Within these boundaries, three-stage Survival-PU earns targeted, repeatable gain
   \item \textbf{Competing interests:} The authors declare no competing financial or non-financial interests relevant to this article.
   \item \textbf{Ethics approval and consent to participate:} Not applicable; this study analyzes public open-source repository histories without human-subject experimentation.
   \item \textbf{Consent for publication:} Not applicable.
-  \item \textbf{Data availability:} The complete replication package, including immutable \texttt{src\_v3/} modules, \texttt{scripts\_v3/} companion audits and verifiers, pinned \texttt{requirements\_\allowbreak lock\_\allowbreak v3.txt}, SHA-256 manifests for all 94 stream bundles, 50 commit-level \texttt{.npz} prediction archives, lossless LLM exchange logs, and Online Resource~1 (\texttt{Online\_Resource\_1.pdf}), is publicly available at \url{https://github.com/789748456v/CausalJIT-Audit-SQJ} with a full offline archival bundle prepared for permanent Zenodo deposit upon acceptance.
+  \item \textbf{Data availability:} The complete replication package, including the immutable core source modules, companion audit and verification scripts, pinned Python dependency lockfile, SHA-256 manifests for all 94 stream bundles, 50 commit-level \texttt{.npz} prediction archives, lossless LLM exchange logs, and Online Resource~1 (\texttt{Online\_Resource\_1.pdf}), is publicly available at \url{https://github.com/789748456v/CausalJIT-Audit-SQJ} with a full offline archival bundle prepared for permanent Zenodo deposit upon acceptance.
   \item \textbf{Author contributions:} Z.L.: Conceptualization, Methodology, Software, Data Curation, Formal Analysis, Writing -- Original Draft. S.X.: Software, Validation, Data Curation, Writing -- Review \& Editing. K.L.: Validation, Investigation, Visualization, Writing -- Review \& Editing. S.M.: Formal Analysis, Investigation, Writing -- Review \& Editing. F.G.: Validation, Visualization, Writing -- Review \& Editing. Y.Z.: Supervision, Conceptualization, Methodology, Project Administration, Writing -- Review \& Editing. All authors read and approved the final manuscript.
 \end{itemize}
 
@@ -761,11 +761,11 @@ Within these boundaries, three-stage Survival-PU earns targeted, repeatable gain
 \section{Locked Parameters, Algebraic Proofs, and Code Traceability}
 \label{app:repro}
 
-Table~\ref{tab:hyperparams} lists all 33 locked protocol parameters frozen in \texttt{src\_v3/\allowbreak config\_\allowbreak v3.py} before unlocking the confirmatory cohort. Complete host architecture tables, executed competitor specifications, full-column mirrors of Main tables, and secondary data-funnel, follow-up, mechanism, shift, prompting, runtime, and forensic audits appear in companion \textbf{Online Resource~1} (Tables~S-1--S-18).
+Table~\ref{tab:hyperparams} lists all 33 locked protocol parameters frozen in the configuration module before unlocking the confirmatory cohort. Complete host architecture tables, executed competitor specifications, full-column mirrors of Main tables, and secondary data-funnel, follow-up, mechanism, shift, prompting, runtime, and forensic audits appear in companion \textbf{Online Resource~1} (Tables~S-1--S-18).
 
 \begin{table}[t]
 \centering
-\caption{Locked protocol parameters of Survival-PU and DriftLens frozen in \texttt{V3\_CONFIG} prior to unlocking the confirmatory repositories.}
+\caption{Locked protocol parameters of Survival-PU and DriftLens frozen in the configuration module prior to unlocking the confirmatory repositories.}
 \label{tab:hyperparams}
 \fontsize{7.5}{9.0}\selectfont
 \renewcommand{\arraystretch}{1.03}
@@ -808,7 +808,7 @@ Differentiating $\mathcal{L}_{\text{SPU},i}(z_i)$ via $\frac{d}{dz}\log(1+e^{-z}
 
 \paragraph{Code-to-Manuscript Traceability.}
 \begingroup\raggedright
-Core estimators (\texttt{Cohort\allowbreak Incidence\allowbreak Estimator}, \texttt{\_set\_fallback()}, \texttt{estimate\_\allowbreak ht\_\allowbreak shrunk\_\allowbreak prevalence}, and \texttt{compute\_\allowbreak survival\_\allowbreak pu\_\allowbreak posterior}) reside in \texttt{src\_v3/\allowbreak survival\_\allowbreak estimators\_\allowbreak v3.py}, while host learners (\texttt{train\_\allowbreak supervised\_\allowbreak v3}, \texttt{LightGBM\allowbreak HostV3}) and causal stream baselines (\texttt{calibrate\_\allowbreak causal\_\allowbreak stream\_\allowbreak probs\_\allowbreak strict}) reside in \texttt{models\_\allowbreak and\_\allowbreak baselines\_\allowbreak v3.py} and \texttt{stream\_\allowbreak competitors\_\allowbreak v3.py}. Protocol sizing (\texttt{compute\_\allowbreak split\_\allowbreak sizes}), pre-registered rules (\texttt{PRE\_\allowbreak REGISTERED\_\allowbreak INTERPRETATION\_\allowbreak BOUNDARIES}), and the ten-stream subset (\texttt{REPRESENTATIVE\_\allowbreak 10\_\allowbreak STREAMS}) live in \texttt{config\_\allowbreak v3.py}, \texttt{data\_\allowbreak audit\_\allowbreak v3.py}, and \texttt{run\_\allowbreak v3\_\allowbreak experiments.py}. Automated verifiers in \texttt{src\_v3/} and \texttt{scripts\_v3/} cross-check every archived JSON hash, table cell across Main and Online Resource~1, locked parameter, and mechanism invariant; full artifact crosswalks appear in the repository README.
+Core estimators (\texttt{Cohort\allowbreak Incidence\allowbreak Estimator}, \texttt{\_set\_fallback()}, \texttt{estimate\_\allowbreak ht\_\allowbreak shrunk\_\allowbreak prevalence}, and \texttt{compute\_\allowbreak survival\_\allowbreak pu\_\allowbreak posterior}) reside in the survival-estimator module, while host learners, custom soft-target gradient-boosting objectives, and causal stream baselines (\texttt{calibrate\_\allowbreak causal\_\allowbreak stream\_\allowbreak probs\_\allowbreak strict}) reside in the host-model and stream-competitor modules. Protocol sizing (\texttt{compute\_\allowbreak split\_\allowbreak sizes}), pre-registered interpretation rules, and the ten-stream representative subset (\texttt{REPRESENTATIVE\_\allowbreak 10\_\allowbreak STREAMS}) live in the configuration, data-audit, and experiment-runner modules. Automated verifiers in the replication repository cross-check every archived JSON hash, table cell across Main and Online Resource~1, locked parameter, and mechanism invariant; exact module filenames and artifact crosswalks appear in the repository README.
 \endgroup
 
 \end{appendices}

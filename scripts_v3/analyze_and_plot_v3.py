@@ -732,10 +732,10 @@ def plot_fig4_confirmatory_boundary(fig_dir: str, bb_j: Dict, conf_j: Dict) -> N
 
 
 def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.0, 4.4), gridspec_kw={"width_ratios": [1.18, 1.0]})
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.2, 4.65), gridspec_kw={"width_ratios": [1.10, 1.08]})
     sm = rq3_j["summary_means"]
 
-    # Panel (a): Survival estimator invariance & internal component ablations (AP)
+    # Panel (a): Survival estimator sensitivity & internal component ablations (AP)
     ab_rows = [
         ("B1b_4W_Oracle", "Window Oracle", PALETTE["oracle"]),
         ("Survival_PU_Default", "Survival-PU (Cohort Incidence)", PALETTE["spu"]),
@@ -754,24 +754,25 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     bars = ax1.barh(yp, vals, height=0.68, color=[c for _, _, c in ab_rows], alpha=0.90)
     ax1.invert_yaxis()
     ax1.set_yticks(yp)
-    ax1.set_yticklabels([l for _, l, _ in ab_rows], fontsize=8.1)
+    ax1.set_yticklabels([l for _, l, _ in ab_rows], fontsize=9.8)
     for b, v in zip(bars, vals):
-        ax1.text(v + 0.006, b.get_y() + b.get_height() / 2, f"{v:.4f}", va="center", ha="left", fontsize=7.8)
-    ax1.set_xlim(0, max(vals) * 1.18)
-    ax1.set_xlabel("10-Stream Mean Average Precision (AP)")
-    ax1.set_title("(a) Maturity-Estimator Sensitivity & Internal Ablations", fontweight="bold")
+        ax1.text(v + 0.007, b.get_y() + b.get_height() / 2, f"{v:.4f}", va="center", ha="left", fontsize=9.4)
+    ax1.set_xlim(0, max(vals) * 1.24)
+    ax1.tick_params(axis="x", labelsize=9.6)
+    ax1.set_xlabel("10-Stream Mean Average Precision (AP)", fontsize=10.6)
+    ax1.set_title("(a) Maturity-Estimator Sensitivity & Internal Ablations", fontweight="bold", fontsize=11.0, pad=8)
     ax1.grid(axis="x", linestyle=":", alpha=0.5)
 
-    # Panel (b): Dual-metric comparison (AP AND Recall@20%Effort) on Compute-Matched Teacher & Legacy Gate Controls
+    # Panel (b): Dual-metric comparison (AP AND Recall@20%Effort) on Compute-Matched Teacher & Gate Controls
     ctrl_rows = [
         ("Survival_PU_Default", "Survival-PU\n(3-Stage)"),
         ("Teacher_Only_Matched", "Teacher-\nMatched"),
         ("Teacher_Only_Exact", "Teacher-\nExact"),
-        ("SPU_WithLegacyGate", "Survival-PU\n(+Gate)"),
-        ("SPU_Fixed90d", "FixedCurve-\nPU (90d)"),
+        ("SPU_WithLegacyGate", "SPU\n(+Gate)"),
+        ("SPU_Fixed90d", "FixedCurve\n(90d)"),
     ]
     xc = np.arange(len(ctrl_rows))
-    bw = 0.36
+    bw = 0.39
     v_ap = [sm[k]["ap"] for k, _ in ctrl_rows]
     v_r20 = [sm[k]["recall_at_20pct_effort"] for k, _ in ctrl_rows]
     b_ap = ax2.bar(xc - bw / 2, v_ap, width=bw, color=PALETTE["spu"], alpha=0.90, label="Average Precision (AP)")
@@ -779,16 +780,17 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     for bars_g in (b_ap, b_r2):
         for b in bars_g:
             hv = b.get_height()
-            ax2.text(b.get_x() + b.get_width() / 2, hv + 0.010, f"{hv:.3f}", ha="center", va="bottom", fontsize=7.2)
+            ax2.text(b.get_x() + b.get_width() / 2, hv + 0.012, f"{hv:.3f}", ha="center", va="bottom", fontsize=8.8)
     ax2.set_xticks(xc)
-    ax2.set_xticklabels([l for _, l in ctrl_rows], fontsize=7.9)
-    ax2.set_ylim(0, max(max(v_ap), max(v_r20)) * 1.22)
-    ax2.set_ylabel("Score (Higher is Better)")
-    ax2.set_title("(b) Distillation, Compute-Matched & Confidence-Gate Controls", fontweight="bold")
-    ax2.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.92, fontsize=8.0)
+    ax2.set_xticklabels([l for _, l in ctrl_rows], fontsize=9.4)
+    ax2.tick_params(axis="y", labelsize=9.6)
+    ax2.set_ylim(0, max(max(v_ap), max(v_r20)) * 1.28)
+    ax2.set_ylabel("Score (Higher is Better)", fontsize=10.6)
+    ax2.set_title("(b) Distillation, Compute-Matched & Gate Controls", fontweight="bold", fontsize=11.0, pad=8)
+    ax2.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.94, fontsize=9.4)
     ax2.grid(axis="y", linestyle=":", alpha=0.5)
 
-    fig.tight_layout(w_pad=2.2)
+    fig.tight_layout(w_pad=1.8)
     _save_fig(fig, fig_dir, "fig5_ablations_and_controls_v3")
 
 

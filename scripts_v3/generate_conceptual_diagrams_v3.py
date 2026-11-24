@@ -195,92 +195,92 @@ def build_fig0a_causal_timeline(fig_dir: str) -> None:
 
 
 def build_fig0b_architecture(fig_dir: str) -> None:
-    fig, ax = plt.subplots(figsize=(12.0, 5.1))
+    fig, ax = plt.subplots(figsize=(10.6, 4.35))
     ax.set_xlim(0.0, 1.0)
     ax.set_ylim(0.0, 1.0)
     ax.axis("off")
 
     ax.text(
-        0.50, 0.958,
+        0.50, 0.955,
         "Survival-PU: Three-Stage Input–Output Pipeline Triggered at Drift Alarm $t_{\\mathrm{alarm}}$",
-        ha="center", va="center", fontsize=11.6, fontweight="bold", color="#0F172A"
+        ha="center", va="center", fontsize=12.6, fontweight="bold", color="#0F172A"
     )
 
     # Column 1: Stream Input & Block DriftLens
     _box(
-        ax, 0.02, 0.55, 0.20, 0.33,
+        ax, 0.012, 0.545, 0.218, 0.345,
         "Commit Stream & Host",
-        "Inputs: commit metrics $x_{\\mathrm{tab}}$\n(+ diff/msg on Bench. A).\nOutputs: logits $z(x)$ and\n24-D PCA embeddings.",
-        fc="#F1F5F9", ec="#475569", title_color="#0F172A", title_fs=10.0, body_fs=8.9, linespacing=1.38
+        "Inputs: metrics $x_{\\mathrm{tab}}$\n(+ diff/msg on Bench. A).\nOutputs: logits $z(x)$ &\n24-D PCA embeddings.",
+        fc="#F1F5F9", ec="#475569", title_color="#0F172A", title_fs=11.0, body_fs=10.1, pad=0.008, linespacing=1.30
     )
     _box(
-        ax, 0.02, 0.13, 0.20, 0.34,
+        ax, 0.012, 0.115, 0.218, 0.365,
         "Block DriftLens Monitor",
-        "Input: window $W_{\\mathrm{drift}}$ emb.\nCircular block bootstrap\n($p_{95}$, cooldown 1) + rolling\n3W reference refresh.\nOutput: alarm at $t_{\\mathrm{alarm}}$.",
-        fc="#FEF3C7", ec="#D97706", title_color="#92400E", title_fs=10.0, body_fs=8.8, linespacing=1.34
+        "Input: $W_{\\mathrm{drift}}$ embeddings.\nCircular block bootstrap\n($p_{95}$, cd 1) + rolling 3W\nreference refresh.\nOutput: alarm at $t_{\\mathrm{alarm}}$.",
+        fc="#FEF3C7", ec="#D97706", title_color="#92400E", title_fs=11.0, body_fs=9.9, pad=0.008, linespacing=1.26
     )
-    _arrow(ax, 0.12, 0.538, 0.12, 0.482, color="#475569", lw=1.6)
+    _arrow(ax, 0.121, 0.535, 0.121, 0.490, color="#475569", lw=1.7)
 
     # Column 2: Stage 1
     _box(
-        ax, 0.26, 0.55, 0.215, 0.33,
+        ax, 0.260, 0.545, 0.222, 0.345,
         "Stage 1: Maturity $c(a_i)$",
-        "Input: causal history\n($t_i \\leq t_{\\mathrm{alarm}}$, revealed fixes).\nRisk-eligible cohort\ncumulative incidence.\nOutput: commit maturity $c_i$.",
-        fc="#EFF6FF", ec="#2563EB", title_color="#1D4ED8", title_fs=10.0, body_fs=8.8, linespacing=1.34
+        "Input: causal history\n($t_i \\leq t_{\\mathrm{alarm}}$, fixes).\nRisk-eligible cohort\ncumulative incidence.\nOutput: maturity $c_i$.",
+        fc="#EFF6FF", ec="#2563EB", title_color="#1D4ED8", title_fs=11.0, body_fs=9.9, pad=0.008, linespacing=1.26
     )
     _box(
-        ax, 0.26, 0.13, 0.215, 0.34,
+        ax, 0.260, 0.115, 0.222, 0.365,
         "Stage 1 Control Curves",
         "Swappable controls:\n• Kaplan–Meier Cure\n• Weibull Mixture-Cure\n• Zero-fit FixedCurve-PU\n  (90-day half-life prior)",
-        fc="#F8FAFC", ec="#64748B", title_color="#334155", title_fs=10.0, body_fs=8.9, linespacing=1.36
+        fc="#F8FAFC", ec="#64748B", title_color="#334155", title_fs=11.0, body_fs=10.0, pad=0.008, linespacing=1.28
     )
-    _arrow(ax, 0.3675, 0.482, 0.3675, 0.538, color="#64748B", lw=1.4)
+    _arrow(ax, 0.371, 0.490, 0.371, 0.535, color="#64748B", lw=1.5)
 
     # Column 3: Stage 2
     _box(
-        ax, 0.515, 0.55, 0.22, 0.33,
+        ax, 0.512, 0.545, 0.230, 0.345,
         "Stage 2: Reliable Teacher",
         "Input: revealed positives $\\cup$\nmature commits ($c_i \\geq 0.45$).\nCovariate + recency weights.\nOutput: de-weighted base\nlog-odds $\\eta_i^{(0)}$ on pool $\\mathcal{B}$.",
-        fc="#F5F3FF", ec="#7C3AED", title_color="#5B21B6", title_fs=10.0, body_fs=8.8, linespacing=1.34
+        fc="#F5F3FF", ec="#7C3AED", title_color="#5B21B6", title_fs=11.0, body_fs=9.9, pad=0.008, linespacing=1.26
     )
     _box(
-        ax, 0.515, 0.13, 0.22, 0.34,
+        ax, 0.512, 0.115, 0.230, 0.365,
         "Stage 2: Prior $\\hat{\\pi}_{\\mathrm{target}}$",
         "Input: calibration pool $\\mathcal{B}_{\\mathrm{cal}}$,\n$y_{i,\\mathrm{obs}}$, and $c_i$.\nClipped IP prevalence shrunk\ntoward mature anchor.\nOutput: target prior $\\hat{\\pi}_{\\mathrm{target}}$.",
-        fc="#FAF5FF", ec="#7C3AED", title_color="#5B21B6", title_fs=10.0, body_fs=8.8, linespacing=1.34
+        fc="#FAF5FF", ec="#7C3AED", title_color="#5B21B6", title_fs=11.0, body_fs=9.9, pad=0.008, linespacing=1.26
     )
 
     # Column 4: Stage 3 & Scoring
     _box(
-        ax, 0.775, 0.48, 0.205, 0.40,
+        ax, 0.772, 0.485, 0.216, 0.405,
         "Stage 3: PU Distillation",
-        "Inputs: $\\eta_i^{(0)}$, $c_i$, $\\hat{\\pi}_{\\mathrm{target}}$.\nMonotone bisection $\\delta^*$ sets\nsoft targets $q_i(\\delta^*)$.\nFits student host on anchor\n+ $W_{\\mathrm{drift}}$ (weighted BCE).",
-        fc="#ECFDF5", ec="#059669", title_color="#047857", title_fs=10.0, body_fs=8.8, linespacing=1.35
+        "Inputs: $\\eta_i^{(0)}$, $c_i$, $\\hat{\\pi}_{\\mathrm{target}}$.\nMonotone bisection $\\delta^*$ sets\nsoft targets $q_i(\\delta^*)$.\nFits student on anchor +\n$W_{\\mathrm{drift}}$ (weighted BCE).",
+        fc="#ECFDF5", ec="#059669", title_color="#047857", title_fs=11.0, body_fs=9.9, pad=0.008, linespacing=1.28
     )
     _box(
-        ax, 0.775, 0.13, 0.205, 0.27,
+        ax, 0.772, 0.115, 0.216, 0.295,
         "Causal Stream Scoring",
-        "Scores next window $[e, e+W)$.\nCausal Platt $\\hat{p}_{\\mathrm{cal}}$ & threshold\n$\\tau_{\\mathrm{th}}$ fit strictly on past\naged commits ($a_i \\geq 90\\mathrm{d}$).",
-        fc="#F0FDF4", ec="#16A34A", title_color="#15803D", title_fs=10.0, body_fs=8.8, linespacing=1.34
+        "Scores window $[e, e+W)$.\nCausal Platt $\\hat{p}_{\\mathrm{cal}}$ & $\\tau_{\\mathrm{th}}$\nfit strictly on past aged\ncommits ($a_i \\geq 90\\mathrm{d}$).",
+        fc="#F0FDF4", ec="#16A34A", title_color="#15803D", title_fs=11.0, body_fs=9.9, pad=0.008, linespacing=1.28
     )
 
     # Clean non-overlapping arrows between columns
-    _arrow(ax, 0.232, 0.715, 0.248, 0.715, color="#334155", lw=1.6)
-    _arrow(ax, 0.232, 0.30, 0.248, 0.64, color="#D97706", lw=1.5, rad=-0.08)
-    _arrow(ax, 0.487, 0.715, 0.503, 0.715, color="#2563EB", lw=1.6)
-    _arrow(ax, 0.487, 0.63, 0.503, 0.31, color="#2563EB", lw=1.5, rad=0.08)
-    _arrow(ax, 0.747, 0.715, 0.763, 0.715, color="#7C3AED", lw=1.6)
-    _arrow(ax, 0.747, 0.30, 0.763, 0.60, color="#7C3AED", lw=1.5, rad=-0.08)
-    _arrow(ax, 0.8775, 0.468, 0.8775, 0.412, color="#059669", lw=1.6)
+    _arrow(ax, 0.240, 0.718, 0.251, 0.718, color="#334155", lw=1.7)
+    _arrow(ax, 0.240, 0.300, 0.251, 0.640, color="#D97706", lw=1.6, rad=-0.08)
+    _arrow(ax, 0.492, 0.718, 0.503, 0.718, color="#2563EB", lw=1.7)
+    _arrow(ax, 0.492, 0.630, 0.503, 0.305, color="#2563EB", lw=1.6, rad=0.08)
+    _arrow(ax, 0.752, 0.718, 0.763, 0.718, color="#7C3AED", lw=1.7)
+    _arrow(ax, 0.752, 0.300, 0.763, 0.600, color="#7C3AED", lw=1.6, rad=-0.08)
+    _arrow(ax, 0.880, 0.475, 0.880, 0.420, color="#059669", lw=1.7)
 
     ax.text(
-        0.50, 0.045,
+        0.50, 0.038,
         "Locked protocol hyperparameters appear in Appendix A; Teacher-Matched and confidence gating are isolated as controls.",
-        ha="center", va="center", fontsize=8.8, style="italic", color="#475569"
+        ha="center", va="center", fontsize=10.0, style="italic", color="#475569"
     )
 
     os.makedirs(fig_dir, exist_ok=True)
-    fig.subplots_adjust(left=0.01, right=0.99, top=0.99, bottom=0.01)
+    fig.subplots_adjust(left=0.006, right=0.994, top=0.992, bottom=0.008)
     fig.savefig(os.path.join(fig_dir, "fig0b_survival_pu_architecture_v3.pdf"))
     fig.savefig(os.path.join(fig_dir, "fig0b_survival_pu_architecture_v3.png"), dpi=300)
     plt.close(fig)
