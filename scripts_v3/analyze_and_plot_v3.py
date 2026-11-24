@@ -437,10 +437,10 @@ def build_derived_aggregates(
 # Publication-Grade Figures (Fig 1 .. Fig 8)
 # ==============================================================================
 
-def _save_fig(fig, fig_dir: str, stem: str) -> None:
+def _save_fig(fig, fig_dir: str, stem: str, pad_inches: float = 0.16) -> None:
     os.makedirs(fig_dir, exist_ok=True)
-    fig.savefig(os.path.join(fig_dir, f"{stem}.pdf"), bbox_inches="tight", pad_inches=0.12)
-    fig.savefig(os.path.join(fig_dir, f"{stem}.png"), dpi=300, bbox_inches="tight", pad_inches=0.12)
+    fig.savefig(os.path.join(fig_dir, f"{stem}.pdf"), bbox_inches="tight", pad_inches=pad_inches)
+    fig.savefig(os.path.join(fig_dir, f"{stem}.png"), dpi=300, bbox_inches="tight", pad_inches=pad_inches)
     plt.close(fig)
 
 
@@ -732,7 +732,7 @@ def plot_fig4_confirmatory_boundary(fig_dir: str, bb_j: Dict, conf_j: Dict) -> N
 
 
 def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.2, 4.65), gridspec_kw={"width_ratios": [1.10, 1.08]})
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.2, 4.88), gridspec_kw={"width_ratios": [1.10, 1.08]})
     sm = rq3_j["summary_means"]
 
     # Panel (a): Survival estimator sensitivity & internal component ablations (AP)
@@ -760,7 +760,7 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     ax1.set_xlim(0, max(vals) * 1.24)
     ax1.tick_params(axis="x", labelsize=9.6)
     ax1.set_xlabel("10-Stream Mean Average Precision (AP)", fontsize=10.6)
-    ax1.set_title("(a) Maturity-Estimator Sensitivity & Internal Ablations", fontweight="bold", fontsize=11.0, pad=11)
+    ax1.set_title("(a) Maturity-Estimator Sensitivity & Internal Ablations", fontweight="bold", fontsize=11.0, pad=12)
     ax1.grid(axis="x", linestyle=":", alpha=0.5)
 
     # Panel (b): Dual-metric comparison (AP AND Recall@20%Effort) on Compute-Matched Teacher & Gate Controls
@@ -786,12 +786,12 @@ def plot_fig5_ablations_and_controls(fig_dir: str, rq3_j: Dict) -> None:
     ax2.tick_params(axis="y", labelsize=9.6)
     ax2.set_ylim(0, max(max(v_ap), max(v_r20)) * 1.28)
     ax2.set_ylabel("Score (Higher is Better)", fontsize=10.6)
-    ax2.set_title("(b) Distillation, Compute-Matched & Gate Controls", fontweight="bold", fontsize=11.0, pad=11)
+    ax2.set_title("(b) Distillation, Compute-Matched & Gate Controls", fontweight="bold", fontsize=11.0, pad=12)
     ax2.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.94, fontsize=9.4)
     ax2.grid(axis="y", linestyle=":", alpha=0.5)
 
-    fig.tight_layout(w_pad=1.8)
-    _save_fig(fig, fig_dir, "fig5_ablations_and_controls_v3")
+    fig.tight_layout(w_pad=1.8, rect=[0.0, 0.0, 1.0, 0.93])
+    _save_fig(fig, fig_dir, "fig5_ablations_and_controls_v3", pad_inches=0.28)
 
 
 def plot_fig6_latency_and_drift_factorial(fig_dir: str, rq4a_j: Dict, rq4b_j: Dict, rq4a_fc_j: Dict) -> None:
